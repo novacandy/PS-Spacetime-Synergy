@@ -6,7 +6,8 @@ addLayer("st", {
         unlocked: true,
 		points: new Decimal(10),
         resetTime: 0,
-        convertMode: true,
+        convertInput: "SPACETIME",
+        convertOutput: "SPACE",
     }},
     color: "#360d87",
     requires: new Decimal(5),
@@ -30,12 +31,30 @@ addLayer("st", {
     clickables: {
         11: {
             title: "Convert 1",
-            canClick() {return player.st.points.gte(1)},
-            onClick() {
-                player.st.points = player.st.points.sub(1)
-                if (player.st.convertMode) {
-                    player.spacePoints = player.spacePoints.add(1)
+            canClick() {
+                if (player.st.convertInput == "SPACETIME" && player.st.points.gte(1)) {
+                    return true
+                } else if (player.st.convertInput == "SPACE" && player.spacePoints.gte(1)) {
+                    return true
+                } else if (player.st.convertInput == "TIME" && player.timePoints.gte(1)) {
+                    return true
                 } else {
+                    return false
+                }
+            },
+            onClick() {
+                if (player.st.convertInput == "SPACETIME" && player.st.points.gte(1)) {
+                    player.st.points = player.st.points.sub(1)
+                } else if (player.st.convertInput == "SPACE" && player.spacePoints.gte(1)) {
+                    player.spacePoints = player.spacePoints.sub(1)
+                } else if (player.st.convertInput == "TIME" && player.timePoints.gte(1)) {
+                    player.timePoints = player.timePoints.sub(1)
+                }
+                if (player.st.convertOutput == "SPACETIME") {
+                    player.st.points = player.st.points.add(1)
+                } else if (player.st.convertOutput == "SPACE") {
+                    player.spacePoints = player.spacePoints.add(1)
+                } else if (player.st.convertOutput == "TIME") {
                     player.timePoints = player.timePoints.add(1)
                 }
                 doReset('st', true)
@@ -47,15 +66,13 @@ addLayer("st", {
             "Spacetime Conversion Module": {
                 content: [
                     "blank",
-                    ["toggle", ["st", "convertMode"]],
+                    ["display-text", "<h3>INPUT</h3>"],
+                    ["drop-down", ["convertInput", ["SPACETIME", "SPACE", "TIME"]]],
                     "blank",
-                    ["display-text", () => {
-                        if (player.st.convertMode) {
-                            return "Convert Mode: SPACE"
-                        } else {
-                            return "Convert Mode: TIME"
-                        }
-                    }],
+                    ["display-text", "<h3>OUTPUT</h3>"],
+                    ["drop-down", ["convertOutput", ["SPACETIME", "SPACE", "TIME"]]],
+                    "blank",
+                    ["display-text", "Convert Mode: "],
                     "blank",
                     "clickables",
                     "blank",
