@@ -6,6 +6,7 @@ addLayer("st", {
         unlocked: true,
 		points: new Decimal(10),
         resetTime: 0,
+        total: new Decimal(10),
         convertInput: "SPACETIME",
         convertOutput: "SPACE",
     }},
@@ -18,6 +19,7 @@ addLayer("st", {
     exponent: 0.5,
     gainMult() {
         mult = new Decimal(1)
+        if (hasUpgrade('st', 24)) mult = mult.mul(upgradeEffect('st', 24))
         return mult
     },
     gainExp() {
@@ -28,6 +30,48 @@ addLayer("st", {
     hotkeys: [
         {key: "s", description: "S: Reset for spacetime", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
+    upgrades: {
+        21: {
+            title: "Doubler",
+            description() {return "Double point gain."},
+            cost: new Decimal(5),
+        },
+        22: {
+            title: "Efficient Space",
+            description() {return "Space grants twice as much point capacity."},
+            cost: new Decimal(10),
+        },
+        23: {
+            title: "Speedrun",
+            description() {return "Earn a multiplier to points based on spacetime. Effect: x" + format(this.effect())},
+            cost: new Decimal(15),
+            effect() {
+                let effect = player.st.points.pow(0.5).div(2).add(1)
+                return effect
+            },
+        },
+        24: {
+            title: "Further Expansion",
+            description() {return "Earn a multiplier to spacetime based on time. Effect: x" + format(this.effect())},
+            cost: new Decimal(25),
+            effect() {
+                let effect = player.timePoints.add(1).log(10).add(1)
+                return effect
+            },
+        }
+    },
+    milestones: {
+        0: {
+            requirementDescription: "Reset for spacetime once",
+            effectDescription: "Unlock the Upgrade Module",
+            done() { return player.st.total.gte(11) }
+        },
+        1: {
+            requirementDescription: "100 spacetime",
+            effectDescription: "Unlock the Spacetime Synthesis Module and more options for spacetime conversion",
+            done() { return player.st.points.gte(100)}
+        }
+    },
     clickables: {
         11: {
             title: "Convert 1",
@@ -72,7 +116,7 @@ addLayer("st", {
                     ["display-text", "<h3>OUTPUT</h3>"],
                     ["drop-down", ["convertOutput", ["SPACETIME", "SPACE", "TIME"]]],
                     "blank",
-                    ["display-text", "Convert Mode: "],
+                    ["display-text", () => {return "Convert Mode: " + player.st.convertInput + " -> " + player.st.convertOutput}],
                     "blank",
                     "clickables",
                     "blank",
@@ -80,6 +124,7 @@ addLayer("st", {
                 ],
             },
             "Upgrade Module": {
+                unlocked() {return hasMilestone('st', 0)},
                 content: [
                     "blank",
                     "upgrades"
@@ -91,10 +136,11 @@ addLayer("st", {
         "main-display",
         "prestige-button",
         "blank",
+        "milestones",
         ["microtabs", "spacetime"]
     ],
     update(diff) {
-        if (player.points.gte(player.spacePoints)) player.points = player.spacePoints
+        if (player.points.gte(getPointCapacity())) player.points = getPointCapacity()
     },
     layerShown() {return true}
 })

@@ -33,7 +33,7 @@ function getStartPoints(){
 
 // Determines if it should show points/sec
 function canGenPoints(){
-	return new Decimal(player.st.resetTime).lt(player.timePoints) && player.points.lt(player.spacePoints)
+	return new Decimal(player.st.resetTime).lt(getPointTime())
 }
 
 // Calculate points/sec!
@@ -42,17 +42,30 @@ function getPointGen() {
 		return new Decimal(0)
 
 	let gain = new Decimal(1)
+	if (hasUpgrade('st', 21)) gain = gain.mul(2)
+	if (hasUpgrade('st', 23)) gain = gain.mul(upgradeEffect('st', 23))
 	return gain
 }
 
 function getPointCapacity() {
 	let cap = player.spacePoints
+	if (hasUpgrade('st', 22)) cap = cap.mul(2)
 	return cap
 }
 
 function getPointTime() {
 	let time = player.timePoints
 	return time
+}
+
+function getSpaceMultis() {
+	let mul = new Decimal(1)
+	return mul
+}
+
+function getTimeMultis() {
+	let mul = new Decimal(1)
+	return mul
 }
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
 function addedPlayerData() { return {
