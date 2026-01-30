@@ -1,12 +1,12 @@
 let modInfo = {
-	name: "The ??? Tree",
-	author: "nobody",
+	name: "Prestigious Saplings: Spacetime Shenanigans!",
+	author: "points",
 	pointsName: "points",
 	modFiles: ["layers.js", "tree.js"],
 
-	discordName: "",
-	discordLink: "",
-	initialStartPoints: new Decimal (10), // Used for hard resets and new players
+	discordName: "The Supernova",
+	discordLink: "https://discord.gg/5K4DXpGeU2",
+	initialStartPoints: new Decimal (0), // Used for hard resets and new players
 	offlineLimit: 1,  // In hours
 }
 
@@ -33,7 +33,7 @@ function getStartPoints(){
 
 // Determines if it should show points/sec
 function canGenPoints(){
-	return true
+	return new Decimal(player.st.resetTime).lt(player.timePoints) && player.points.lt(player.spacePoints)
 }
 
 // Calculate points/sec!
@@ -45,12 +45,26 @@ function getPointGen() {
 	return gain
 }
 
+function getPointCapacity() {
+	let cap = player.spacePoints
+	return cap
+}
+
+function getPointTime() {
+	let time = player.timePoints
+	return time
+}
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
 function addedPlayerData() { return {
+	spacePoints: new Decimal(0),
+	timePoints: new Decimal(0),
 }}
 
 // Display extra things at the top of the page
 var displayThings = [
+	() => "You have " + format(player.spacePoints) + " space and " + format(player.timePoints) + " time",
+	() => "Space is granting a point capacity of " + format(getPointCapacity()) + "",
+	() => "Time is allowing points to be generated for " + format(new Decimal(player.st.resetTime).min(getPointTime())) + "/" + format(getPointTime()) + " seconds",
 ]
 
 // Determines when the game "ends"
