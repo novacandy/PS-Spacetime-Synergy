@@ -1,6 +1,7 @@
 addLayer("st", {
     name: "spacetime",
     symbol: "ST",
+    row: 0,
     position: 0,
     startData() { return {
         unlocked: true,
@@ -9,6 +10,12 @@ addLayer("st", {
         total: new Decimal(10),
         convertInput: "SPACETIME",
         convertOutput: "SPACE",
+
+        spaceRefillAmount: new Decimal(0),
+        spaceExtractedAmount: new Decimal(0),
+
+        timeRefillAmount: new Decimal(0),
+        timeExtractedAmount: new Decimal(0),
     }},
     color: "#360d87",
     requires: new Decimal(5),
@@ -26,7 +33,14 @@ addLayer("st", {
         exp = new Decimal(1)
         return exp
     },
-    row: 0,
+    getSpaceTankCap() {
+        let cap = new Decimal(1e100)
+        return cap
+    },
+    getTimeTankCap() {
+        let cap = new Decimal(1e100)
+        return cap
+    },
     hotkeys: [
         {key: "s", description: "S: Reset for spacetime", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
@@ -64,7 +78,7 @@ addLayer("st", {
         0: {
             requirementDescription: "Reset for spacetime once",
             effectDescription: "Unlock the Upgrade Module",
-            done() { return player.st.total.gte(11) }
+            done() { return player.st.total.gte(1) }
         },
         1: {
             requirementDescription: "100 spacetime",
@@ -211,6 +225,25 @@ addLayer("st", {
             unlocked() {return hasMilestone('st', 1)}
         }
     },
+    bars: {
+        spaceTankBar: {
+            direction: UP,
+            width: 150,
+            height: 200,
+            progress() {return new Decimal(1).sub(player.st.spaceExtractedAmount.max(1).log(10).div(tmp.st.getSpaceTankCap.pow(player.st.spaceRefillAmount.add(1)).log(10)))},
+            display() {return "Space Tank: " + format(tmp.st.getSpaceTankCap.pow(player.st.spaceRefillAmount.add(1)).sub(player.st.spaceExtractedAmount)) + "/" + format(tmp.st.getSpaceTankCap.pow(player.st.spaceRefillAmount.add(1)))},
+            fillStyle: {"background-color": "rgb(63, 63, 63)"},
+        },
+        timeTankBar: {
+            direction: UP,
+            width: 150,
+            height: 200,
+            progress() {return new Decimal(1).sub(player.st.timeExtractedAmount.max(1).log(10).div(tmp.st.getTimeTankCap.pow(player.st.timeRefillAmount.add(1)).log(10)))},
+            display() {return "Time Tank: " + format(tmp.st.getTimeTankCap.pow(player.st.timeRefillAmount.add(1)).sub(player.st.timeExtractedAmount)) + "/" + format(tmp.st.getTimeTankCap.pow(player.st.timeRefillAmount.add(1)))},
+            fillStyle: {"background-color": "rgb(191, 191, 191)"},
+            textStyle: {"color": "#000000"}
+        },
+    },
     microtabs: {
         spacetime: {
             "Spacetime Conversion Module": {
@@ -240,6 +273,7 @@ addLayer("st", {
                 unlocked() {return hasMilestone('st', 1)},
                 content: [
                     "blank",
+                    ["row", [["bar", "spaceTankBar"], ["blank", ["60px", "0px"]],  ["bar", "timeTankBar"]]]
                 ],
             }
         }
