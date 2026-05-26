@@ -1,6 +1,6 @@
 let modInfo = {
 	name: "Prestigious Saplings: Spacetime Shenanigans!",
-	author: "points",
+	author: "Team Sapling",
 	pointsName: "points",
 	modFiles: ["layers.js", "tree.js"],
 

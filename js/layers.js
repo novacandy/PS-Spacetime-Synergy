@@ -5,11 +5,14 @@ addLayer("st", {
     position: 0,
     startData() { return {
         unlocked: true,
-		points: new Decimal(10),
+		points: new Decimal(15),
         resetTime: 0,
-        total: new Decimal(10),
+        total: new Decimal(15),
+
         convertInput: "SPACETIME",
         convertOutput: "SPACE",
+        convertAmount: new Decimal(0),
+        converting: false,
 
         spaceRefillAmount: new Decimal(0),
         spaceExtractedAmount: new Decimal(0),
@@ -40,6 +43,14 @@ addLayer("st", {
     getTimeTankCap() {
         let cap = new Decimal(1e100)
         return cap
+    },
+    getConvertRate() {
+        let rate = new Decimal(1)
+        return rate
+    },
+    getConvertReduction() {
+        let reduction = new Decimal(0.01)
+        return reduction
     },
     hotkeys: [
         {key: "s", description: "S: Reset for spacetime", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
@@ -78,7 +89,7 @@ addLayer("st", {
         0: {
             requirementDescription: "Reset for spacetime once",
             effectDescription: "Unlock the Upgrade Module",
-            done() { return player.st.total.gte(1) }
+            done() { return player.st.total.gte(16) }
         },
         1: {
             requirementDescription: "100 spacetime",
@@ -88,7 +99,13 @@ addLayer("st", {
     },
     clickables: {
         11: {
-            title: "Convert 1",
+            title: () => {
+                    if (player.st.converting == false) {
+                        return "BEGIN CONVERSION"
+                    } else if (player.st.converting == true) {
+                        return "END CONVERSION"
+                    }
+                },
             canClick() {
                 if (player.st.convertInput == "SPACETIME" && player.st.points.gte(1)) {
                     return true
@@ -101,129 +118,14 @@ addLayer("st", {
                 }
             },
             onClick() {
-                if (player.st.convertInput == "SPACETIME" && player.st.points.gte(1)) {
-                    player.st.points = player.st.points.sub(1)
-                } else if (player.st.convertInput == "SPACE" && player.spacePoints.gte(1)) {
-                    player.spacePoints = player.spacePoints.sub(1)
-                } else if (player.st.convertInput == "TIME" && player.timePoints.gte(1)) {
-                    player.timePoints = player.timePoints.sub(1)
-                }
-                if (player.st.convertOutput == "SPACETIME") {
-                    player.st.points = player.st.points.add(1)
-                } else if (player.st.convertOutput == "SPACE") {
-                    player.spacePoints = player.spacePoints.add(1)
-                } else if (player.st.convertOutput == "TIME") {
-                    player.timePoints = player.timePoints.add(1)
+                if (player.st.converting == false) {
+                    player.st.converting = true
+                } else {
+                    player.st.converting = false
                 }
                 doReset('st', true)
             }
         },
-        12: {
-            title: "Convert 10%",
-            canClick() {
-                if (player.st.convertInput == "SPACETIME" && player.st.points.gte(10)) {
-                    return true
-                } else if (player.st.convertInput == "SPACE" && player.spacePoints.gte(10)) {
-                    return true
-                } else if (player.st.convertInput == "TIME" && player.timePoints.gte(10)) {
-                    return true
-                } else {
-                    return false
-                }
-            },
-            onClick() {
-                if (player.st.convertInput == "SPACETIME" && player.st.points.gte(10)) {
-                    convertAmount = player.st.points.mul(0.1).floor()
-                    player.st.points = player.st.points.sub(convertAmount)
-                } else if (player.st.convertInput == "SPACE" && player.spacePoints.gte(10)) {
-                    convertAmount = player.spacePoints.mul(0.1).floor()
-                    player.spacePoints = player.spacePoints.sub(convertAmount)
-                } else if (player.st.convertInput == "TIME" && player.timePoints.gte(10)) {
-                    convertAmount = player.timePoints.mul(0.1).floor()
-                    player.timePoints = player.timePoints.sub(convertAmount)
-                }
-                if (player.st.convertOutput == "SPACETIME") {
-                    player.st.points = player.st.points.add(convertAmount)
-                } else if (player.st.convertOutput == "SPACE") {
-                    player.spacePoints = player.st.points.add(convertAmount)
-                } else if (player.st.convertOutput == "TIME") {
-                    player.timePoints = player.st.points.add(convertAmount)
-                }
-                doReset('st', true)
-            },
-            unlocked() {return hasMilestone('st', 1)}
-        },
-        13: {
-            title: "Convert 50%",
-            canClick() {
-                if (player.st.convertInput == "SPACETIME" && player.st.points.gte(2)) {
-                    return true
-                } else if (player.st.convertInput == "SPACE" && player.spacePoints.gte(2)) {
-                    return true
-                } else if (player.st.convertInput == "TIME" && player.timePoints.gte(2)) {
-                    return true
-                } else {
-                    return false
-                }
-            },
-            onClick() {
-                if (player.st.convertInput == "SPACETIME" && player.st.points.gte(2)) {
-                    convertAmount = player.st.points.mul(0.5).floor()
-                    player.st.points = player.st.points.sub(convertAmount)
-                } else if (player.st.convertInput == "SPACE" && player.spacePoints.gte(2)) {
-                    convertAmount = player.spacePoints.mul(0.5).floor()
-                    player.spacePoints = player.spacePoints.sub(convertAmount)
-                } else if (player.st.convertInput == "TIME" && player.timePoints.gte(2)) {
-                    convertAmount = player.timePoints.mul(0.5).floor()
-                    player.timePoints = player.timePoints.sub(convertAmount)
-                }
-                if (player.st.convertOutput == "SPACETIME") {
-                    player.st.points = player.st.points.add(convertAmount)
-                } else if (player.st.convertOutput == "SPACE") {
-                    player.spacePoints = player.st.points.add(convertAmount)
-                } else if (player.st.convertOutput == "TIME") {
-                    player.timePoints = player.st.points.add(convertAmount)
-                }
-                doReset('st', true)
-            },
-            unlocked() {return hasMilestone('st', 1)}
-        },
-        14: {
-            title: "Convert All",
-            canClick() {
-                if (player.st.convertInput == "SPACETIME" && player.st.points.gte(1)) {
-                    return true
-                } else if (player.st.convertInput == "SPACE" && player.spacePoints.gte(1)) {
-                    return true
-                } else if (player.st.convertInput == "TIME" && player.timePoints.gte(1)) {
-                    return true
-                } else {
-                    return false
-                }
-            },
-            onClick() {
-                let convertAmount
-                if (player.st.convertInput == "SPACETIME" && player.st.points.gte(1)) {
-                    convertAmount = player.st.points
-                    player.st.points = new Decimal(0)
-                } else if (player.st.convertInput == "SPACE" && player.spacePoints.gte(1)) {
-                    convertAmount = player.spacePoints
-                    player.spacePoints = new Decimal(0)
-                } else if (player.st.convertInput == "TIME" && player.timePoints.gte(1)) {
-                    convertAmount = player.timePoints
-                    player.timePoints = new Decimal(0)
-                }
-                if (player.st.convertOutput == "SPACETIME") {
-                    player.st.points = player.st.points.add(convertAmount)
-                } else if (player.st.convertOutput == "SPACE") {
-                    player.spacePoints = player.spacePoints.add(convertAmount)
-                } else if (player.st.convertOutput == "TIME") {
-                    player.timePoints = player.timePoints.add(convertAmount)
-                }
-                doReset('st', true)
-            },
-            unlocked() {return hasMilestone('st', 1)}
-        }
     },
     bars: {
         spaceTankBar: {
@@ -256,10 +158,11 @@ addLayer("st", {
                     ["drop-down", ["convertOutput", ["SPACETIME", "SPACE", "TIME"]]],
                     "blank",
                     ["display-text", () => {return "Convert Mode: " + player.st.convertInput + " -> " + player.st.convertOutput}],
+                    ["display-text", () => {return "Convert Ratio: 1:1"}],
                     "blank",
                     "clickables",
                     "blank",
-                    ["display-text", "Converting spacetime will force a Spacetime reset"],
+                    ["display-text", "Starting/ending a spacetime conversion will force a Spacetime reset"],
                 ],
             },
             "Spacetime Upgrade Module": {
@@ -287,6 +190,22 @@ addLayer("st", {
     ],
     update(diff) {
         if (player.points.gte(getPointCapacity())) player.points = getPointCapacity()
+        if (player.st.converting == true) {
+            if (player.st.convertInput == "SPACETIME") {
+                player.st.points = player.st.points.sub(diff)
+            } else if (player.st.convertInput == "TIME") {
+                player.timePoints = player.timePoints.sub(diff)
+            } else if (player.st.convertInput == "SPACE") {
+                player.spacePoints = player.spacePoints.sub(diff)
+            } 
+            if (player.st.convertOutput == "SPACETIME") {
+                player.st.points = player.st.points.add(diff)
+            } else if (player.st.convertOutput == "TIME") {
+                player.timePoints = player.timePoints.add(diff)
+            } else if (player.st.convertOutput == "SPACE") {
+                player.spacePoints = player.spacePoints.add(diff)
+            } 
+        }
     },
     layerShown() {return true}
 })
