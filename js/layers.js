@@ -129,10 +129,11 @@ addLayer("st", {
     },
     buyables: {
         11: {
-            title() {return "Point Enhancement (" + formatWhole(this.amount) + ")"},
+            title() {return "Point Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
             cost(x) { return new Decimal(10).mul(new Decimal(2.5).pow(x)) },
             display() { return "\
                 Multiplying points by x"+ format(this.effectBase()) +" each\n\
+                Currently: x" + format(this.effect()) + "\n\
                 Cost: "+ format(this.cost()) +" spacetime\n\
                 " },
             effectBase() {
@@ -151,10 +152,11 @@ addLayer("st", {
             unlocked() {return hasMilestone('st', 1)}
         },
         12: {
-            title() {return "Spacetime Enhancement (" + formatWhole(this.amount) + ")"},
+            title() {return "Spacetime Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
             cost(x) { return new Decimal(10).mul(new Decimal(2.5).pow(x)) },
             display() { return "\
                 Multiplying spacetime gain by x"+ format(this.effectBase()) +" each\n\
+                Currently: x" + format(this.effect()) + "\n\
                 Cost: "+ format(this.cost()) +" spacetime\n\
                 " },
             effectBase() {
@@ -173,10 +175,11 @@ addLayer("st", {
             unlocked() {return hasMilestone('st', 1)}
         },
         13: {
-            title() {return "Space Enhancement (" + formatWhole(this.amount) + ")"},
+            title() {return "Space Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
             cost(x) { return new Decimal(10).mul(new Decimal(2.5).pow(x)) },
             display() { return "\
                 Multiplying space gain by x"+ format(this.effectBase()) +" each\n\
+                Currently: x" + format(this.effect()) + "\n\
                 Cost: "+ format(this.cost()) +" spacetime\n\
                 " },
             effectBase() {
@@ -195,10 +198,11 @@ addLayer("st", {
             unlocked() {return hasMilestone('st', 1)}
         },
         14: {
-            title() {return "Time Enhancement (" + formatWhole(this.amount) + ")"},
+            title() {return "Time Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
             cost(x) { return new Decimal(10).mul(new Decimal(2.5).pow(x)) },
             display() { return "\
                 Multiplying time gain by x"+ format(this.effectBase()) +" each\n\
+                Currently: x" + format(this.effect()) + "\n\
                 Cost: "+ format(this.cost()) +" spacetime\n\
                 " },
             effectBase() {
@@ -259,10 +263,14 @@ addLayer("st", {
         if (player.st.converting == true) {
             if (player.st.convertInput == "SPACETIME") {
                 player.st.points = player.st.points.sub(diff)
+                if (player.st.points.lte(0.1)) player.st.converting = false
             } else if (player.st.convertInput == "TIME") {
                 player.timePoints = player.timePoints.sub(diff)
+                if (player.timePoints.lte(0.1)) player.st.converting = false
+
             } else if (player.st.convertInput == "SPACE") {
                 player.spacePoints = player.spacePoints.sub(diff)
+                if (player.spacePoints.lte(0.1)) player.st.converting = false
             } 
             if (player.st.convertOutput == "SPACETIME") {
                 player.st.points = player.st.points.add(tmp.st.gainMult.mul(diff))
