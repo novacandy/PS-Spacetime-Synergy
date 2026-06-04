@@ -1,5 +1,5 @@
 let modInfo = {
-	name: "Prestigious Saplings: Spacetime Shenanigans!",
+	name: "Prestigious Saplings: Synergetic Spacetime!",
 	author: "Team Sapling",
 	pointsName: "points",
 	modFiles: ["layers.js", "tree.js"],
@@ -44,6 +44,7 @@ function getPointGen() {
 	let gain = new Decimal(1)
 	if (hasUpgrade('st', 21)) gain = gain.mul(2)
 	if (hasUpgrade('st', 23)) gain = gain.mul(upgradeEffect('st', 23))
+	gain = gain.mul(buyableEffect('st', 11))
 	return gain
 }
 
@@ -59,13 +60,15 @@ function getPointTime() {
 }
 
 function getSpaceMultis() {
-	let mul = new Decimal(1)
-	return mul
+	let mult = new Decimal(1)
+	mult = mult.mul(buyableEffect('st', 13))
+	return mult
 }
 
 function getTimeMultis() {
 	let mul = new Decimal(1)
-	return mul
+	mult = mult.mul(buyableEffect('st', 14))
+	return mult
 }
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
 function addedPlayerData() { return {

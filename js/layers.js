@@ -11,7 +11,6 @@ addLayer("st", {
 
         convertInput: "SPACETIME",
         convertOutput: "SPACE",
-        convertAmount: new Decimal(0),
         converting: false,
 
         spaceRefillAmount: new Decimal(0),
@@ -30,6 +29,7 @@ addLayer("st", {
     gainMult() {
         mult = new Decimal(1)
         if (hasUpgrade('st', 24)) mult = mult.mul(upgradeEffect('st', 24))
+        mult = mult.mul(buyableEffect('st', 12))
         return mult
     },
     gainExp() {
@@ -92,9 +92,9 @@ addLayer("st", {
             done() { return player.st.total.gte(16) }
         },
         1: {
-            requirementDescription: "100 spacetime",
-            effectDescription: "Unlock the Spacetime Extraction Module and more options for spacetime conversion",
-            done() { return player.st.points.gte(100)}
+            requirementDescription: "50 spacetime",
+            effectDescription: "Unlock spacetime buyables and more options for spacetime conversion",
+            done() { return player.st.points.gte(50)}
         }
     },
     clickables: {
@@ -127,23 +127,94 @@ addLayer("st", {
             }
         },
     },
-    bars: {
-        spaceTankBar: {
-            direction: UP,
-            width: 150,
-            height: 200,
-            progress() {return new Decimal(1).sub(player.st.spaceExtractedAmount.max(1).log(10).div(tmp.st.getSpaceTankCap.pow(player.st.spaceRefillAmount.add(1)).log(10)))},
-            display() {return "Space Tank: " + format(tmp.st.getSpaceTankCap.pow(player.st.spaceRefillAmount.add(1)).sub(player.st.spaceExtractedAmount)) + "/" + format(tmp.st.getSpaceTankCap.pow(player.st.spaceRefillAmount.add(1)))},
-            fillStyle: {"background-color": "rgb(63, 63, 63)"},
+    buyables: {
+        11: {
+            title() {return "Point Enhancement (" + formatWhole(this.amount) + ")"},
+            cost(x) { return new Decimal(10).mul(new Decimal(2.5).pow(x)) },
+            display() { return "\
+                Multiplying points by x"+ format(this.effectBase()) +" each\n\
+                Cost: "+ format(this.cost()) +" spacetime\n\
+                " },
+            effectBase() {
+                let base = new Decimal(1.25)
+                return base
+            },
+            effect() {
+                let effect = this.effectBase().pow(getBuyableAmount(this.layer, this.id))
+                return effect
+            },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            unlocked() {return hasMilestone('st', 1)}
         },
-        timeTankBar: {
-            direction: UP,
-            width: 150,
-            height: 200,
-            progress() {return new Decimal(1).sub(player.st.timeExtractedAmount.max(1).log(10).div(tmp.st.getTimeTankCap.pow(player.st.timeRefillAmount.add(1)).log(10)))},
-            display() {return "Time Tank: " + format(tmp.st.getTimeTankCap.pow(player.st.timeRefillAmount.add(1)).sub(player.st.timeExtractedAmount)) + "/" + format(tmp.st.getTimeTankCap.pow(player.st.timeRefillAmount.add(1)))},
-            fillStyle: {"background-color": "rgb(191, 191, 191)"},
-            textStyle: {"color": "#000000"}
+        12: {
+            title() {return "Spacetime Enhancement (" + formatWhole(this.amount) + ")"},
+            cost(x) { return new Decimal(10).mul(new Decimal(2.5).pow(x)) },
+            display() { return "\
+                Multiplying spacetime gain by x"+ format(this.effectBase()) +" each\n\
+                Cost: "+ format(this.cost()) +" spacetime\n\
+                " },
+            effectBase() {
+                let base = new Decimal(1.25)
+                return base
+            },
+            effect() {
+                let effect = this.effectBase().pow(getBuyableAmount(this.layer, this.id))
+                return effect
+            },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            unlocked() {return hasMilestone('st', 1)}
+        },
+        13: {
+            title() {return "Space Enhancement (" + formatWhole(this.amount) + ")"},
+            cost(x) { return new Decimal(10).mul(new Decimal(2.5).pow(x)) },
+            display() { return "\
+                Multiplying space gain by x"+ format(this.effectBase()) +" each\n\
+                Cost: "+ format(this.cost()) +" spacetime\n\
+                " },
+            effectBase() {
+                let base = new Decimal(1.25)
+                return base
+            },
+            effect() {
+                let effect = this.effectBase().pow(getBuyableAmount(this.layer, this.id))
+                return effect
+            },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            unlocked() {return hasMilestone('st', 1)}
+        },
+        14: {
+            title() {return "Time Enhancement (" + formatWhole(this.amount) + ")"},
+            cost(x) { return new Decimal(10).mul(new Decimal(2.5).pow(x)) },
+            display() { return "\
+                Multiplying time gain by x"+ format(this.effectBase()) +" each\n\
+                Cost: "+ format(this.cost()) +" spacetime\n\
+                " },
+            effectBase() {
+                let base = new Decimal(1.25)
+                return base
+            },
+            effect() {
+                let effect = this.effectBase().pow(getBuyableAmount(this.layer, this.id))
+                return effect
+            },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            unlocked() {return hasMilestone('st', 1)}
         },
     },
     microtabs: {
@@ -169,16 +240,11 @@ addLayer("st", {
                 unlocked() {return hasMilestone('st', 0)},
                 content: [
                     "blank",
-                    "upgrades"
+                    "upgrades",
+                    "blank",
+                    "buyables"
                 ],
             },
-            "Spacetime Extraction Module": {
-                unlocked() {return hasMilestone('st', 1)},
-                content: [
-                    "blank",
-                    ["row", [["bar", "spaceTankBar"], ["blank", ["60px", "0px"]],  ["bar", "timeTankBar"]]]
-                ],
-            }
         }
     },
     tabFormat: [
@@ -199,11 +265,11 @@ addLayer("st", {
                 player.spacePoints = player.spacePoints.sub(diff)
             } 
             if (player.st.convertOutput == "SPACETIME") {
-                player.st.points = player.st.points.add(diff)
+                player.st.points = player.st.points.add(tmp.st.gainMult.mul(diff))
             } else if (player.st.convertOutput == "TIME") {
-                player.timePoints = player.timePoints.add(diff)
+                player.timePoints = player.timePoints.add(getTimeMultis().mul(diff))
             } else if (player.st.convertOutput == "SPACE") {
-                player.spacePoints = player.spacePoints.add(diff)
+                player.spacePoints = player.spacePoints.add(getSpaceMultis().mul(diff))
             } 
         }
     },
