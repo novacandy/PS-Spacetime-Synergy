@@ -66,7 +66,7 @@ function getSpaceMultis() {
 }
 
 function getTimeMultis() {
-	let mul = new Decimal(1)
+	let mult = new Decimal(1)
 	mult = mult.mul(buyableEffect('st', 14))
 	return mult
 }

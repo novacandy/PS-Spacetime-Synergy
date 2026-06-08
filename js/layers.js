@@ -36,20 +36,12 @@ addLayer("st", {
         exp = new Decimal(1)
         return exp
     },
-    getSpaceTankCap() {
-        let cap = new Decimal(1e100)
-        return cap
-    },
-    getTimeTankCap() {
-        let cap = new Decimal(1e100)
-        return cap
-    },
     getConvertRate() {
         let rate = new Decimal(1)
         return rate
     },
     getConvertReduction() {
-        let reduction = new Decimal(0.01)
+        let reduction = new Decimal(0.25)
         return reduction
     },
     hotkeys: [
@@ -93,7 +85,7 @@ addLayer("st", {
         },
         1: {
             requirementDescription: "50 spacetime",
-            effectDescription: "Unlock spacetime buyables and more options for spacetime conversion",
+            effectDescription: "Unlock enhancement buyables in the Upgrade Modules",
             done() { return player.st.points.gte(50)}
         }
     },
@@ -130,7 +122,7 @@ addLayer("st", {
     buyables: {
         11: {
             title() {return "Point Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
-            cost(x) { return new Decimal(10).mul(new Decimal(2.5).pow(x)) },
+            cost(x) { return new Decimal(10).mul(x.add(1)).mul(new Decimal(1.25).pow(x)) },
             display() { return "\
                 Multiplying points by x"+ format(this.effectBase()) +" each\n\
                 Currently: x" + format(this.effect()) + "\n\
@@ -153,7 +145,7 @@ addLayer("st", {
         },
         12: {
             title() {return "Spacetime Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
-            cost(x) { return new Decimal(10).mul(new Decimal(2.5).pow(x)) },
+            cost(x) { return new Decimal(25).mul(x.mul(1.5).add(1)).mul(new Decimal(1.5).pow(x)) },
             display() { return "\
                 Multiplying spacetime gain by x"+ format(this.effectBase()) +" each\n\
                 Currently: x" + format(this.effect()) + "\n\
@@ -176,7 +168,7 @@ addLayer("st", {
         },
         13: {
             title() {return "Space Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
-            cost(x) { return new Decimal(10).mul(new Decimal(2.5).pow(x)) },
+            cost(x) { return new Decimal(50).mul(x.mul(1.5).add(1)).mul(new Decimal(1.3).pow(x)) },
             display() { return "\
                 Multiplying space gain by x"+ format(this.effectBase()) +" each\n\
                 Currently: x" + format(this.effect()) + "\n\
@@ -199,7 +191,7 @@ addLayer("st", {
         },
         14: {
             title() {return "Time Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
-            cost(x) { return new Decimal(10).mul(new Decimal(2.5).pow(x)) },
+            cost(x) { return new Decimal(50).mul(x.mul(1.5).add(1)).mul(new Decimal(1.3).pow(x)) },
             display() { return "\
                 Multiplying time gain by x"+ format(this.effectBase()) +" each\n\
                 Currently: x" + format(this.effect()) + "\n\
@@ -227,13 +219,36 @@ addLayer("st", {
                 content: [
                     "blank",
                     ["display-text", "<h3>INPUT</h3>"],
-                    ["drop-down", ["convertInput", ["SPACETIME", "SPACE", "TIME"]]],
+                    ["drop-down", ["convertInput", ["SPACETIME"]]],
                     "blank",
                     ["display-text", "<h3>OUTPUT</h3>"],
-                    ["drop-down", ["convertOutput", ["SPACETIME", "SPACE", "TIME"]]],
+                    ["drop-down", ["convertOutput", ["SPACE", "TIME"]]],
                     "blank",
                     ["display-text", () => {return "Convert Mode: " + player.st.convertInput + " -> " + player.st.convertOutput}],
-                    ["display-text", () => {return "Convert Ratio: 1:1"}],
+                    ["display-text", () => {return "Convert Rate: " + format(tmp.st.getConvertRate) + "/s"}],
+                    "blank",
+                    ["display-text", () => {
+                        if (player.st.converting) {
+                            return "SPACETIME: " + format(player.st.points) + " (-" + format(tmp.st.getConvertRate) + "/s)"
+                        } else {
+                            return "SPACETIME: " + format(player.st.points) + " (-0.00/s)"
+                        }
+                    }],
+                    "blank",
+                    ["display-text", () => {
+                        if (player.st.converting) {
+                            return "SPACE: " + format(player.spacePoints) + " (+" + format(getSpaceMultis().mul(tmp.st.getConvertRate.pow(new Decimal(1).sub(tmp.st.getConvertReduction)))) + "/s)"
+                        } else {
+                            return "SPACE: " + format(player.spacePoints) + " (+0.00/s)"
+                        }
+                    }],
+                    ["display-text", () => {
+                        if (player.st.converting) {
+                            return "TIME: " + format(player.timePoints) + " (+" + format(getTimeMultis().mul(tmp.st.getConvertRate.pow(new Decimal(1).sub(tmp.st.getConvertReduction)))) + "/s)"
+                        } else {
+                            return "TIME: " + format(player.timePoints) + " (+0.00/s)"
+                        }
+                    }],
                     "blank",
                     "clickables",
                     "blank",
@@ -275,9 +290,9 @@ addLayer("st", {
             if (player.st.convertOutput == "SPACETIME") {
                 player.st.points = player.st.points.add(tmp.st.gainMult.mul(diff))
             } else if (player.st.convertOutput == "TIME") {
-                player.timePoints = player.timePoints.add(getTimeMultis().mul(diff))
+                player.timePoints = player.timePoints.add(getTimeMultis().pow(new Decimal(1).sub(tmp.st.getConvertReduction)).mul(diff))
             } else if (player.st.convertOutput == "SPACE") {
-                player.spacePoints = player.spacePoints.add(getSpaceMultis().mul(diff))
+                player.spacePoints = player.spacePoints.add(getSpaceMultis().pow(new Decimal(1).sub(tmp.st.getConvertReduction)).mul(diff))
             } 
         }
     },
