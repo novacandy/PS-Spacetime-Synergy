@@ -12,12 +12,14 @@ addLayer("st", {
         convertInput: "SPACETIME",
         convertOutput: "SPACE",
         converting: false,
+        convertBuyableAmount: new Decimal(0),
 
         spaceRefillAmount: new Decimal(0),
         spaceExtractedAmount: new Decimal(0),
 
         timeRefillAmount: new Decimal(0),
         timeExtractedAmount: new Decimal(0),
+
     }},
     color: "#360d87",
     requires: new Decimal(5),
@@ -26,6 +28,9 @@ addLayer("st", {
     baseAmount() {return player.points},
     type: "normal",
     exponent: 0.5,
+    passiveGeneration() {
+        if (hasMilestone('st', 3)) return 0.1
+    },
     gainMult() {
         mult = new Decimal(1)
         if (hasUpgrade('st', 24)) mult = mult.mul(upgradeEffect('st', 24))
@@ -38,6 +43,7 @@ addLayer("st", {
     },
     getConvertRate() {
         let rate = new Decimal(1)
+        rate = rate.add(buyableEffect('st', 21))
         return rate
     },
     getConvertReduction() {
@@ -60,10 +66,17 @@ addLayer("st", {
         },
         23: {
             title: "Speedrun",
-            description() {return "Earn a multiplier to points based on spacetime. Effect: x" + format(this.effect())},
+            description() {
+                if (this.effect().gte(10)){
+                    return "Earn a multiplier to points based on spacetime. Effect: x" + format(this.effect()) + " <b style='color: #ff0000'>[SOFTCAPPED]<b>"
+                } else {
+                    return "Earn a multiplier to points based on spacetime. Effect: x" + format(this.effect())
+                }
+            },
             cost: new Decimal(15),
             effect() {
                 let effect = player.st.points.pow(0.5).div(2).add(1)
+                if (effect.gte(10)) effect = effect.sub(10).pow(0.2).add(10)
                 return effect
             },
         },
@@ -72,7 +85,7 @@ addLayer("st", {
             description() {return "Earn a multiplier to spacetime based on time. Effect: x" + format(this.effect())},
             cost: new Decimal(25),
             effect() {
-                let effect = player.timePoints.add(1).log(10).add(1)
+                let effect = player.timePoints.add(1).log(2).add(1)
                 return effect
             },
         }
@@ -87,6 +100,16 @@ addLayer("st", {
             requirementDescription: "50 spacetime",
             effectDescription: "Unlock enhancement buyables in the Upgrade Modules",
             done() { return player.st.points.gte(50)}
+        },
+        2: {
+            requirementDescription: "1000 spacetime",
+            effectDescription: "Unlock a buyable in the Convert Module that increases spacetime convert rate",
+            done() { return player.st.points.gte(1000)}
+        },
+        3: {
+            requirementDescription: "10000 spacetime [PERMANENT]",
+            effectDescription: "Remove the prestige button but generate 10% of spacetime per second",
+            done() { return player.st.points.gte(10000)}
         }
     },
     clickables: {
@@ -101,10 +124,6 @@ addLayer("st", {
             canClick() {
                 if (player.st.convertInput == "SPACETIME" && player.st.points.gte(1)) {
                     return true
-                } else if (player.st.convertInput == "SPACE" && player.spacePoints.gte(1)) {
-                    return true
-                } else if (player.st.convertInput == "TIME" && player.timePoints.gte(1)) {
-                    return true
                 } else {
                     return false
                 }
@@ -116,6 +135,24 @@ addLayer("st", {
                     player.st.converting = false
                 }
                 doReset('st', true)
+            }
+        },
+        21: {
+            title: () => {return "-"},
+            canClick() {
+                return player.st.convertBuyableAmount.gt(0)
+            },
+            onClick() {
+                player.st.convertBuyableAmount = player.st.convertBuyableAmount.sub(1)
+            }
+        },
+        22: {
+            title: () => {return "+"},
+            canClick() {
+                return player.st.convertBuyableAmount.lt(getBuyableAmount('st', 21))
+            },
+            onClick() {
+                player.st.convertBuyableAmount = player.st.convertBuyableAmount.add(1)
             }
         },
     },
@@ -212,6 +249,30 @@ addLayer("st", {
             },
             unlocked() {return hasMilestone('st', 1)}
         },
+        21: {
+            title() {return "Convert Rate (" + formatWhole(player.st.convertBuyableAmount) + "/" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost(x) { return new Decimal(250).mul(x.mul(0.25).add(1)).mul(new Decimal(1.05).pow(x)) },
+            display() { return "\
+                Increasing convert rate by +" + format(this.effectBase()) +" each\n\
+                Currently: +" + format(this.effect()) + "\n\
+                Cost: "+ format(this.cost()) +" points\n\
+                " },
+            effectBase() {
+                let base = new Decimal(1)
+                return base
+            },
+            effect() {
+                let effect = this.effectBase().mul(player.st.convertBuyableAmount)
+                return effect
+            },
+            canAfford() { return player.points.gte(this.cost()) },
+            buy() {
+                player.points = player.points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                player.st.convertBuyableAmount = player.st.convertBuyableAmount.add(1)
+            },
+            unlocked() {return hasMilestone('st', 2)}
+        },
     },
     microtabs: {
         spacetime: {
@@ -226,6 +287,12 @@ addLayer("st", {
                     "blank",
                     ["display-text", () => {return "Convert Mode: " + player.st.convertInput + " -> " + player.st.convertOutput}],
                     ["display-text", () => {return "Convert Rate: " + format(tmp.st.getConvertRate) + "/s"}],
+                    ["display-text", () => {
+                        if (tmp.st.getConvertRate.gt(1)) return "As your convert rate increases, convert output gets reduced by " + format(tmp.st.getConvertReduction.mul(100)) +"% per 1 convert rate."
+                    }],
+                    ["display-text", () => {
+                        if (tmp.st.getConvertRate.gt(1)) return "Convert rate is dividing convert output by /" + format(new Decimal(1).div(new Decimal(1).sub(tmp.st.getConvertReduction).pow(tmp.st.getConvertRate)))
+                    }],
                     "blank",
                     ["display-text", () => {
                         if (player.st.converting) {
@@ -236,23 +303,32 @@ addLayer("st", {
                     }],
                     "blank",
                     ["display-text", () => {
-                        if (player.st.converting) {
-                            return "SPACE: " + format(player.spacePoints) + " (+" + format(getSpaceMultis().mul(tmp.st.getConvertRate.pow(new Decimal(1).sub(tmp.st.getConvertReduction)))) + "/s)"
+                        if (player.st.converting && player.st.convertOutput == "SPACE") {
+                            return "SPACE: " + format(player.spacePoints) + " (+" + format(getSpaceMultis().mul(tmp.st.getConvertRate).mul(new Decimal(1).sub(tmp.st.getConvertReduction).pow(tmp.st.getConvertRate))) + "/s)"
                         } else {
                             return "SPACE: " + format(player.spacePoints) + " (+0.00/s)"
                         }
                     }],
                     ["display-text", () => {
-                        if (player.st.converting) {
-                            return "TIME: " + format(player.timePoints) + " (+" + format(getTimeMultis().mul(tmp.st.getConvertRate.pow(new Decimal(1).sub(tmp.st.getConvertReduction)))) + "/s)"
+                        if (player.st.converting && player.st.convertOutput == "TIME") {
+                            return "TIME: " + format(player.timePoints) + " (+" + format(getTimeMultis().mul(tmp.st.getConvertRate).mul(new Decimal(1).sub(tmp.st.getConvertReduction).pow(tmp.st.getConvertRate))) + "/s)"
                         } else {
                             return "TIME: " + format(player.timePoints) + " (+0.00/s)"
                         }
                     }],
                     "blank",
-                    "clickables",
+                    ["row", [
+                        ["clickable", 21],
+                        ["buyables", [2]],
+                        ["clickable", 22],
+                    ]],
+                    "blank",
+                    ["display-text", "This is a variable buyable, you can increase/decrease its amount up to its max without spending anything"],
+                    "blank",
+                    ["clickables", [1]],
                     "blank",
                     ["display-text", "Starting/ending a spacetime conversion will force a Spacetime reset"],
+                    "blank"
                 ],
             },
             "Spacetime Upgrade Module": {
@@ -261,14 +337,21 @@ addLayer("st", {
                     "blank",
                     "upgrades",
                     "blank",
-                    "buyables"
+                    ["buyables", [1]],
+                    "blank"
                 ],
             },
         }
     },
     tabFormat: [
-        "main-display",
-        "prestige-button",
+        () => {if (!hasMilestone('st', 3)) return "main-display"},
+        () => {
+            if (!hasMilestone('st', 3)) {
+                return "prestige-button"
+            } else {
+                return ["display-text", "You have <h2 id='points' style='color: #360d87; text-shadow: 0 0 5px #360d87'>" + formatWhole(player.st.points) + "</h2> spacetime (+" + format(getResetGain('st').div(10)) + "/s)"]
+            }
+        },
         "blank",
         "milestones",
         ["microtabs", "spacetime"]
