@@ -2,7 +2,7 @@ let modInfo = {
 	name: "Prestigious Saplings: Synergetic Spacetime!",
 	author: "Team Sapling",
 	pointsName: "points",
-	modFiles: ["layers.js", "tree.js"],
+	modFiles: ["spacetime.js", "life.js", "death.js", "tree.js"],
 
 	discordName: "The Supernova",
 	discordLink: "https://discord.gg/5K4DXpGeU2",
@@ -33,7 +33,7 @@ function getStartPoints(){
 
 // Determines if it should show points/sec
 function canGenPoints(){
-	return new Decimal(player.st.resetTime).lt(getPointTime())
+	return new Decimal(getTimeConsumptionMultis().mul(player.st.resetTime)).lt(getPointTime())
 }
 
 // Calculate points/sec!
@@ -42,21 +42,29 @@ function getPointGen() {
 		return new Decimal(0)
 
 	let gain = new Decimal(1)
-	if (hasUpgrade('st', 21)) gain = gain.mul(2)
-	if (hasUpgrade('st', 23)) gain = gain.mul(upgradeEffect('st', 23))
+	if (hasUpgrade('st', 11)) gain = gain.mul(2)
+	if (hasUpgrade('st', 13)) gain = gain.mul(upgradeEffect('st', 13))
 	gain = gain.mul(buyableEffect('st', 11))
+	if (hasUpgrade('st', 23)) gain = gain.mul(upgradeEffect('st', 23))
 	return gain
 }
 
 function getPointCapacity() {
 	let cap = player.spacePoints
-	if (hasUpgrade('st', 22)) cap = cap.mul(2)
+	if (hasUpgrade('st', 12)) cap = cap.mul(2)
+	if (hasUpgrade('st', 22)) cap = cap.mul(upgradeEffect('st', 22))
 	return cap
 }
 
 function getPointTime() {
 	let time = player.timePoints
 	return time
+}
+
+function getTimeConsumptionMultis() {
+	let mult = new Decimal(1)
+	if (hasUpgrade('st', 23)) mult = mult.mul(upgradeEffect('st', 23))
+	return mult
 }
 
 function getSpaceMultis() {
@@ -80,7 +88,7 @@ function addedPlayerData() { return {
 var displayThings = [
 	() => "You have " + format(player.spacePoints) + " space and " + format(player.timePoints) + " time",
 	() => "Space is granting a point capacity of " + format(getPointCapacity()) + "",
-	() => "Time is allowing points to be generated for " + format(new Decimal(player.st.resetTime).min(getPointTime())) + "/" + format(getPointTime()) + " seconds",
+	() => "Time is allowing points to be generated for " + format(new Decimal(getTimeConsumptionMultis().mul(player.st.resetTime)).min(getPointTime())) + "/" + format(getPointTime()) + " seconds",
 ]
 
 // Determines when the game "ends"
