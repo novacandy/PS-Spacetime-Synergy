@@ -257,7 +257,7 @@ addLayer("st", {
                 return cost
             },
             display() {
-                if (getBuyableAmount('st', 13).gte(10)) {
+                if (getBuyableAmount('st', 12).gte(10)) {
                     return "\
                     Multiplying spacetime gain by x"+ format(this.effectBase()) +" each\n\
                     Currently: x" + format(this.effect()) + "\n\
@@ -401,10 +401,50 @@ addLayer("st", {
             unlocked() {return hasMilestone('st', 2)}
         },
     },
+    infoboxes: {
+        conversionInfo: {
+            title: "AUDIO LOG [ID: ST-CNV]",
+            body() {return `
+                DATE: 6/09/XX<br>
+                AUTHOR(S): GRACE & CLYDE<br>
+                TRANSCRIPT:<br>
+                <br>
+                GRACE: Hello, new player! Boss told Clyde and I that apparently we needed to explain to new players how EVERY feature within our sapling works, including earlygame ones!<br><br>
+                GRACE: Really, boss? You think our players are idiots? I'm not explaining how this stuff works, it's so obvious-<br><br>
+                CLYDE: (sigh) You want us to get evicted or not? Explain how the Spacetime Conversion Module works!<br><br>
+                GRACE: Fine! (clears throat) The Spacetime Conversion Module is a section of the Spacetime layer where you can convert certain resources into another.<br><br>
+                GRACE: The first checklist determines your input currency, and- ugh, THIS IS STUPID! There are LABELS, it's not that hard to read-<br><br>
+                CLYDE: Whatever. I'll take over for now. The first checklist determines your input currency, and the second determines your output currency.<br><br>
+                CLYDE: As of right now, you can only convert your fifteen (15) given spacetime into either Space or Time, but more options will be unlocked later.<br><br>
+                CLYDE: For now, you'll want to obtain five (5) space and five (5) time, which is enough to allow you to generate the five (5) points needed to perform a Spacetime reset.<br><br>
+                CLYDE: See, Grace? It's not that hard to simply explain.<br><br>
+                GRACE: But we're practically stating the obvious here! If only I could try convincing-<br><br>
+                CLYDE: Remember what happened last time you tried that?<br><br>
+                GRACE: Ugh, nevermind then, let's just start another audio recording for the next feature. What was it again?<br><br>
+                CLYDE: The Upgrade Module.`
+            },
+        },
+        upgradeInfo: {
+            title: "AUDIO LOG [ID: ST-UPG]",
+            body() {return `
+                DATE: 6/09/XX<br>
+                AUTHOR(S): GRACE & CLYDE<br>
+                TRANSCRIPT:<br>
+                <br>
+                GRACE: We have to explain THAT? Really?<br><br>
+                CLYDE: Listen, Grace. We were given a job by the boss, and we need to follow them. If you don't want to listen, so be it.<br><br>
+                CLYDE: Also, we've been given only one take to do these recordings, so please, stop interrupting.<br><br>
+                CLYDE: Where were we? Oh right, the Upgrade Module. Here, you can purchase upgrades that'll help a lot with general progression.<br><br>
+                CLYDE: Your next goal will be to reach 1 million spacetime to unlock the next two layers. This will take a few minutes of grinding, so good luck, player!`
+            },
+        }
+    },
     microtabs: {
         spacetime: {
             "Spacetime Conversion Module": {
                 content: [
+                    "blank",
+                    ["infobox", "conversionInfo"],
                     "blank",
                     ["display-text", "<h3>INPUT</h3>"],
                     ["drop-down", ["convertInput", ["SPACETIME"]]],
@@ -462,6 +502,8 @@ addLayer("st", {
             "Spacetime Upgrade Module": {
                 unlocked() {return hasMilestone('st', 0)},
                 content: [
+                    "blank",
+                    ["infobox", "conversionInfo"],
                     "blank",
                     "upgrades",
                     "blank",
