@@ -17,7 +17,7 @@ addLayer("dt", {
         }
     },
     color: "#360d87",
-    requires: new Decimal(25000),
+    requires: new Decimal(10000),
     resource: "death essence",
     baseResource: "time",
     baseAmount() {return player.timePoints},

@@ -53,6 +53,7 @@ function getPointCapacity() {
 	let cap = player.spacePoints
 	if (hasUpgrade('st', 12)) cap = cap.mul(2)
 	if (hasUpgrade('st', 22)) cap = cap.mul(upgradeEffect('st', 22))
+	cap = cap.mul(tmp.lf.effect)
 	return cap
 }
 
@@ -70,6 +71,7 @@ function getTimeConsumptionMultis() {
 function getSpaceMultis() {
 	let mult = new Decimal(1)
 	mult = mult.mul(buyableEffect('st', 13))
+	mult = mult.mul(tmp.lf.lifeEnergyEffect)
 	return mult
 }
 

@@ -433,9 +433,9 @@ addLayer("st", {
                 <br>
                 GRACE: We have to explain THAT? Really?<br><br>
                 CLYDE: Listen, Grace. We were given a job by the boss, and we need to follow them. If you don't want to listen, so be it.<br><br>
-                CLYDE: Also, we've been given only one take to do these recordings, so please, stop interrupting.<br><br>
+                CLYDE: Also, we've been given only one (1) take to do these recordings, so please, stop interrupting.<br><br>
                 CLYDE: Where were we? Oh right, the Upgrade Module. Here, you can purchase upgrades that'll help a lot with general progression.<br><br>
-                CLYDE: Your next goal will be to reach 1 million spacetime to unlock the next two layers. This will take a few minutes of grinding, so good luck, player!`
+                CLYDE: Your next goal will be to reach one million (1000000) spacetime to unlock the next two layers. This will take a few minutes of grinding, so good luck, player!`
             },
         }
     },
@@ -503,7 +503,7 @@ addLayer("st", {
                 unlocked() {return hasMilestone('st', 0)},
                 content: [
                     "blank",
-                    ["infobox", "conversionInfo"],
+                    ["infobox", "upgradeInfo"],
                     "blank",
                     "upgrades",
                     "blank",
@@ -520,6 +520,13 @@ addLayer("st", {
         "milestones",
         ["microtabs", "spacetime"]
     ],
+    doReset(resettingLayer) {
+        if (layers[resettingLayer].row <= this.row) return;
+        let keep = [];
+        keep.push("milestones")
+        layerDataReset(this.layer, keep);
+        player[this.layer].upgrades.push(...keptUpgrades)
+    },
     update(diff) {
         if (player.points.gte(getPointCapacity())) player.points = getPointCapacity()
         if (player.st.converting == true) {
