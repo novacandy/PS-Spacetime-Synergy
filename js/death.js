@@ -67,5 +67,5 @@ addLayer("dt", {
     update(diff) {
         
     },
-    layerShown() {return hasUpgrade('st', 24)}
+    layerShown() {return hasUpgrade('st', 24) && !player.lf.unlocked}
 })

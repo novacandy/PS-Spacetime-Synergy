@@ -8,7 +8,10 @@ addLayer("lf", {
 		points: new Decimal(0),
         resetTime: 0,
         total: new Decimal(0),
-        lifeEnergy: new Decimal(0)
+
+        lifeEnergy: new Decimal(0),
+        absoluteSpace: new Decimal(0),
+
     }},
     tooltip() {
         if (!player.lf.unlocked) {
@@ -20,9 +23,10 @@ addLayer("lf", {
     onPrestige() {
         player.spacePoints = new Decimal(15)
         player.timePoints = new Decimal(5)
+        if (hasMilestone('lf', 1)) player.lf.absoluteSpace = player.lf.absoluteSpace.add(tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims))
     },
     effectDescription() {
-       return "which multiplies point capacity by " + format(tmp.lf.effect)
+       return "which multiplies point capacity by x" + format(tmp.lf.effect)
     },
     effect() {
         let effect = new Decimal(4).mul(player.lf.points.pow(0.75)).add(1)
@@ -51,6 +55,10 @@ addLayer("lf", {
         let effect = player.lf.lifeEnergy.pow(0.5).add(1)
         return effect
     },
+    absoluteSpaceEffect() {
+        let effect = player.lf.absoluteSpace.add(1).log(10).pow(1.5).add(1)
+        return effect
+    },
     hotkeys: [
         {key: "l", description: "L: Reset for life essence", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
@@ -60,7 +68,7 @@ addLayer("lf", {
     milestones: {
         0: {
             requirementDescription: "Reset for life essence once",
-            effectDescription: "Start resets with 15 space and 5 time",
+            effectDescription: "Start resets with 15 space and 5 time, unlock a new space buyable",
             done() {return player.lf.points.gte(1)}
         },
         1: {
@@ -72,6 +80,43 @@ addLayer("lf", {
     clickables: {
     },
     buyables: {
+        11: {
+            title() {return "Space Points (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost(x) {
+                let cost = new Decimal(100).mul(x.mul(1.25).add(1)).mul(new Decimal(1.25).pow(x))
+                if (x.gte(15)) cost = cost.pow(1.25)
+                return cost
+            },
+            display() { 
+                if (getBuyableAmount('lf', 11).gte(15)) {
+                    return "\
+                    Multiplying point gain by x"+ format(this.effectBase()) +" each\n\
+                    Currently: x" + format(this.effect()) + "\n\
+                    Cost: "+ format(this.cost()) +" space\n\
+                    <b style='color: #ff0000'>[SOFTCAPPED]<b>" 
+                } else {
+                    return "\
+                    Multiplying point gain by x"+ format(this.effectBase()) +" each\n\
+                    Currently: x" + format(this.effect()) + "\n\
+                    Cost: "+ format(this.cost()) +" space\n\
+                    " 
+                }
+            },
+            effectBase() {
+                let base = new Decimal(1.1)
+                return base
+            },
+            effect() {
+                let effect = this.effectBase().pow(getBuyableAmount(this.layer, this.id))
+                return effect
+            },
+            canAfford() { return player.spacePoints.gte(this.cost()) },
+            buy() {
+                player.spacePoints = player.spacePoints.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            unlocked() {return hasMilestone('lf', 0)}
+        },
     },
     microtabs: {
         life: {
@@ -101,12 +146,14 @@ addLayer("lf", {
         "main-display",
         "prestige-button",
         "blank",
-        ["display-text", () => {return "You have " + format(player.lf.lifeEnergy) + " life energy, (+" + format(new Decimal(0.01).mul(tmp.lf.lifeEnergyMult)) + "/s) which multiplies space gain from all sources by x" + format(tmp.lf.lifeEnergyEffect)}],
+        ["display-text", () => {return "You have <h2 style='color: #C5E1A5; text-shadow: 0px 0px 10px #C5E1A5'>" + format(player.lf.lifeEnergy) + "</h2> life energy, (+" + format(new Decimal(0.01).mul(tmp.lf.lifeEnergyMult)) + "/s) which multiplies space gain from all sources by x" + format(tmp.lf.lifeEnergyEffect)}],
+        ["display-text", () => {return "You have <h2 style='color: #000000; text-shadow: 0px 0px 10px #ffffff'>" + format(player.lf.absoluteSpace) + "</h2> absolute space, which multiplies spacetime gain by x" + format(tmp.lf.absoluteSpaceEffect)}],
         "blank",
         "milestones",
         "blank",
         ["infobox", "lifeEssenceInfo"],
         "blank",
+        "buyables"
     ],
     update(diff) {
         player.lf.lifeEnergy = player.lf.lifeEnergy.add(new Decimal(0.01).mul(tmp.lf.lifeEnergyMult).mul(diff))

@@ -20,6 +20,8 @@ addLayer("st", {
         timeRefillAmount: new Decimal(0),
         timeExtractedAmount: new Decimal(0),
 
+
+
     }},
     color: "#360d87",
     requires: new Decimal(5),
@@ -36,6 +38,7 @@ addLayer("st", {
         if (hasUpgrade('st', 14)) mult = mult.mul(upgradeEffect('st', 14))
         mult = mult.mul(buyableEffect('st', 12))
     	if (hasUpgrade('st', 23)) mult = mult.mul(upgradeEffect('st', 23))
+        mult = mult.mul(tmp.lf.absoluteSpaceEffect)
         return mult
     },
     gainExp() {
@@ -56,7 +59,35 @@ addLayer("st", {
         let mult = new Decimal(1)
         if (hasUpgrade('st', 21)) mult = mult.mul(1.75)
         if (hasUpgrade('st', 23)) mult = mult.mul(upgradeEffect('st', 23))
+        mult = mult.mul(tmp.st.getStoredAbsSpaceEffect)
         return mult
+    },
+    getAbsSpaceName() {
+        if (tmp.st.getAbsoluteSpaceDims.eq(1)) return "Line"
+        if (tmp.st.getAbsoluteSpaceDims.eq(2)) return "Square"
+        if (tmp.st.getAbsoluteSpaceDims.eq(3)) return "Cube"
+        if (tmp.st.getAbsoluteSpaceDims.eq(4)) return "Tesseract"
+        if (tmp.st.getAbsoluteSpaceDims.eq(5)) return "Penteract"
+        if (tmp.st.getAbsoluteSpaceDims.eq(6)) return "Hexeract"
+        if (tmp.st.getAbsoluteSpaceDims.eq(7)) return "Hepteract"
+        if (tmp.st.getAbsoluteSpaceDims.eq(8)) return "Octeract"
+        if (tmp.st.getAbsoluteSpaceDims.eq(9)) return "Enneract"
+        if (tmp.st.getAbsoluteSpaceDims.eq(10)) return "Dekeract"
+        return format(tmp.st.getAbsoluteSpaceDims, 0) + "-eract"
+    },
+    getStoredAbsSpaceEffect() {
+        let effect = tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims).pow(0.33)
+        return effect
+    },
+    getAbsoluteSpaceLengths() {
+        let len = new Decimal(1)
+        len = len.add(buyableEffect('st', 31))
+        return len
+    },
+    getAbsoluteSpaceDims() {
+        let dims = new Decimal(1)
+        dims = dims.add(buyableEffect('st', 32))
+        return dims
     },
     hotkeys: [
         {key: "s", description: "S: Reset for spacetime", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
@@ -253,7 +284,7 @@ addLayer("st", {
             title() {return "Spacetime Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
             cost(x) {
                 let cost = new Decimal(25).mul(x.mul(1.5).add(1)).mul(new Decimal(1.5).pow(x))
-                if (x.gte(10)) cost = cost.pow(1.33)
+                if (x.gte(10)) cost = cost.pow(1.5)
                 return cost
             },
             display() {
@@ -291,7 +322,7 @@ addLayer("st", {
             title() {return "Space Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
             cost(x) {
                 let cost = new Decimal(50).mul(x.mul(1.5).add(1)).mul(new Decimal(1.3).pow(x)) 
-                if (x.gte(10)) cost = cost.pow(1.33)
+                if (x.gte(10)) cost = cost.pow(1.5)
                 return cost
             },
             display() { 
@@ -329,7 +360,7 @@ addLayer("st", {
             title() {return "Time Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
             cost(x) {
                 let cost = new Decimal(50).mul(x.mul(1.5).add(1)).mul(new Decimal(1.3).pow(x))
-                if (x.gte(10)) cost = cost.pow(1.33)
+                if (x.gte(10)) cost = cost.pow(1.5)
                 return cost
             },
             display() { 
@@ -400,6 +431,80 @@ addLayer("st", {
             },
             unlocked() {return hasMilestone('st', 2)}
         },
+        31: {
+            title() {return "Lengthener (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost(x) {
+                let cost = new Decimal(1).mul(x.mul(1.5).add(1)).mul(new Decimal(1.3).pow(x))
+                return cost
+            },
+            display() { 
+                if (getBuyableAmount('st', 31).gte(999)) {
+                    return "\
+                    Increasing the " + tmp.st.getAbsSpaceName + "'s side lengths by +"+ format(this.effectBase()) +" each\n\
+                    Currently: +" + format(this.effect()) + "\n\
+                    Cost: "+ format(this.cost()) +" life energy\n\
+                    <b style='color: #ff0000'>[SOFTCAPPED]<b>" 
+                } else {
+                    return "\
+                    Increasing the " + tmp.st.getAbsSpaceName + "'s side lengths by +"+ format(this.effectBase()) +" each\n\
+                    Currently: +" + format(this.effect()) + "\n\
+                    Cost: "+ format(this.cost()) +" life energy\n\
+                    " 
+                }
+            },
+            effectBase() {
+                let base = new Decimal(1)
+                return base
+            },
+            effect() {
+                let effect = this.effectBase().mul(getBuyableAmount(this.layer, this.id))
+                return effect
+            },
+            canAfford() { return player.lf.lifeEnergy.gte(this.cost()) },
+            buy() {
+                player.lf.lifeEnergy = player.lf.lifeEnergy.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+        },
+        32: {
+            title() {return "Dimension Shift (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")"},
+            cost(x) {
+                let cost = new Decimal(1).mul(new Decimal(100).pow(x))
+                return cost
+            },
+            display() { 
+                if (getBuyableAmount('st', 32).gte(999)) {
+                    return "\
+                    Increasing the " + tmp.st.getAbsSpaceName + "'s dimension by +"+ format(this.effectBase()) +" each\n\
+                    Currently: +" + format(this.effect()) + "\n\
+                    Cost: "+ format(this.cost()) +" life essence\n\
+                    <b style='color: #ff0000'>[SOFTCAPPED]<b>" 
+                } else {
+                    return "\
+                    Increasing the " + tmp.st.getAbsSpaceName + "'s dimensions by +"+ format(this.effectBase()) +" each\n\
+                    Currently: +" + format(this.effect()) + "\n\
+                    Cost: "+ format(this.cost()) +" life essence\n\
+                    " 
+                }
+            },
+            effectBase() {
+                let base = new Decimal(1)
+                return base
+            },
+            effect() {
+                let effect = this.effectBase().mul(getBuyableAmount(this.layer, this.id))
+                return effect
+            },
+            canAfford() { return player.lf.points.gte(this.cost()) },
+            buy() {
+                player.lf.points = player.lf.points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            purchaseLimit() {
+                let limit = new Decimal(10)
+                return limit
+            }
+        },
     },
     infoboxes: {
         conversionInfo: {
@@ -435,7 +540,8 @@ addLayer("st", {
                 CLYDE: Listen, Grace. We were given a job by the boss, and we need to follow them. If you don't want to listen, so be it.<br><br>
                 CLYDE: Also, we've been given only one (1) take to do these recordings, so please, stop interrupting.<br><br>
                 CLYDE: Where were we? Oh right, the Upgrade Module. Here, you can purchase upgrades that'll help a lot with general progression.<br><br>
-                CLYDE: Your next goal will be to reach one million (1000000) spacetime to unlock the next two layers. This will take a few minutes of grinding, so good luck, player!`
+                CLYDE: You'll also eventually unlock buyables that'll multiply your point, spacetime, space, and time earnings.<br><br> 
+                CLYDE: Your next goal will be to reach one million (1000000) spacetime to unlock the next two (2) layers. This will take a few minutes of grinding, so good luck, player!`
             },
         }
     },
@@ -490,7 +596,7 @@ addLayer("st", {
                     "blank",
                     ["row", [
                         ["clickable", 21],
-                        ["buyables", [2]],
+                        ["buyable", 21],
                         ["clickable", 22],
                     ]],
                     "blank",
@@ -511,6 +617,21 @@ addLayer("st", {
                     "blank"
                 ],
             },
+            "Absolute Spacetime Module": {
+                unlocked() {return hasMilestone('lf', 1)},
+                content: [
+                    "blank",
+                    ["display-text", () => {return "<h2 style='color: #000000; text-shadow: 0px 0px 10px #ffffff'>The " + tmp.st.getAbsSpaceName + "</h2> has a side length of <h2 style='color: #000000; text-shadow: 0px 0px 10px #ffffff'>" + format(tmp.st.getAbsoluteSpaceLengths) + "</h2> and is storing <h2 style='color: #000000; text-shadow: 0px 0px 10px #ffffff'>" + format(tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims)) +  "</h2> absolute space"}],
+                    ["display-text", () => {return "Stored absolute space is multiplying convert output by " + format(tmp.st.getStoredAbsSpaceEffect)}],
+                    ["display-text", () => {return "Performing life resets will grant absolute space in the Life layer"}],
+                    "blank",
+                    ["row", [
+                        ["buyable", 31],
+                        "blank",
+                        ["buyable", 32]
+                    ]]
+                ]
+            }
         }
     },
     tabFormat: [
