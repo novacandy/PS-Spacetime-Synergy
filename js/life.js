@@ -14,7 +14,7 @@ addLayer("lf", {
         if (!player.lf.unlocked) {
             return "(Requires 25000 space)"
         } else {
-            return format(player.lf.points) + " life"
+            return format(player.lf.points, 0) + " life essence"
         }
     },
     onPrestige() {
@@ -34,7 +34,7 @@ addLayer("lf", {
     baseResource: "space",
     baseAmount() {return player.spacePoints},
     type: "normal",
-    exponent: 0.5,
+    exponent: 0.9,
     gainMult() {
         let mult = new Decimal(1)
         return mult
@@ -44,7 +44,7 @@ addLayer("lf", {
         return exp
     },
     lifeEnergyMult() {
-        let mult = player.lf.points.pow(0.3)
+        let mult = player.lf.points.pow(0.75)
         return mult
     },
     lifeEnergyEffect() {
@@ -65,7 +65,7 @@ addLayer("lf", {
         },
         1: {
             requirementDescription: "10 life essence",
-            effectDescription: "Unlock Absolute Space",
+            effectDescription: "Unlock Absolute Space (in Spacetime)",
             done() {return player.lf.points.gte(10)}
         }
     },
