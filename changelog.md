@@ -316,7 +316,7 @@
 
 ### v2.2.5 - 11/29/20
 - Added features for overriding the displays and costs/goals of upgrades and challenges to make them fully custom.
-- best, total, and unlocked are always automatically added to layerData (but best and total will only display if you add them yourself).
+- best, total, and unlocked are always automatically added to layerData (but best and total will only display if you add them yoursemn).
 - Fixed getStartClickables.
 
 ### v2.2.4 - 11/28/20
@@ -333,7 +333,7 @@
 - Setting a tooltip to "" hides it entirely.
 
 ### v2.2.2 - 11/22/20
-- Fixed right half of the screen being unclickable in some circumstances.
+- Fixed right hamn of the screen being unclickable in some circumstances.
 - Fixed tree branches being offset.
 - Fix to lastSafeTab.
 

@@ -38,7 +38,7 @@ addLayer("st", {
         if (hasUpgrade('st', 14)) mult = mult.mul(upgradeEffect('st', 14))
         mult = mult.mul(buyableEffect('st', 12))
     	if (hasUpgrade('st', 23)) mult = mult.mul(upgradeEffect('st', 23))
-        mult = mult.mul(tmp.lf.absoluteSpaceEffect)
+        mult = mult.mul(tmp.mn.absoluteSpaceEffect)
         return mult
     },
     gainExp() {
@@ -54,6 +54,17 @@ addLayer("st", {
         let reduction = new Decimal(0.25)
         if (hasUpgrade('st', 24)) reduction = reduction.div(2)
         return reduction
+    },
+    getConvertInputs() {
+        let inputs = ['SPACETIME']
+        if (hasMilestone('mn', 2)) inputs.push('MOON ENERGY')
+        return inputs
+    },
+    getConverOutputs() {
+        let outputs = []
+        if (player.st.convertInput == 'SPACETIME') outputs = ['SPACE', 'TIME']
+        if (player.st.convertInput == 'MOON ENERGY') outputs = ['SPACE', 'TIME']
+        return outputs
     },
     getConvertOutputMult() {
         let mult = new Decimal(1)
@@ -73,7 +84,7 @@ addLayer("st", {
         if (tmp.st.getAbsoluteSpaceDims.eq(8)) return "Octeract"
         if (tmp.st.getAbsoluteSpaceDims.eq(9)) return "Enneract"
         if (tmp.st.getAbsoluteSpaceDims.eq(10)) return "Dekeract"
-        return format(tmp.st.getAbsoluteSpaceDims, 0) + "-eract"
+        return format(tmp.st.getAbsoluteSpaceDims) + "-eract"
     },
     getStoredAbsSpaceEffect() {
         let effect = tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims).pow(0.33)
@@ -442,13 +453,13 @@ addLayer("st", {
                     return "\
                     Increasing the " + tmp.st.getAbsSpaceName + "'s side lengths by +"+ format(this.effectBase()) +" each\n\
                     Currently: +" + format(this.effect()) + "\n\
-                    Cost: "+ format(this.cost()) +" life energy\n\
+                    Cost: "+ format(this.cost()) +" moon energy\n\
                     <b style='color: #ff0000'>[SOFTCAPPED]<b>" 
                 } else {
                     return "\
                     Increasing the " + tmp.st.getAbsSpaceName + "'s side lengths by +"+ format(this.effectBase()) +" each\n\
                     Currently: +" + format(this.effect()) + "\n\
-                    Cost: "+ format(this.cost()) +" life energy\n\
+                    Cost: "+ format(this.cost()) +" moon energy\n\
                     " 
                 }
             },
@@ -460,9 +471,9 @@ addLayer("st", {
                 let effect = this.effectBase().mul(getBuyableAmount(this.layer, this.id))
                 return effect
             },
-            canAfford() { return player.lf.lifeEnergy.gte(this.cost()) },
+            canAfford() { return player.mn.moonEnergy.gte(this.cost()) },
             buy() {
-                player.lf.lifeEnergy = player.lf.lifeEnergy.sub(this.cost())
+                player.mn.moonEnergy = player.mn.moonEnergy.sub(this.cost())
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
         },
@@ -477,13 +488,13 @@ addLayer("st", {
                     return "\
                     Increasing the " + tmp.st.getAbsSpaceName + "'s dimension by +"+ format(this.effectBase()) +" each\n\
                     Currently: +" + format(this.effect()) + "\n\
-                    Cost: "+ format(this.cost()) +" life essence\n\
+                    Cost: "+ format(this.cost()) +" moon essence\n\
                     <b style='color: #ff0000'>[SOFTCAPPED]<b>" 
                 } else {
                     return "\
                     Increasing the " + tmp.st.getAbsSpaceName + "'s dimensions by +"+ format(this.effectBase()) +" each\n\
                     Currently: +" + format(this.effect()) + "\n\
-                    Cost: "+ format(this.cost()) +" life essence\n\
+                    Cost: "+ format(this.cost()) +" moon essence\n\
                     " 
                 }
             },
@@ -495,9 +506,9 @@ addLayer("st", {
                 let effect = this.effectBase().mul(getBuyableAmount(this.layer, this.id))
                 return effect
             },
-            canAfford() { return player.lf.points.gte(this.cost()) },
+            canAfford() { return player.mn.points.gte(this.cost()) },
             buy() {
-                player.lf.points = player.lf.points.sub(this.cost())
+                player.mn.points = player.mn.points.sub(this.cost())
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
             purchaseLimit() {
@@ -618,12 +629,12 @@ addLayer("st", {
                 ],
             },
             "Absolute Spacetime Module": {
-                unlocked() {return hasMilestone('lf', 1)},
+                unlocked() {return hasMilestone('mn', 1)},
                 content: [
                     "blank",
                     ["display-text", () => {return "<h2 style='color: #000000; text-shadow: 0px 0px 10px #ffffff'>The " + tmp.st.getAbsSpaceName + "</h2> has a side length of <h2 style='color: #000000; text-shadow: 0px 0px 10px #ffffff'>" + format(tmp.st.getAbsoluteSpaceLengths) + "</h2> and is storing <h2 style='color: #000000; text-shadow: 0px 0px 10px #ffffff'>" + format(tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims)) +  "</h2> absolute space"}],
                     ["display-text", () => {return "Stored absolute space is multiplying convert output by " + format(tmp.st.getStoredAbsSpaceEffect)}],
-                    ["display-text", () => {return "Performing life resets will grant absolute space in the Life layer"}],
+                    ["display-text", () => {return "Performing moon resets will grant absolute space in the moon layer"}],
                     "blank",
                     ["row", [
                         ["buyable", 31],

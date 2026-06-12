@@ -1,6 +1,6 @@
-addLayer("dt", {
-    name: "death",
-    symbol: "DT",
+addLayer("sn", {
+    name: "sun",
+    symbol: "SN",
     row: 1,
     position: 1,
     startData() { return {
@@ -11,14 +11,14 @@ addLayer("dt", {
     }},
     tooltip() {
         if (!player.dt.unlocked) {
-            return "You'll never know how much you have left, until it's all gone. (Requires 25000 time)"
+            return "(Requires 25000 time)"
         } else {
-            return format(player.lf.points) + " death essence"
+            return format(player.mn.points) + " sun essence"
         }
     },
     color: "#360d87",
     requires: new Decimal(10000),
-    resource: "death essence",
+    resource: "sun essence",
     baseResource: "time",
     baseAmount() {return player.timePoints},
     type: "normal",
@@ -32,16 +32,16 @@ addLayer("dt", {
         return exp
     },
     hotkeys: [
-        {key: "d", description: "D: Reset for death essence", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+        {key: "d", description: "D: Reset for sun essence", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
     upgrades: {
         
     },
     milestones: {
         0: {
-            requirementDescription: "Reset for death essence once",
+            requirementDescription: "Reset for sun essence once",
             effectDescription: "Unlock ",
-            done() { return player.dt.points.gte(1) }
+            done() { return player.sn.points.gte(1) }
         },
     },
     clickables: {
@@ -49,7 +49,7 @@ addLayer("dt", {
     buyables: {
     },
     microtabs: {
-        death: {
+        sun: {
             "": {
                 content: [
                     "blank",
@@ -62,10 +62,10 @@ addLayer("dt", {
         "prestige-button",
         "blank",
         "milestones",
-        ["microtabs", "death"]
+        ["microtabs", "sun"]
     ],
     update(diff) {
         
     },
-    layerShown() {return hasUpgrade('st', 24) && !player.lf.unlocked}
+    layerShown() {return hasUpgrade('st', 24) && !player.mn.unlocked}
 })

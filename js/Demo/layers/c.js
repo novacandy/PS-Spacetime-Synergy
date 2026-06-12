@@ -192,7 +192,7 @@ addLayer("c", {
                     player[this.layer].buyables[this.id] = player[this.layer].buyables[this.id].add(1)
                     player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
                 },
-                buyMax() {}, // You'll have to handle this yourself if you want
+                buyMax() {}, // You'll have to handle this yoursemn if you want
                 style: {'height':'222px'},
                 purchaseLimit: new Decimal(4),
                 sellOne() {
@@ -292,7 +292,7 @@ addLayer("c", {
             },
         },
         
-        // Optional, lets you format the tab yourself by listing components. You can create your own components in v.js.
+        // Optional, lets you format the tab yoursemn by listing components. You can create your own components in v.js.
         tabFormat: {
             "main tab": {
                 buttonStyle() {return  {'color': 'orange'}},

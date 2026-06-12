@@ -88,7 +88,7 @@ You can make almost any value dynamic by using a function in its place, includin
 
     - "normal": The amount of currency you gain is independent of its current amount (like Prestige). The formula before bonuses is based on `baseResource^exponent`
     - "static": The cost is dependent on your total after reset. The formula before bonuses is based on `base^(x^exponent)`
-    - "custom": You can define everything, from the calculations to the text on the button, yourself. (See more at the bottom)
+    - "custom": You can define everything, from the calculations to the text on the button, yoursemn. (See more at the bottom)
     - "none": This layer does not prestige, and therefore does not need any of the other features in this section.
 
 - baseResource: The name of the resource that determines how much of the main currency you gain on reset.
@@ -177,7 +177,7 @@ componentStyles: {
 
 - previousTab: **optional**, a layer's id. If a layer has a previousTab, the layer will always have a back arrow and pressing the back arrow on this layer will take you to the layer with this id. 
 
-- deactivated: **optional**, if this is true, hasUpgrade, hasChallenge, hasAchievement, and hasMilestone will return false for things in the layer, and you will be unable to buy or click things, or gain achievements/milestones on the layer. You will have to disable effects of buyables, the innate layer effect, and possibly other things yourself.
+- deactivated: **optional**, if this is true, hasUpgrade, hasChallenge, hasAchievement, and hasMilestone will return false for things in the layer, and you will be unable to buy or click things, or gain achievements/milestones on the layer. You will have to disable effects of buyables, the innate layer effect, and possibly other things yoursemn.
 
 ## Custom Prestige type  
 (All of these can also be used by other prestige types)

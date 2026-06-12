@@ -2,7 +2,7 @@ let modInfo = {
 	name: "Prestigious Saplings: Synergetic Spacetime!",
 	author: "Team Sapling",
 	pointsName: "points",
-	modFiles: ["spacetime.js", "life.js", "death.js", "tree.js"],
+	modFiles: ["spacetime.js", "moon.js", "sun.js", "tree.js"],
 
 	discordName: "The Supernova",
 	discordLink: "https://discord.gg/5K4DXpGeU2",
@@ -46,7 +46,7 @@ function getPointGen() {
 	if (hasUpgrade('st', 13)) gain = gain.mul(upgradeEffect('st', 13))
 	gain = gain.mul(buyableEffect('st', 11))
 	if (hasUpgrade('st', 23)) gain = gain.mul(upgradeEffect('st', 23))
-	gain = gain.mul(buyableEffect('lf', 11))
+	gain = gain.mul(buyableEffect('mn', 11))
 	return gain
 }
 
@@ -54,7 +54,7 @@ function getPointCapacity() {
 	let cap = player.spacePoints
 	if (hasUpgrade('st', 12)) cap = cap.mul(2)
 	if (hasUpgrade('st', 22)) cap = cap.mul(upgradeEffect('st', 22))
-	cap = cap.mul(tmp.lf.effect)
+	cap = cap.mul(tmp.mn.effect)
 	return cap
 }
 
@@ -72,7 +72,7 @@ function getTimeConsumptionMultis() {
 function getSpaceMultis() {
 	let mult = new Decimal(1)
 	mult = mult.mul(buyableEffect('st', 13))
-	mult = mult.mul(tmp.lf.lifeEnergyEffect)
+	mult = mult.mul(tmp.mn.moonEnergyEffect)
 	return mult
 }
 

@@ -1,5 +1,5 @@
 
-function exponentialFormat(num, precision, mantissa = true) {
+function exponentiamnormat(num, precision, mantissa = true) {
     let e = num.log10().floor()
     let m = num.div(Decimal.pow(10, e))
     if (m.toStringWithDecimalPlaces(precision) == 10) {
@@ -54,9 +54,9 @@ function format(decimal, precision = 2, small) {
         if (slog.gte(1e6)) return "F" + format(slog.floor())
         else return Decimal.pow(10, slog.sub(slog.floor())).toStringWithDecimalPlaces(3) + "F" + commaFormat(slog.floor(), 0)
     }
-    else if (decimal.gte("1e1000000")) return exponentialFormat(decimal, 0, false)
-    else if (decimal.gte("1e10000")) return exponentialFormat(decimal, 0)
-    else if (decimal.gte(1e9)) return exponentialFormat(decimal, precision)
+    else if (decimal.gte("1e1000000")) return exponentiamnormat(decimal, 0, false)
+    else if (decimal.gte("1e10000")) return exponentiamnormat(decimal, 0)
+    else if (decimal.gte(1e9)) return exponentiamnormat(decimal, precision)
     else if (decimal.gte(1e3)) return commaFormat(decimal, 0)
     else if (decimal.gte(0.0001) || !small) return regularFormat(decimal, precision)
     else if (decimal.eq(0)) return (0).toFixed(precision)
@@ -64,7 +64,7 @@ function format(decimal, precision = 2, small) {
     decimal = invertOOM(decimal)
     let val = ""
     if (decimal.lt("1e1000")){
-        val = exponentialFormat(decimal, precision)
+        val = exponentiamnormat(decimal, precision)
         return val.replace(/([^(?:e|F)]*)$/, '-$1')
     }
     else   
