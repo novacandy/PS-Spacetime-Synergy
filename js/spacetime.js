@@ -574,10 +574,22 @@ addLayer("st", {
                         let displayCurrency = new Decimal(0)
                         let displayMult = new Decimal(0)
                         let convertMult = tmp.st.getConvertOutputMult.mul(tmp.st.getConvertRate).mul(new Decimal(1).sub(tmp.st.getConvertReduction).pow(tmp.st.getConvertRate.sub(1)))
-                        if (player.st.convertOutput == "SPACE") displayCurrency = player.spacePoints; displayMult = getSpaceMultis()
-                        if (player.st.convertOutput == "TIME") displayCurrency = player.timePoints; displayMult = getTimeMultis()
-                        if (player.st.convertOutput == "MOONSTONE") displayCurrency = player.mn.moonstone; displayMult = tmp.mn.getMoonstoneMultis
-                        if (player.st.convertOutput == "DARK ESSENCE") displayCurrency = player.mn.darkEssence; displayMult = tmp.mn.getDarkEssenceMultis
+                        if (player.st.convertOutput == "SPACE") {
+                            displayCurrency = player.spacePoints
+                            displayMult = getSpaceMultis()
+                        }
+                        if (player.st.convertOutput == "TIME") {
+                            displayCurrency = player.timePoints
+                            displayMult = getTimeMultis()
+                        }
+                        if (player.st.convertOutput == "MOONSTONE") {
+                            displayCurrency = player.mn.moonstone
+                            displayMult = tmp.mn.getMoonstoneMultis
+                        }
+                        if (player.st.convertOutput == "DARK ESSENCE") {
+                            displayCurrency = player.mn.darkEssence
+                            displayMult = tmp.mn.getDarkEssenceMultis
+                        }
                         return player.st.convertOutput + ": " + format(displayCurrency) + " (+" + (player.st.converting ? format(displayMult.mul(convertMult)) : "0.00") + "/s)"
                     }],
                     "blank",
@@ -666,11 +678,11 @@ addLayer("st", {
         if (player.st.converting == true) {
             // convert inputs
             if (player.st.convertInput == "SPACETIME") {
-                player.st.points = player.st.points.sub(diff).max(0)
+                player.st.points = player.st.points.sub(tmp.st.getConvertRate.mul(diff)).max(0)
                 if (player.st.points.eq(0)) player.st.converting = false
             }
-            if (player.st.convertInput == "LIFE ESSENCE") {
-                player.mn.points = player.mn.points.sub(diff).max(0)
+            if (player.st.convertInput == "MOON ESSENCE") {
+                player.mn.points = player.mn.points.sub(tmp.st.getConvertRate.mul(diff)).max(0)
                 if (player.mn.points.eq(0)) player.st.converting = false
             }
             let convertMult = tmp.st.getConvertRate.mul(tmp.st.getConvertOutputMult).mul((new Decimal(1).sub(tmp.st.getConvertReduction)).pow(tmp.st.getConvertRate.sub(1))).mul(diff)

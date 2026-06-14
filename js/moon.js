@@ -13,7 +13,8 @@ addLayer("mn", {
         absoluteSpace: new Decimal(0),
 
         moonstone: new Decimal(0),
-        darkEssence: new Decimal(0)
+        radiance: new Decimal(0),
+        darkEssence: new Decimal(0),
     }},
     tooltip() {
         if (!player.mn.unlocked) {
@@ -66,6 +67,28 @@ addLayer("mn", {
         let mult = new Decimal(1)
         return mult
     },
+    moonstoneEffect() {
+        let effect = player.mn.moonstone.add(1).log(5)
+        return effect
+    },
+    getRadianceGen() {
+        let gen = tmp.mn.moonstoneEffect
+        gen = gen.mul(buyableEffect('mn', 22))
+        return gen
+    },
+    getRadianceExponent() {
+        let exp = new Decimal(1)
+        exp = exp.add(buyableEffect('mn', 21))
+        return exp
+    },
+    getRadianceOverflowStart() {
+        let start = new Decimal(1e9)
+        return start
+    },
+    getRadianceOverflowDiv() {
+        let div = player.mn.radiance.div(tmp.mn.getRadianceOverflowStart).pow(0.1).max(1)
+        return div
+    },
     getDarkEssenceMultis() {
         let mult = new Decimal(1)
         return mult
@@ -74,7 +97,14 @@ addLayer("mn", {
         {key: "m", description: "M: Reset for moon essence", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
     upgrades: {
-        
+        11: {
+            title: "Brighten Up The Night",
+            description: "Unlock the potential of your Dark Essence",
+            cost: new Decimal(1e7),
+            currencyLayer: "mn",
+            currencyDisplayName: "radiance",
+            currencyInternalName: "radiance",
+        }
     },
     milestones: {
         0: {
@@ -89,7 +119,7 @@ addLayer("mn", {
         },
         2: {
             requirementDescription: "1000 moon essence",
-            effectDescription: "Unlock darkness and a new spacetime conversion input",
+            effectDescription: "Unlock Dark Side Module and a new spacetime conversion input",
             done() {return player.mn.points.gte(1000)}
         }
     },
@@ -133,6 +163,78 @@ addLayer("mn", {
             },
             unlocked() {return hasMilestone('mn', 0)}
         },
+        21: {
+            title() {return "Radiant Enhancement Type-A (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost(x) {
+                let cost = new Decimal(100).mul(x.mul(2).add(1)).mul(new Decimal(2.5).pow(x))
+                if (x.gte(10)) cost = new Decimal(100).mul(x.mul(2).add(1)).mul(new Decimal(10).pow(x))
+                return cost
+            },
+            display() { 
+                if (getBuyableAmount('mn', 21).gte(10)) {
+                    return "\
+                    Increasing radiance exponent by +"+ format(this.effectBase()) +" each\n\
+                    Currently: +" + format(this.effect()) + "\n\
+                    Cost: "+ format(this.cost()) +" radiance\n\
+                    <b style='color: #ff0000'>[SOFTCAPPED]<b>" 
+                } else {
+                    return "\
+                    Increasing radiance exponent by +"+ format(this.effectBase()) +" each\n\
+                    Currently: +" + format(this.effect()) + "\n\
+                    Cost: "+ format(this.cost()) +" radiance\n\
+                    " 
+                }
+            },
+            effectBase() {
+                let base = new Decimal(0.1)
+                return base
+            },
+            effect() {
+                let effect = this.effectBase().mul(getBuyableAmount(this.layer, this.id))
+                return effect
+            },
+            canAfford() { return player.mn.radiance.gte(this.cost()) },
+            buy() {
+                player.mn.radiance = player.mn.radiance.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+        },
+        22: {
+            title() {return "Radiant Enhancement Type-B (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost(x) {
+                let cost = new Decimal(1000).mul(x.mul(2).add(1)).mul(new Decimal(1.25).pow(x))
+                if (x.gte(999)) cost = new Decimal(100).mul(x.mul(2).add(1)).mul(new Decimal(2).pow(x))
+                return cost
+            },
+            display() { 
+                if (getBuyableAmount(this.layer, this.id).gte(999)) {
+                    return "\
+                    Increasing base radiance generation multiplier by +"+ format(this.effectBase()) +" each\n\
+                    Currently: x" + format(this.effect()) + "\n\
+                    Cost: "+ format(this.cost()) +" radiance\n\
+                    <b style='color: #ff0000'>[SOFTCAPPED]<b>" 
+                } else {
+                    return "\
+                    Increasing base radiance generation multiplier by +"+ format(this.effectBase()) +" each\n\
+                    Currently: x" + format(this.effect()) + "\n\
+                    Cost: "+ format(this.cost()) +" radiance\n\
+                    " 
+                }
+            },
+            effectBase() {
+                let base = new Decimal(1)
+                return base
+            },
+            effect() {
+                let effect = this.effectBase().mul(getBuyableAmount(this.layer, this.id)).add(1)
+                return effect
+            },
+            canAfford() { return player.mn.radiance.gte(this.cost()) },
+            buy() {
+                player.mn.radiance = player.mn.radiance.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+        },
     },
     microtabs: {
         moon: {
@@ -147,11 +249,35 @@ addLayer("mn", {
             "Dark Side Module": {
                 content: [
                     "blank",
+                    ["microtabs", "darkSide"]
                 ],
                 unlocked() {return hasMilestone('mn', 2)}
             },
         },
-        
+        darkSide: {
+            "Moonstone Sub-Module": {
+                content: [
+                    "blank",
+                    ["display-text", () => {return "You have " + format(player.mn.moonstone) + " moonstone, which produce a base of +" + format(tmp.mn.moonstoneEffect) +  " radiance/s"}],
+                    ["display-text", () => {return "You have " + format(player.mn.radiance) + " radiance<sup>" + format(tmp.mn.getRadianceExponent) + "</sup> (+" + format(tmp.mn.getRadianceGen) +  "/s, then raised to displayed exponent)" }],
+                    ["display-text", () => {
+                        if (player.mn.radiance.gte(1e9)) {
+                            return "Due to having more than " + format(tmp.mn.getRadianceOverflowStart) + " radiance, your radiance is dividing itself by " + format(tmp.mn.getRadianceOverflowDiv) + " every second"
+                        }
+                    }],
+                    "blank",
+                    ["buyables", [2]],
+                    "blank",
+                    ["upgrades", [1]]
+                ]
+            },
+            "Dark Side of The Moon": {
+                content: [
+                    "blank",
+                    ["display-text", () => {return "You have " + format(player.mn.darkEssence) + " dark essence, which ???"}]
+                ]
+            }
+        }
     },
     infoboxes: {
         moonEssenceInfo: {
@@ -185,6 +311,8 @@ addLayer("mn", {
     ],
     update(diff) {
         player.mn.moonEnergy = player.mn.moonEnergy.add(new Decimal(0.01).mul(tmp.mn.moonEnergyMult).mul(diff))
+        player.mn.radiance = player.mn.radiance.root(tmp.mn.getRadianceExponent).add(tmp.mn.getRadianceGen.mul(diff)).pow(tmp.mn.getRadianceExponent)
+        if (player.mn.radiance.gte(tmp.mn.getRadianceOverflowStart)) player.mn.radiance = player.mn.radiance.div(tmp.mn.getRadianceOverflowDiv.pow(diff))
     },
     layerShown() {return hasUpgrade('st', 24) || player.mn.unlocked}
 })
