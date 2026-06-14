@@ -564,15 +564,15 @@ addLayer("st", {
                     }],
                     "blank",
                     ["display-text", () => {
-                        let displayCurrency
-                        if (player.st.convertOutput == "SPACETIME") displayCurrency = player.st.points
-                        if (player.st.convertOutput == "MOON ESSENCE") displayCurrency = player.mn.points
+                        let displayCurrency = new Decimal(0)
+                        if (player.st.convertInput == "SPACETIME") displayCurrency = player.st.points
+                        if (player.st.convertInput == "MOON ESSENCE") displayCurrency = player.mn.points
                         return player.st.convertInput + ": " + format(displayCurrency) + " (-" + (player.st.converting ? format(tmp.st.getConvertRate) : "0.00") + "/s)"
                     }],
                     ["display-text", "↓"],
                     ["display-text", () => {
-                        let displayCurrency
-                        let displayMult
+                        let displayCurrency = new Decimal(0)
+                        let displayMult = new Decimal(0)
                         let convertMult = tmp.st.getConvertOutputMult.mul(tmp.st.getConvertRate).mul(new Decimal(1).sub(tmp.st.getConvertReduction).pow(tmp.st.getConvertRate.sub(1)))
                         if (player.st.convertOutput == "SPACE") displayCurrency = player.spacePoints; displayMult = getSpaceMultis()
                         if (player.st.convertOutput == "TIME") displayCurrency = player.timePoints; displayMult = getTimeMultis()
@@ -682,10 +682,10 @@ addLayer("st", {
                 player.spacePoints = player.spacePoints.add(getSpaceMultis().mul(convertMult))
             }
             if (player.st.convertOutput == "MOONSTONE") {
-                player.mn.moonstone = player.mn.moonstone.add(tmp.lf.getMoonstoneMultis().mul(convertMult))
+                player.mn.moonstone = player.mn.moonstone.add(tmp.mn.getMoonstoneMultis.mul(convertMult))
             }
             if (player.st.convertOutput == "DARK ESSENCE") {
-                player.mn.moonstone = player.mn.moonstone.add(tmp.lf.getDarkEssenceMultis().mul(convertMult))
+                player.mn.darkEssence = player.mn.darkEssence.add(tmp.mn.getDarkEssenceMultis.mul(convertMult))
             } 
         }
         if (!tmp.st.getConverOutputs.includes(player.st.convertOutput)) player.st.convertOutput = tmp.st.getConverOutputs[0]
