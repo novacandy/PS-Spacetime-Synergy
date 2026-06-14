@@ -20,8 +20,6 @@ addLayer("st", {
         timeRefillAmount: new Decimal(0),
         timeExtractedAmount: new Decimal(0),
 
-
-
     }},
     color: "#360d87",
     requires: new Decimal(5),
@@ -30,9 +28,6 @@ addLayer("st", {
     baseAmount() {return player.points},
     type: "normal",
     exponent: 0.5,
-    passiveGeneration() {
-        if (hasMilestone('st', 3)) return 0.5
-    },
     gainMult() {
         mult = new Decimal(1)
         if (hasUpgrade('st', 14)) mult = mult.mul(upgradeEffect('st', 14))
@@ -57,13 +52,13 @@ addLayer("st", {
     },
     getConvertInputs() {
         let inputs = ['SPACETIME']
-        if (hasMilestone('mn', 2)) inputs.push('MOON ENERGY')
+        if (hasMilestone('mn', 2)) inputs.push('MOON ESSENCE')
         return inputs
     },
     getConverOutputs() {
         let outputs = []
         if (player.st.convertInput == 'SPACETIME') outputs = ['SPACE', 'TIME']
-        if (player.st.convertInput == 'MOON ENERGY') outputs = ['SPACE', 'TIME']
+        if (player.st.convertInput == 'MOON ESSENCE') outputs = ['MOONSTONE', 'DARK ESSENCE']
         return outputs
     },
     getConvertOutputMult() {
@@ -169,18 +164,6 @@ addLayer("st", {
             },
             unlocked() {return hasMilestone('st', 2)}
         },
-        23: {
-            title: "Tickspeed",
-            description() {
-                return "Earn a multiplier to points, convert output, and spacetime based on time, but also multiplies time consumption. Effect: x" + format(this.effect())
-            },
-            cost: new Decimal(250000),
-            effect() {
-                let effect = player.timePoints.pow(0.25).div(5).add(1)
-                return effect
-            },
-            unlocked() {return hasMilestone('st', 2)}
-        },
         24: {
             title: "Split In Two",
             description() {
@@ -219,9 +202,11 @@ addLayer("st", {
             canClick() {
                 if (player.st.convertInput == "SPACETIME" && player.st.points.gte(1)) {
                     return true
-                } else {
-                    return false
                 }
+                if (player.st.convertInput == "MOON ESSENCE" && player.mn.points.gte(1)) {
+                    return true
+                }
+                return false
             },
             onClick() {
                 if (player.st.converting == false) {
@@ -564,10 +549,10 @@ addLayer("st", {
                     ["infobox", "conversionInfo"],
                     "blank",
                     ["display-text", "<h3>INPUT</h3>"],
-                    ["drop-down", ["convertInput", ["SPACETIME"]]],
+                    ["drop-down", ["convertInput", () => {return tmp.st.getConvertInputs}]],
                     "blank",
                     ["display-text", "<h3>OUTPUT</h3>"],
-                    ["drop-down", ["convertOutput", ["SPACE", "TIME"]]],
+                    ["drop-down", ["convertOutput", () => {return tmp.st.getConverOutputs}]],
                     "blank",
                     ["display-text", () => {return "Convert Mode: " + player.st.convertInput + " -> " + player.st.convertOutput}],
                     ["display-text", () => {return "Convert Rate: " + format(tmp.st.getConvertRate) + "/s"}],
@@ -579,26 +564,21 @@ addLayer("st", {
                     }],
                     "blank",
                     ["display-text", () => {
-                        if (player.st.converting) {
-                            return "SPACETIME: " + format(player.st.points) + " (-" + format(tmp.st.getConvertRate) + "/s)"
-                        } else {
-                            return "SPACETIME: " + format(player.st.points) + " (-0.00/s)"
-                        }
+                        let displayCurrency
+                        if (player.st.convertOutput == "SPACETIME") displayCurrency = player.st.points
+                        if (player.st.convertOutput == "MOON ESSENCE") displayCurrency = player.mn.points
+                        return player.st.convertInput + ": " + format(displayCurrency) + " (-" + (player.st.converting ? format(tmp.st.getConvertRate) : "0.00") + "/s)"
                     }],
-                    "blank",
+                    ["display-text", "↓"],
                     ["display-text", () => {
-                        if (player.st.converting && player.st.convertOutput == "SPACE") {
-                            return "SPACE: " + format(player.spacePoints) + " (+" + format(getSpaceMultis().mul(tmp.st.getConvertOutputMult).mul(tmp.st.getConvertRate).mul(new Decimal(1).sub(tmp.st.getConvertReduction).pow(tmp.st.getConvertRate.sub(1)))) + "/s)"
-                        } else {
-                            return "SPACE: " + format(player.spacePoints) + " (+0.00/s)"
-                        }
-                    }],
-                    ["display-text", () => {
-                        if (player.st.converting && player.st.convertOutput == "TIME") {
-                            return "TIME: " + format(player.timePoints) + " (+" + format(getTimeMultis().mul(tmp.st.getConvertOutputMult).mul(tmp.st.getConvertRate).mul(new Decimal(1).sub(tmp.st.getConvertReduction).pow(tmp.st.getConvertRate.sub(1)))) + "/s)"
-                        } else {
-                            return "TIME: " + format(player.timePoints) + " (+0.00/s)"
-                        }
+                        let displayCurrency
+                        let displayMult
+                        let convertMult = tmp.st.getConvertOutputMult.mul(tmp.st.getConvertRate).mul(new Decimal(1).sub(tmp.st.getConvertReduction).pow(tmp.st.getConvertRate.sub(1)))
+                        if (player.st.convertOutput == "SPACE") displayCurrency = player.spacePoints; displayMult = getSpaceMultis()
+                        if (player.st.convertOutput == "TIME") displayCurrency = player.timePoints; displayMult = getTimeMultis()
+                        if (player.st.convertOutput == "MOONSTONE") displayCurrency = player.mn.moonstone; displayMult = tmp.mn.getMoonstoneMultis
+                        if (player.st.convertOutput == "DARK ESSENCE") displayCurrency = player.mn.darkEssence; displayMult = tmp.mn.getDarkEssenceMultis
+                        return player.st.convertOutput + ": " + format(displayCurrency) + " (+" + (player.st.converting ? format(displayMult.mul(convertMult)) : "0.00") + "/s)"
                     }],
                     "blank",
                     ["clickables", [1]],
@@ -629,7 +609,22 @@ addLayer("st", {
                 ],
             },
             "Absolute Spacetime Module": {
-                unlocked() {return hasMilestone('mn', 1)},
+                unlocked() {return hasMilestone('mn', 1) || false},
+                content: [
+                    "blank",
+                    ["microtabs", "absoluteSpacetime"]
+                ]
+            }
+        },
+        absoluteSpacetime: {
+            "Main Sub-Module": {
+                content: [
+                    "blank",
+                    ["display-text", "Requires both Absolute Space and Absolute Time to be unlocked at the same time"],
+                ],
+                unlocked() {return false}
+            },
+            "Absolute Space Sub-Module": {
                 content: [
                     "blank",
                     ["display-text", () => {return "<h2 style='color: #000000; text-shadow: 0px 0px 10px #ffffff'>The " + tmp.st.getAbsSpaceName + "</h2> has a side length of <h2 style='color: #000000; text-shadow: 0px 0px 10px #ffffff'>" + format(tmp.st.getAbsoluteSpaceLengths) + "</h2> and is storing <h2 style='color: #000000; text-shadow: 0px 0px 10px #ffffff'>" + format(tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims)) +  "</h2> absolute space"}],
@@ -641,9 +636,16 @@ addLayer("st", {
                         "blank",
                         ["buyable", 32]
                     ]]
-                ]
+                ],
+                unlocked() {return hasMilestone('mn', 2)}
+            },
+            "Absolute Time Sub-Module": {
+                content: [
+                    "blank",
+                ],
+                unlocked() {return false}
             }
-        }
+        },
     },
     tabFormat: [
         "main-display",
@@ -662,16 +664,31 @@ addLayer("st", {
     update(diff) {
         if (player.points.gte(getPointCapacity())) player.points = getPointCapacity()
         if (player.st.converting == true) {
+            // convert inputs
             if (player.st.convertInput == "SPACETIME") {
-                player.st.points = player.st.points.sub(diff)
-                if (player.st.points.lte(0.1)) player.st.converting = false
+                player.st.points = player.st.points.sub(diff).max(0)
+                if (player.st.points.eq(0)) player.st.converting = false
             }
+            if (player.st.convertInput == "LIFE ESSENCE") {
+                player.mn.points = player.mn.points.sub(diff).max(0)
+                if (player.mn.points.eq(0)) player.st.converting = false
+            }
+            let convertMult = tmp.st.getConvertRate.mul(tmp.st.getConvertOutputMult).mul((new Decimal(1).sub(tmp.st.getConvertReduction)).pow(tmp.st.getConvertRate.sub(1))).mul(diff)
+            // convert outputs
             if (player.st.convertOutput == "TIME") {
-                player.timePoints = player.timePoints.add(getTimeMultis().mul(tmp.st.getConvertRate).mul(tmp.st.getConvertOutputMult).mul((new Decimal(1).sub(tmp.st.getConvertReduction)).pow(tmp.st.getConvertRate.sub(1))).mul(diff))
-            } else if (player.st.convertOutput == "SPACE") {
-                player.spacePoints = player.spacePoints.add(getSpaceMultis().mul(tmp.st.getConvertRate).mul(tmp.st.getConvertOutputMult).mul((new Decimal(1).sub(tmp.st.getConvertReduction)).pow(tmp.st.getConvertRate.sub(1))).mul(diff))
+                player.timePoints = player.timePoints.add(getTimeMultis().mul(convertMult))
+            }
+            if (player.st.convertOutput == "SPACE") {
+                player.spacePoints = player.spacePoints.add(getSpaceMultis().mul(convertMult))
+            }
+            if (player.st.convertOutput == "MOONSTONE") {
+                player.mn.moonstone = player.mn.moonstone.add(tmp.lf.getMoonstoneMultis().mul(convertMult))
+            }
+            if (player.st.convertOutput == "DARK ESSENCE") {
+                player.mn.moonstone = player.mn.moonstone.add(tmp.lf.getDarkEssenceMultis().mul(convertMult))
             } 
         }
+        if (!tmp.st.getConverOutputs.includes(player.st.convertOutput)) player.st.convertOutput = tmp.st.getConverOutputs[0]
     },
     layerShown() {return true}
 })

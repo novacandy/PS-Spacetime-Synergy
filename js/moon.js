@@ -12,8 +12,8 @@ addLayer("mn", {
         moonEnergy: new Decimal(0),
         absoluteSpace: new Decimal(0),
 
-        cells: new Decimal(0)
-
+        moonstone: new Decimal(0),
+        darkEssence: new Decimal(0)
     }},
     tooltip() {
         if (!player.mn.unlocked) {
@@ -55,11 +55,20 @@ addLayer("mn", {
     },
     moonEnergyEffect() {
         let effect = player.mn.moonEnergy.pow(0.5).add(1)
+        if (effect.gte(10)) effect = effect.sub(10).pow(0.75).add(10)
         return effect
     },
     absoluteSpaceEffect() {
         let effect = player.mn.absoluteSpace.add(1).log(10).pow(1.5).add(1)
         return effect
+    },
+    getMoonstoneMultis() {
+        let mult = new Decimal(1)
+        return mult
+    },
+    getDarkEssenceMultis() {
+        let mult = new Decimal(1)
+        return mult
     },
     hotkeys: [
         {key: "m", description: "M: Reset for moon essence", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
@@ -75,12 +84,12 @@ addLayer("mn", {
         },
         1: {
             requirementDescription: "10 moon essence",
-            effectDescription: "Unlock Absolute Space (in Spacetime)",
+            effectDescription: "Unlock the Absolute Space Module (in Spacetime)",
             done() {return player.mn.points.gte(10)}
         },
         2: {
             requirementDescription: "1000 moon essence",
-            effectDescription: "Unlock darkness and new spacetime conversion options",
+            effectDescription: "Unlock darkness and a new spacetime conversion input",
             done() {return player.mn.points.gte(1000)}
         }
     },
@@ -127,17 +136,26 @@ addLayer("mn", {
     },
     microtabs: {
         moon: {
-            "Genetics": {
+            "Space Buyable Module": {
+                content: [
+                    "blank",
+                    ["infobox", "moonEssenceInfo"],
+                    "blank",
+                    "buyables"
+                ]
+            },
+            "Dark Side Module": {
                 content: [
                     "blank",
                 ],
                 unlocked() {return hasMilestone('mn', 2)}
             },
-        }
+        },
+        
     },
     infoboxes: {
         moonEssenceInfo: {
-            title: "AUDIO LOG [ID: MN-MAIN]",
+            title: "AUDIO LOG [ID: MN-SBY]",
             body() {return `
                 DATE: 6/10/XX<br>
                 AUTHOR(S): GRACE<br>
@@ -153,14 +171,17 @@ addLayer("mn", {
         "main-display",
         "prestige-button",
         "blank",
-        ["display-text", () => {return "You have <h2 style='color: #7f7f7f; text-shadow: 0px 0px 10px #7f7f7f'>" + format(player.mn.moonEnergy) + "</h2> moon energy, (+" + format(new Decimal(0.01).mul(tmp.mn.moonEnergyMult)) + "/s) which multiplies space gain from all sources by x" + format(tmp.mn.moonEnergyEffect)}],
+        ["display-text", () => {
+            if (tmp.mn.moonEnergyEffect.gte(10)) {
+                return "You have <h2 style='color: #7f7f7f; text-shadow: 0px 0px 10px #7f7f7f'>" + format(player.mn.moonEnergy) + "</h2> moon energy, (+" + format(new Decimal(0.01).mul(tmp.mn.moonEnergyMult)) + "/s) which multiplies space gain from all sources by x" + format(tmp.mn.moonEnergyEffect) + " <b style='color: #ff0000'>[SOFTCAPPED]<b>"
+            } else {
+                return "You have <h2 style='color: #7f7f7f; text-shadow: 0px 0px 10px #7f7f7f'>" + format(player.mn.moonEnergy) + "</h2> moon energy, (+" + format(new Decimal(0.01).mul(tmp.mn.moonEnergyMult)) + "/s) which multiplies space gain from all sources by x" + format(tmp.mn.moonEnergyEffect)
+            }
+        }],
         ["display-text", () => {return "You have <h2 style='color: #000000; text-shadow: 0px 0px 10px #ffffff'>" + format(player.mn.absoluteSpace) + "</h2> absolute space, which multiplies spacetime gain by x" + format(tmp.mn.absoluteSpaceEffect)}],
         "blank",
         "milestones",
-        "blank",
-        ["infobox", "moonEssenceInfo"],
-        "blank",
-        "buyables"
+        ["microtabs", "moon"]
     ],
     update(diff) {
         player.mn.moonEnergy = player.mn.moonEnergy.add(new Decimal(0.01).mul(tmp.mn.moonEnergyMult).mul(diff))
