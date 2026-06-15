@@ -1,6 +1,9 @@
 addLayer("st", {
     name: "spacetime",
-    symbol: "ST",
+    symbol() {
+        if (inChallenge('mn', 11)) return "DST"
+        return "ST"
+    },
     row: 0,
     position: 0,
     startData() { return {
@@ -21,9 +24,38 @@ addLayer("st", {
         timeExtractedAmount: new Decimal(0),
 
     }},
-    color: "#360d87",
+    color() {
+        if (inChallenge('mn', 11)) return "#290e58"
+        return "#360d87"
+    },
+    nodeStyle() {
+        if (inChallenge('mn', 11)) return {
+            "color": "#ffffff"
+        }
+    },
+    componentStyles: {
+        "prestige-button"() {if (inChallenge('mn', 11)) return {
+            "color": "#ffffff"
+        }},
+        "clickable"() {if (inChallenge('mn', 11)) return {
+            "color": "#ffffff"
+        }},
+        "buyable"() {if (inChallenge('mn', 11)) return {
+            "color": "#ffffff"
+        }},
+        "upgrade"() {if (inChallenge('mn', 11)) return {
+            "color": "#ffffff"
+        }},
+        "milestone"() {if (inChallenge('mn', 11)) return {
+            "color": "#ffffff",
+            "background-color": "#0a371d"
+        }},
+    },
     requires: new Decimal(5),
-    resource: "spacetime",
+    resource() {
+        if (inChallenge('mn', 11)) return "dark spacetime"
+        return "spacetime"
+    },
     baseResource: "points",
     baseAmount() {return player.points},
     type: "normal",
@@ -34,6 +66,7 @@ addLayer("st", {
         mult = mult.mul(buyableEffect('st', 12))
     	if (hasUpgrade('st', 23)) mult = mult.mul(upgradeEffect('st', 23))
         mult = mult.mul(tmp.mn.absoluteSpaceEffect)
+        if (inChallenge('mn', 11)) mult = new Decimal(1)
         return mult
     },
     gainExp() {
@@ -103,11 +136,21 @@ addLayer("st", {
             title: "Doubler",
             description() {return "Double point gain."},
             cost: new Decimal(5),
+            style() {
+                if (inChallenge('mn', 11) && hasUpgrade(this.layer, this.id)) return {
+                    "background-color": "#0a371d"
+                }
+            }
         },
         12: {
             title: "Efficient Space",
             description() {return "Space grants twice as much point capacity."},
             cost: new Decimal(10),
+            style() {
+                if (inChallenge('mn', 11) && hasUpgrade(this.layer, this.id)) return {
+                    "background-color": "#0a371d"
+                }
+            }
         },
         13: {
             title: "Speedrun",
@@ -124,21 +167,42 @@ addLayer("st", {
                 if (effect.gte(10)) effect = effect.sub(10).pow(0.2).add(10)
                 return effect
             },
+            style() {
+                if (inChallenge('mn', 11) && hasUpgrade(this.layer, this.id)) return {
+                    "background-color": "#0a371d"
+                }
+            }
         },
         14: {
-            title: "Further Expansion",
-            description() {return "Earn a multiplier to spacetime based on time. Effect: x" + format(this.effect())},
+            title() {
+                if (inChallenge('mn', 11)) return "<s>Further Expansion</s> Dark Revival"
+                return "Further Expansion"
+            },
+            description() {
+                if (inChallenge('mn', 11)) return "Earn a multiplier to <s>spacetime</s> darkness based on time. Effect: x" + format(this.effect())
+                return "Earn a multiplier to spacetime based on time. Effect: x" + format(this.effect())
+            },
             cost: new Decimal(25),
             effect() {
                 let effect = player.timePoints.add(1).log(2).add(1)
                 return effect
             },
+            style() {
+                if (inChallenge('mn', 11) && hasUpgrade(this.layer, this.id)) return {
+                    "background-color": "#0a371d"
+                }
+            }
         },
         21: {
             title: "Efficient Conversion",
             description() {return "Multiply convert output by x1.75."},
             cost: new Decimal(10000),
-            unlocked() {return hasMilestone('st', 2)}
+            unlocked() {return hasMilestone('st', 2)},
+            style() {
+                if (inChallenge('mn', 11) && hasUpgrade(this.layer, this.id)) return {
+                    "background-color": "#0a371d"
+                }
+            }
         },
         22: {
             title: "Extra Spacious",
@@ -150,11 +214,17 @@ addLayer("st", {
                 let effect = player.spacePoints.pow(0.25).div(5).add(1)
                 return effect
             },
-            unlocked() {return hasMilestone('st', 2)}
+            unlocked() {return hasMilestone('st', 2)},
+            style() {
+                if (inChallenge('mn', 11) && hasUpgrade(this.layer, this.id)) return {
+                    "background-color": "#0a371d"
+                }
+            }
         },
         23: {
             title: "Tickspeed",
             description() {
+                if (inChallenge('mn', 11)) return "Earn a multiplier to points, convert output, and <s>spacetime</s> darkness based on time, but also multiplies time consumption. Effect: x" + format(this.effect())
                 return "Earn a multiplier to points, convert output, and spacetime based on time, but also multiplies time consumption. Effect: x" + format(this.effect())
             },
             cost: new Decimal(250000),
@@ -162,7 +232,12 @@ addLayer("st", {
                 let effect = player.timePoints.pow(0.25).div(5).add(1)
                 return effect
             },
-            unlocked() {return hasMilestone('st', 2)}
+            unlocked() {return hasMilestone('st', 2)},
+            style() {
+                if (inChallenge('mn', 11) && hasUpgrade(this.layer, this.id)) return {
+                    "background-color": "#0a371d"
+                }
+            }
         },
         24: {
             title: "Split In Two",
@@ -170,22 +245,36 @@ addLayer("st", {
                 return "Halves convert rate reduction. Also unlocks a pair of new layers."
             },
             cost: new Decimal(1e6),
-            unlocked() {return hasMilestone('st', 2)}
+            unlocked() {return hasMilestone('st', 2)},
+            style() {
+                if (inChallenge('mn', 11) && hasUpgrade(this.layer, this.id)) return {
+                    "background-color": "#0a371d"
+                }
+            }
         },
     },
     milestones: {
         0: {
-            requirementDescription: "Reset for spacetime once",
+            requirementDescription() {
+                if (inChallenge('mn', 11)) return "Reset for dark spacetime once"
+                return "Reset for spacetime once"
+            },
             effectDescription: "Unlock the Upgrade Module",
             done() { return player.st.total.gte(16) }
         },
         1: {
-            requirementDescription: "50 spacetime",
+            requirementDescription() {
+                if (inChallenge('mn', 11)) return "50 dark spacetime"
+                return "50 spacetime"
+            },
             effectDescription: "Unlock enhancement buyables in the Upgrade Modules",
             done() { return player.st.points.gte(50)}
         },
         2: {
-            requirementDescription: "1000 spacetime",
+            requirementDescription() {
+                if (inChallenge('mn', 11)) return "1000 dark spacetime"
+                return "1000 spacetime"
+            },
             effectDescription: "Unlock a buyable in the Convert Module that increases spacetime convert rate and more upgrades in the Upgrade Module",
             done() { return player.st.points.gte(1000)}
         },
@@ -277,13 +366,31 @@ addLayer("st", {
             unlocked() {return hasMilestone('st', 1)}
         },
         12: {
-            title() {return "Spacetime Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
+            title() {
+                if (inChallenge('mn', 11)) return "<s>Spacetime</s> Darkness Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"
+                return "Spacetime Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"
+            },
             cost(x) {
                 let cost = new Decimal(25).mul(x.mul(1.5).add(1)).mul(new Decimal(1.5).pow(x))
                 if (x.gte(10)) cost = cost.pow(1.5)
                 return cost
             },
             display() {
+                if (inChallenge('mn', 11)) {
+                    if (getBuyableAmount('st', 12).gte(10)) {
+                        return "\
+                        Multiplying <s>spacetime</s> darkness gain by x"+ format(this.effectBase()) +" each\n\
+                        Currently: x" + format(this.effect()) + "\n\
+                        Cost: "+ format(this.cost()) +" dark spacetime\n\
+                        <b style='color: #ff0000'>[SOFTCAPPED]<b>"
+                    } else {
+                        return "\
+                        Multiplying <s>spacetime</s> darkness gain by x"+ format(this.effectBase()) +" each\n\
+                        Currently: x" + format(this.effect()) + "\n\
+                        Cost: "+ format(this.cost()) +" dark spacetime\n\
+                        "
+                    }
+                }
                 if (getBuyableAmount('st', 12).gte(10)) {
                     return "\
                     Multiplying spacetime gain by x"+ format(this.effectBase()) +" each\n\
@@ -297,10 +404,10 @@ addLayer("st", {
                     Cost: "+ format(this.cost()) +" spacetime\n\
                     "
                 }
-                
             },
             effectBase() {
                 let base = new Decimal(1.25)
+                if (inChallenge('mn', 11)) base = new Decimal(2)
                 return base
             },
             effect() {
@@ -524,6 +631,7 @@ addLayer("st", {
                 GRACE: Ugh, nevermind then, let's just start another audio recording for the next feature. What was it again?<br><br>
                 CLYDE: The Upgrade Module.`
             },
+            unlocked() {return !inChallenge('mn', 11)}
         },
         upgradeInfo: {
             title: "AUDIO LOG [ID: ST-UPG]",
@@ -539,6 +647,7 @@ addLayer("st", {
                 CLYDE: You'll also eventually unlock buyables that'll multiply your point, spacetime, space, and time earnings.<br><br> 
                 CLYDE: Your next goal will be to reach one million (1000000) spacetime to unlock the next two (2) layers. This will take a few minutes of grinding, so good luck, player!`
             },
+            unlocked() {return !inChallenge('mn', 11)}
         }
     },
     microtabs: {
@@ -660,7 +769,10 @@ addLayer("st", {
         },
     },
     tabFormat: [
-        "main-display",
+        ["row", [
+            () => {if (!inChallenge('mn', 11)) return "main-display"},
+            ["display-text", () => {if (inChallenge('mn', 11)) return "You have <h2 style='color: #290e58; text-shadow: 0px 0px 10px #290e58'>" + formatWhole(player.st.points) + "</h2> <h3 style='color: #4f4f4f; text-shadow: 0px 0px 10px #4f4f4f'>dark</h3> spacetime<br><br>"}],
+        ]],
         "prestige-button",
         "blank",
         "milestones",
@@ -671,7 +783,6 @@ addLayer("st", {
         let keep = [];
         keep.push("milestones")
         layerDataReset(this.layer, keep);
-        player[this.layer].upgrades.push(...keptUpgrades)
     },
     update(diff) {
         if (player.points.gte(getPointCapacity())) player.points = getPointCapacity()

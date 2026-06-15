@@ -1,6 +1,9 @@
 addLayer("mn", {
     name: "moon",
-    symbol: "MN",
+    symbol() {
+        if (inChallenge('mn', 11) && challengeCompletions('mn', 11) > 0) return "DMN"
+        return "MN"
+    },
     row: 1,
     position: 0,
     startData() { return {
@@ -35,7 +38,33 @@ addLayer("mn", {
         let effect = new Decimal(4).mul(player.mn.points.pow(0.75)).add(1)
         return effect
     },
-    color: "#7f7f7f",
+    nodeStyle() {
+        if (inChallenge('mn', 11) && challengeCompletions('mn', 11) > 0) return {
+            "color": "#ffffff"
+        }
+    },
+    color() {
+        if (inChallenge('mn', 11) && challengeCompletions('mn', 11) > 0) return "#3f3f3f"
+        return "#7f7f7f"
+    },
+    componentStyles: {
+        "prestige-button"() {if (inChallenge('mn', 11) && challengeCompletions('mn', 11) > 0) return {
+            "color": "#ffffff"
+        }},
+        "clickable"() {if (inChallenge('mn', 11) && challengeCompletions('mn', 11) > 0) return {
+            "color": "#ffffff"
+        }},
+        "buyable"() {if (inChallenge('mn', 11) && challengeCompletions('mn', 11) > 0) return {
+            "color": "#ffffff"
+        }},
+        "upgrade"() {if (inChallenge('mn', 11) && challengeCompletions('mn', 11) > 0) return {
+            "color": "#ffffff"
+        }},
+        "milestone"() {if (inChallenge('mn', 11) && challengeCompletions('mn', 11) > 0) return {
+            "color": "#ffffff",
+            "background-color": "#0a371d"
+        }},
+    },
     requires: new Decimal(10000),
     resource: "moon essence",
     baseResource: "space",
@@ -92,6 +121,10 @@ addLayer("mn", {
     getDarkEssenceMultis() {
         let mult = new Decimal(1)
         return mult
+    },
+    getDarkEssenceEffect() {
+        let effect = player.mn.darkEssence.add(1).log(2)
+        return effect
     },
     hotkeys: [
         {key: "m", description: "M: Reset for moon essence", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
@@ -236,6 +269,46 @@ addLayer("mn", {
             },
         },
     },
+    challenges: {
+        11: {
+            name: "Dark Side of The Moon",
+            fullDisplay() {return `
+                Envelops your ${this.currenciesAffectedDisplay()[challengeCompletions('mn', 11)]} in darkness, making direct multipliers ineffective. Unlocks challenge-exclusive layers based on Depth.<br>
+                Goal: ${format(this.goals()[challengeCompletions('mn', 11)])} darkness (Depth ${formatWhole(challengeCompletions('mn', 11))}/5)<br>
+               `
+            },
+            currenciesAffectedDisplay() {
+                return ['Spacetime', 'Spactime, Moon Essence, and Moon Energy']
+            },
+            onEnter() {
+                doReset('mn', true)
+                player.spacePoints = new Decimal(15)
+                player.timePoints = new Decimal(5)
+            },
+            onExit() {
+                player.dk.darkness = new Decimal(0)
+                player.dk.lunarGenerators = new Decimal(0)
+                player.dk.lunarGenPower = new Decimal(0)
+                setBuyableAmount('dk', 11, new Decimal(0))
+                setBuyableAmount('dk', 12, new Decimal(0))
+            },
+            goals() {
+                return [new Decimal(10000000), new Decimal(1e15)]
+            },
+            canComplete() {return player.dk.darkness.gte(this.goals()[challengeCompletions('mn', 11)])},
+            style() {return {
+                "width": "350px",
+                "height": "350px",
+                "border-color": "#0f0f0f",
+                "background-color": "rgba(0, 0, 0, 0)",
+                "color": "#7f7f7f",
+                "text-shadow": "0px 0px 10px #4f4f4f",
+                "box-shadow": "0px 0px 10px #4f4f4f",
+                "align-content": "center"
+            }},
+            completionLimit: 5
+        },
+    },
     microtabs: {
         moon: {
             "Space Buyable Module": {
@@ -243,7 +316,7 @@ addLayer("mn", {
                     "blank",
                     ["infobox", "moonEssenceInfo"],
                     "blank",
-                    "buyables"
+                    ["buyables", [1]]
                 ]
             },
             "Dark Side Module": {
@@ -274,7 +347,12 @@ addLayer("mn", {
             "Dark Side of The Moon": {
                 content: [
                     "blank",
-                    ["display-text", () => {return "You have " + format(player.mn.darkEssence) + " dark essence, which ???"}]
+                    ["display-text", () => {
+                        if (inChallenge('mn', 11)) return "You have " + format(player.mn.darkEssence) + " dark essence, which produce a base of " + format(tmp.mn.getDarkEssenceEffect) + " darkness per second"
+                        return "You have " + format(player.mn.darkEssence) + " dark essence, which ???"
+                    }],
+                    "blank",
+                    "challenges"
                 ]
             }
         }
@@ -294,10 +372,19 @@ addLayer("mn", {
         },
     },
     tabFormat: [
-        "main-display",
-        "prestige-button",
+        ["row", [
+            () => {if (!(inChallenge('mn', 11) && challengeCompletions('mn', 11) > 0)) return "main-display"},
+            ["display-text", () => {if (inChallenge('mn', 11) && challengeCompletions('mn', 11) > 0) return "You have <h2 style='color: #3f3f3f; text-shadow: 0px 0px 10px #3f3f3f'>" + formatWhole(player.mn.points) + "</h2> <h3 style='color: #4f4f4f; text-shadow: 0px 0px 10px #4f4f4f'>dark</h3> moon essence, " + layers.mn.effectDescription() + "<br><br>"}],
+        ]],        "prestige-button",
         "blank",
         ["display-text", () => {
+            if (inChallenge('mn', 11) && challengeCompletions('mn', 11) > 0) {
+                if (tmp.mn.moonEnergyEffect.gte(10)) {
+                    return "You have <h2 style='color: #7f7f7f; text-shadow: 0px 0px 10px #7f7f7f'>" + format(player.mn.moonEnergy) + "</h2> <h3 style='color: #4f4f4f; text-shadow: 0px 0px 10px #4f4f4f'>dark</h3> moon energy, (+" + format(new Decimal(0.01).mul(tmp.mn.moonEnergyMult)) + "/s) which multiplies space gain from all sources by x" + format(tmp.mn.moonEnergyEffect) + " <b style='color: #ff0000'>[SOFTCAPPED]<b>"
+                } else {
+                    return "You have <h2 style='color: #7f7f7f; text-shadow: 0px 0px 10px #7f7f7f'>" + format(player.mn.moonEnergy) + "</h2> <h3 style='color: #4f4f4f; text-shadow: 0px 0px 10px #4f4f4f'>dark</h3> moon energy, (+" + format(new Decimal(0.01).mul(tmp.mn.moonEnergyMult)) + "/s) which multiplies space gain from all sources by x" + format(tmp.mn.moonEnergyEffect)
+                }
+            } 
             if (tmp.mn.moonEnergyEffect.gte(10)) {
                 return "You have <h2 style='color: #7f7f7f; text-shadow: 0px 0px 10px #7f7f7f'>" + format(player.mn.moonEnergy) + "</h2> moon energy, (+" + format(new Decimal(0.01).mul(tmp.mn.moonEnergyMult)) + "/s) which multiplies space gain from all sources by x" + format(tmp.mn.moonEnergyEffect) + " <b style='color: #ff0000'>[SOFTCAPPED]<b>"
             } else {
