@@ -769,10 +769,7 @@ addLayer("st", {
         },
     },
     tabFormat: [
-        ["row", [
-            () => {if (!inChallenge('mn', 11)) return "main-display"},
-            ["display-text", () => {if (inChallenge('mn', 11)) return "You have <h2 style='color: #290e58; text-shadow: 0px 0px 10px #290e58'>" + formatWhole(player.st.points) + "</h2> <h3 style='color: #4f4f4f; text-shadow: 0px 0px 10px #4f4f4f'>dark</h3> spacetime<br><br>"}],
-        ]],
+    
         "prestige-button",
         "blank",
         "milestones",

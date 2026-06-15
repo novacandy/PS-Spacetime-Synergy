@@ -10,7 +10,7 @@ addLayer("sn", {
         total: new Decimal(0),
     }},
     tooltip() {
-        if (!player.dt.unlocked) {
+        if (!player.sn.unlocked) {
             return "(Requires 25000 time)"
         } else {
             return format(player.mn.points) + " sun essence"

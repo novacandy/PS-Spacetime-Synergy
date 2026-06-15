@@ -35,7 +35,7 @@ addLayer("mn", {
        return "which multiplies point capacity by x" + format(tmp.mn.effect)
     },
     effect() {
-        let effect = new Decimal(4).mul(player.mn.points.pow(0.75)).add(1)
+        let effect = new Decimal(1).mul(player.mn.points.pow(0.5)).add(1)
         return effect
     },
     nodeStyle() {
@@ -154,6 +154,11 @@ addLayer("mn", {
             requirementDescription: "1000 moon essence",
             effectDescription: "Unlock Dark Side Module and a new spacetime conversion input",
             done() {return player.mn.points.gte(1000)}
+        },
+        100: {
+            requirementDescription: "Complete Depth 0",
+            effectDescription: "Unlock a new space buyable and more moonstone content",
+            done() {return challengeCompletions('mn', 11) >= 1}
         }
     },
     clickables: {
@@ -273,7 +278,7 @@ addLayer("mn", {
         11: {
             name: "Dark Side of The Moon",
             fullDisplay() {return `
-                Envelops your ${this.currenciesAffectedDisplay()[challengeCompletions('mn', 11)]} in darkness, making direct multipliers ineffective. Unlocks challenge-exclusive layers based on Depth.<br>
+                Envelops your ${this.currenciesAffectedDisplay()[challengeCompletions('mn', 11)]} in darkness, resetting them and making their direct multipliers ineffective. Unlocks challenge-exclusive layers based on Depth.<br>
                 Goal: ${format(this.goals()[challengeCompletions('mn', 11)])} darkness (Depth ${formatWhole(challengeCompletions('mn', 11))}/5)<br>
                `
             },
@@ -284,6 +289,10 @@ addLayer("mn", {
                 doReset('mn', true)
                 player.spacePoints = new Decimal(15)
                 player.timePoints = new Decimal(5)
+                if (challengeCompletions('mn', 11) >= 1) {
+                    player.mn.points = new Decimal(0)
+                    player.mn.moonEnergy = new Decimal(0)
+                }
             },
             onExit() {
                 player.dk.darkness = new Decimal(0)
@@ -306,7 +315,7 @@ addLayer("mn", {
                 "box-shadow": "0px 0px 10px #4f4f4f",
                 "align-content": "center"
             }},
-            completionLimit: 5
+            completionLimit: 6
         },
     },
     microtabs: {
@@ -352,7 +361,9 @@ addLayer("mn", {
                         return "You have " + format(player.mn.darkEssence) + " dark essence, which ???"
                     }],
                     "blank",
-                    "challenges"
+                    "challenges",
+                    "blank",
+                    ["milestones", [100]]
                 ]
             }
         }
@@ -393,7 +404,7 @@ addLayer("mn", {
         }],
         ["display-text", () => {return "You have <h2 style='color: #000000; text-shadow: 0px 0px 10px #ffffff'>" + format(player.mn.absoluteSpace) + "</h2> absolute space, which multiplies spacetime gain by x" + format(tmp.mn.absoluteSpaceEffect)}],
         "blank",
-        "milestones",
+        ["milestones", [1, 2, 3]],
         ["microtabs", "moon"]
     ],
     update(diff) {
