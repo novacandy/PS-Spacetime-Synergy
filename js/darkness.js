@@ -37,8 +37,8 @@ addNode('ld', {
 addLayer("dk", {
     name: "darkness",
     symbol: "DK",
-    row: 1,
-    position: 1,
+    row: 3,
+    position: 0,
     startData() { return {
         unlocked: true,
         darkness: new Decimal(0),
@@ -50,7 +50,8 @@ addLayer("dk", {
     tooltip() {return formatWhole(player.dk.darkness) + " darkness"},
     nodeStyle() {
         return {
-            "color": "#ffffff"
+            "color": "#ffffff",
+            "animation": 'darknessOrbit 60s infinite linear',
         }
     },
     color() {
@@ -252,3 +253,15 @@ addLayer("dk", {
     },
     layerShown() {return inChallenge('mn', 11)}
 })
+const darknessOrbit = document.createElement('style'); // orbit code stolen from Gods of Incremental adkv
+darknessOrbit.innerHTML = `
+@keyframes darknessOrbit {
+    0% {
+        transform: rotate(0deg) translateX(350px) rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg) translateX(350px) rotate(-360deg);
+      }
+  }
+  `
+document.head.appendChild(darknessOrbit);

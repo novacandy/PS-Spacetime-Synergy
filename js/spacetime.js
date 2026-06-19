@@ -29,8 +29,13 @@ addLayer("st", {
         return "#360d87"
     },
     nodeStyle() {
+        
         if (inChallenge('mn', 11)) return {
-            "color": "#ffffff"
+            "color": "#ffffff",
+            "transform": "translateY(325px)"
+        }
+        return {
+            "transform": "translateY(325px)"
         }
     },
     componentStyles: {
@@ -81,6 +86,7 @@ addLayer("st", {
     getConvertReduction() {
         let reduction = new Decimal(0.25)
         if (hasUpgrade('st', 24)) reduction = reduction.div(2)
+        if (hasUpgrade('mn', 22)) reduction = reduction.div(upgradeEffect('mn', 22))
         return reduction
     },
     getConvertInputs() {
@@ -121,6 +127,7 @@ addLayer("st", {
     getAbsoluteSpaceLengths() {
         let len = new Decimal(1)
         len = len.add(buyableEffect('st', 31))
+        if (hasUpgrade('mn', 13)) len = len.mul(upgradeEffect('mn', 13))
         return len
     },
     getAbsoluteSpaceDims() {
@@ -329,7 +336,7 @@ addLayer("st", {
     },
     buyables: {
         11: {
-            title() {return "Point Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
+            title() {return "Point Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")"},
             cost(x) { 
                 let cost = new Decimal(10).mul(x.add(1)).mul(new Decimal(1.25).pow(x))
                 if (x.gte(30)) cost = cost.pow(1.33)
@@ -358,6 +365,10 @@ addLayer("st", {
                 let effect = this.effectBase().pow(getBuyableAmount(this.layer, this.id))
                 return effect
             },
+            purchaseLimit() {
+                let limit = new Decimal(50)
+                return limit
+            },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
                 player[this.layer].points = player[this.layer].points.sub(this.cost())
@@ -367,8 +378,8 @@ addLayer("st", {
         },
         12: {
             title() {
-                if (inChallenge('mn', 11)) return "<s>Spacetime</s> Darkness Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"
-                return "Spacetime Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"
+                if (inChallenge('mn', 11)) return "<s>Spacetime</s> Darkness Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")"
+                return "Spacetime Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")"
             },
             cost(x) {
                 let cost = new Decimal(25).mul(x.mul(1.5).add(1)).mul(new Decimal(1.5).pow(x))
@@ -379,7 +390,7 @@ addLayer("st", {
                 if (inChallenge('mn', 11)) {
                     if (getBuyableAmount('st', 12).gte(10)) {
                         return "\
-                        Multiplying <s>spacetime</s> darkness gain by x"+ format(this.effectBase()) +" each\n\
+                        Multiplying <s>spacetime</s> darkness gain by x"+ format(this.effectBase()) + "/" + formatWhole(this.purchaseLimit()) +" each\n\
                         Currently: x" + format(this.effect()) + "\n\
                         Cost: "+ format(this.cost()) +" dark spacetime\n\
                         <b style='color: #ff0000'>[SOFTCAPPED]<b>"
@@ -414,6 +425,10 @@ addLayer("st", {
                 let effect = this.effectBase().pow(getBuyableAmount(this.layer, this.id))
                 return effect
             },
+            purchaseLimit() {
+                let limit = new Decimal(25)
+                return limit
+            },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
                 player[this.layer].points = player[this.layer].points.sub(this.cost())
@@ -422,7 +437,7 @@ addLayer("st", {
             unlocked() {return hasMilestone('st', 1)}
         },
         13: {
-            title() {return "Space Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
+            title() {return "Space Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")"},
             cost(x) {
                 let cost = new Decimal(50).mul(x.mul(1.5).add(1)).mul(new Decimal(1.3).pow(x)) 
                 if (x.gte(10)) cost = cost.pow(1.5)
@@ -452,6 +467,10 @@ addLayer("st", {
                 let effect = this.effectBase().pow(getBuyableAmount(this.layer, this.id))
                 return effect
             },
+            purchaseLimit() {
+                let limit = new Decimal(25)
+                return limit
+            },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
                 player[this.layer].points = player[this.layer].points.sub(this.cost())
@@ -460,7 +479,7 @@ addLayer("st", {
             unlocked() {return hasMilestone('st', 1)}
         },
         14: {
-            title() {return "Time Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
+            title() {return "Time Enhancement (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")"},
             cost(x) {
                 let cost = new Decimal(50).mul(x.mul(1.5).add(1)).mul(new Decimal(1.3).pow(x))
                 if (x.gte(10)) cost = cost.pow(1.5)
@@ -489,6 +508,10 @@ addLayer("st", {
                 let effect = this.effectBase().pow(getBuyableAmount(this.layer, this.id))
                 return effect
             },
+            purchaseLimit() {
+                let limit = new Decimal(25)
+                return limit
+            },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
                 player[this.layer].points = player[this.layer].points.sub(this.cost())
@@ -500,7 +523,7 @@ addLayer("st", {
             title() {return "Convert Rate (" + formatWhole(player.st.convertBuyableAmount) + "/" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
             cost(x) { 
                 let cost = new Decimal(1000).mul(x.mul(0.25).add(1)).mul(new Decimal(1.05).pow(x))
-                if (x.gte(10)) cost = cost.pow(1.75)
+                if (x.gte(10)) cost = cost.pow(2.5)
                 return cost
             },
             display() { 

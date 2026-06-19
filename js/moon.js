@@ -29,6 +29,7 @@ addLayer("mn", {
     onPrestige() {
         player.spacePoints = new Decimal(15)
         player.timePoints = new Decimal(5)
+        player.mn.moonEnergy = new Decimal(0)
         if (hasMilestone('mn', 1)) player.mn.absoluteSpace = player.mn.absoluteSpace.add(tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims))
     },
     effectDescription() {
@@ -40,7 +41,11 @@ addLayer("mn", {
     },
     nodeStyle() {
         if (inChallenge('mn', 11) && challengeCompletions('mn', 11) > 0) return {
-            "color": "#ffffff"
+            "color": "#ffffff",
+            "animation": 'moonOrbit 25s infinite linear',
+        }
+        return {
+            "animation": 'moonOrbit 25s infinite linear',
         }
     },
     color() {
@@ -73,6 +78,7 @@ addLayer("mn", {
     exponent: 0.9,
     gainMult() {
         let mult = new Decimal(1)
+        mult = mult.mul(buyableEffect('mn', 13))
         return mult
     },
     gainExp() {
@@ -108,6 +114,8 @@ addLayer("mn", {
     getRadianceExponent() {
         let exp = new Decimal(1)
         exp = exp.add(buyableEffect('mn', 21))
+        if (hasUpgrade('mn', 12)) exp = exp.add(upgradeEffect('mn', 12))
+        if (hasUpgrade('mn', 23)) exp = exp.add(upgradeEffect('mn', 23))
         return exp
     },
     getRadianceOverflowStart() {
@@ -137,7 +145,68 @@ addLayer("mn", {
             currencyLayer: "mn",
             currencyDisplayName: "radiance",
             currencyInternalName: "radiance",
-        }
+        },
+        12: {
+            title: "Starry Sky",
+            description() {return "Space increases the radiance exponent. Effect: +" + format(this.effect())},
+            cost: new Decimal(1e9),
+            effect() {
+                let effect = player.spacePoints.add(1).log(50).pow(0.5).div(5)
+                return effect
+            },
+            currencyLayer: "mn",
+            currencyDisplayName: "radiance",
+            currencyInternalName: "radiance",
+            unlocked() {return challengeCompletions('mn', 11) >= 1}
+        },
+        13: {
+            title: "Even More Spacious",
+            description() {return "Radiance exponent multiplies the " + tmp.st.getAbsSpaceName + "'s side lengths. Effect: x" + format(this.effect())},
+            cost: new Decimal(1e15),
+            effect() {
+                let effect = tmp.mn.getRadianceExponent.add(1).pow(0.5)
+                return effect
+            },
+            currencyLayer: "mn",
+            currencyDisplayName: "radiance",
+            currencyInternalName: "radiance",
+            unlocked() {return challengeCompletions('mn', 11) >= 1}
+        },
+        21: {
+            title: "Enhancing Exponentially",
+            description() {return "Raise <b>Radiant Enhancement Type-B</b>'s effect to the power of ^1.5."},
+            cost: new Decimal(10000),
+            currencyLayer: "mn",
+            currencyDisplayName: "moonstone",
+            currencyInternalName: "moonstone",
+            unlocked() {return challengeCompletions('mn', 11) >= 1}
+        },
+        22: {
+            title: "Radiant Conversion",
+            description() {return "Divide convert rate penalty based on radiance. Effect: /" + format(this.effect())},
+            cost: new Decimal(100000),
+            effect() {
+                let effect = player.mn.radiance.add(1).log(10).pow(0.2).add(1)
+                return effect
+            },
+            currencyLayer: "mn",
+            currencyDisplayName: "moonstone",
+            currencyInternalName: "moonstone",
+            unlocked() {return challengeCompletions('mn', 11) >= 1}
+        },
+        23: {
+            title: "Extraponential",
+            description() {return "Earn an extra +0.05 radiance exponent per 4 <b>Radiant Enhancement Type-B</b>. Effect: +" + format(this.effect())},
+            cost: new Decimal(1000000),
+            effect() {
+                let effect = getBuyableAmount('mn', 21).div(4).floor().mul(0.05)
+                return effect
+            },
+            currencyLayer: "mn",
+            currencyDisplayName: "moonstone",
+            currencyInternalName: "moonstone",
+            unlocked() {return challengeCompletions('mn', 11) >= 1}
+        },
     },
     milestones: {
         0: {
@@ -157,7 +226,7 @@ addLayer("mn", {
         },
         100: {
             requirementDescription: "Complete Depth 0",
-            effectDescription: "Unlock a new space buyable and more moonstone content",
+            effectDescription: "Unlock two new space buyables and more moonstone content",
             done() {return challengeCompletions('mn', 11) >= 1}
         }
     },
@@ -201,11 +270,85 @@ addLayer("mn", {
             },
             unlocked() {return hasMilestone('mn', 0)}
         },
+        12: {
+            title() {return "Spacier Spacetime (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost(x) {
+                let cost = new Decimal(100000).mul(x.mul(1.25).add(1)).mul(new Decimal(1.25).pow(x))
+                if (x.gte(15)) cost = cost.pow(1.25)
+                return cost
+            },
+            display() { 
+                if (getBuyableAmount('mn', 12).gte(15)) {
+                    return "\
+                    Multiplying spacetime gain by x"+ format(this.effectBase()) +" each\n\
+                    Currently: x" + format(this.effect()) + "\n\
+                    Cost: "+ format(this.cost()) +" space\n\
+                    <b style='color: #ff0000'>[SOFTCAPPED]<b>" 
+                } else {
+                    return "\
+                    Multiplying spacetime gain by x"+ format(this.effectBase()) +" each\n\
+                    Currently: x" + format(this.effect()) + "\n\
+                    Cost: "+ format(this.cost()) +" space\n\
+                    " 
+                }
+            },
+            effectBase() {
+                let base = new Decimal(1.075)
+                return base
+            },
+            effect() {
+                let effect = this.effectBase().pow(getBuyableAmount(this.layer, this.id))
+                return effect
+            },
+            canAfford() { return player.spacePoints.gte(this.cost()) },
+            buy() {
+                player.spacePoints = player.spacePoints.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            unlocked() {return hasMilestone('mn', 100)}
+        },
+        13: {
+            title() {return "Space Essence (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost(x) {
+                let cost = new Decimal(10000000).mul(x.mul(1.25).add(1)).mul(new Decimal(1.25).pow(x))
+                if (x.gte(15)) cost = cost.pow(1.25)
+                return cost
+            },
+            display() { 
+                if (getBuyableAmount('mn', 13).gte(15)) {
+                    return "\
+                    Multiplying moon essence gain by x"+ format(this.effectBase()) +" each\n\
+                    Currently: x" + format(this.effect()) + "\n\
+                    Cost: "+ format(this.cost()) +" space\n\
+                    <b style='color: #ff0000'>[SOFTCAPPED]<b>" 
+                } else {
+                    return "\
+                    Multiplying moon essence gain by x"+ format(this.effectBase()) +" each\n\
+                    Currently: x" + format(this.effect()) + "\n\
+                    Cost: "+ format(this.cost()) +" space\n\
+                    " 
+                }
+            },
+            effectBase() {
+                let base = new Decimal(1.05)
+                return base
+            },
+            effect() {
+                let effect = this.effectBase().pow(getBuyableAmount(this.layer, this.id))
+                return effect
+            },
+            canAfford() { return player.spacePoints.gte(this.cost()) },
+            buy() {
+                player.spacePoints = player.spacePoints.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            unlocked() {return hasMilestone('mn', 100)}
+        },
         21: {
             title() {return "Radiant Enhancement Type-A (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
             cost(x) {
                 let cost = new Decimal(100).mul(x.mul(2).add(1)).mul(new Decimal(2.5).pow(x))
-                if (x.gte(10)) cost = new Decimal(100).mul(x.mul(2).add(1)).mul(new Decimal(10).pow(x))
+                if (x.gte(10)) cost = new Decimal(100).mul(x.mul(2).add(1)).mul(new Decimal(3).add(x.mul(0.1)).pow(x))
                 return cost
             },
             display() { 
@@ -265,6 +408,7 @@ addLayer("mn", {
             },
             effect() {
                 let effect = this.effectBase().mul(getBuyableAmount(this.layer, this.id)).add(1)
+                if (hasUpgrade('mn', 21)) effect = effect.pow(1.5)
                 return effect
             },
             canAfford() { return player.mn.radiance.gte(this.cost()) },
@@ -350,7 +494,7 @@ addLayer("mn", {
                     "blank",
                     ["buyables", [2]],
                     "blank",
-                    ["upgrades", [1]]
+                    ["upgrades", [1, 2]]
                 ]
             },
             "Dark Side of The Moon": {
@@ -414,3 +558,15 @@ addLayer("mn", {
     },
     layerShown() {return hasUpgrade('st', 24) || player.mn.unlocked}
 })
+const moonOrbit = document.createElement('style'); // orbit code stolen from Gods of Incremental adkv
+moonOrbit.innerHTML = `
+@keyframes moonOrbit {
+    0% {
+        transform: translateY(160px) rotate(0deg) translateX(175px) rotate(0deg);
+      }
+      100% {
+        transform: translateY(160px) rotate(360deg) translateX(175px) rotate(-360deg);
+      }
+  }
+  `
+document.head.appendChild(moonOrbit);
