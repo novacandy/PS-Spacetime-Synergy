@@ -47,6 +47,7 @@ function getPointGen() {
 	gain = gain.mul(buyableEffect('st', 11))
 	if (hasUpgrade('st', 23)) gain = gain.mul(upgradeEffect('st', 23))
 	gain = gain.mul(buyableEffect('mn', 11))
+	if (hasUpgrade('dk', 11)) gain = gain.mul(10)
 	return gain
 }
 
@@ -73,6 +74,7 @@ function getSpaceMultis() {
 	let mult = new Decimal(1)
 	mult = mult.mul(buyableEffect('st', 13))
 	mult = mult.mul(tmp.mn.moonEnergyEffect)
+	if (hasUpgrade('dk', 11)) mult = mult.mul(10)
 	return mult
 }
 

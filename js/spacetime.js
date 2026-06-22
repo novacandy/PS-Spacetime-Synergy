@@ -71,7 +71,10 @@ addLayer("st", {
         mult = mult.mul(buyableEffect('st', 12))
     	if (hasUpgrade('st', 23)) mult = mult.mul(upgradeEffect('st', 23))
         mult = mult.mul(tmp.mn.absoluteSpaceEffect)
-        if (inChallenge('mn', 11)) mult = new Decimal(1)
+        if (inChallenge('mn', 11)) {
+            mult = new Decimal(1)
+            mult = mult.mul(tmp.dk.getLunarACEffect)
+        }
         return mult
     },
     gainExp() {
@@ -359,6 +362,7 @@ addLayer("st", {
             },
             effectBase() {
                 let base = new Decimal(1.25)
+                if (hasUpgrade('dk', 14)) base = base.add(0.1)
                 return base
             },
             effect() {
@@ -390,7 +394,7 @@ addLayer("st", {
                 if (inChallenge('mn', 11)) {
                     if (getBuyableAmount('st', 12).gte(10)) {
                         return "\
-                        Multiplying <s>spacetime</s> darkness gain by x"+ format(this.effectBase()) + "/" + formatWhole(this.purchaseLimit()) +" each\n\
+                        Multiplying <s>spacetime</s> darkness gain by x"+ format(this.effectBase()) + " each\n\
                         Currently: x" + format(this.effect()) + "\n\
                         Cost: "+ format(this.cost()) +" dark spacetime\n\
                         <b style='color: #ff0000'>[SOFTCAPPED]<b>"
@@ -419,6 +423,7 @@ addLayer("st", {
             effectBase() {
                 let base = new Decimal(1.25)
                 if (inChallenge('mn', 11)) base = new Decimal(2)
+                if (hasUpgrade('dk', 14)) base = base.add(0.1)
                 return base
             },
             effect() {
@@ -461,6 +466,7 @@ addLayer("st", {
             },
             effectBase() {
                 let base = new Decimal(1.25)
+                if (hasUpgrade('dk', 14)) base = base.add(0.1)
                 return base
             },
             effect() {
@@ -502,6 +508,7 @@ addLayer("st", {
             },
             effectBase() {
                 let base = new Decimal(1.25)
+                if (hasUpgrade('dk', 14)) base = base.add(0.1)
                 return base
             },
             effect() {

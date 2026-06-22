@@ -1,7 +1,7 @@
 addLayer("mn", {
     name: "moon",
     symbol() {
-        if (inChallenge('mn', 11) && challengeCompletions('mn', 11) > 0) return "DMN"
+        if (inChallenge('mn', 11) && challengeCompletions('mn', 11) > 0) return "DM"
         return "MN"
     },
     row: 1,
@@ -71,14 +71,17 @@ addLayer("mn", {
         }},
     },
     requires: new Decimal(10000),
-    resource: "moon essence",
-    baseResource: "space",
+    resource() {
+        if (inChallenge('mn', 11)) return "dark moon essence"
+        return "moon essence"
+    },    baseResource: "space",
     baseAmount() {return player.spacePoints},
     type: "normal",
     exponent: 0.9,
     gainMult() {
         let mult = new Decimal(1)
         mult = mult.mul(buyableEffect('mn', 13))
+        if (inChallenge('mn', 11)) mult = new Decimal(1)
         return mult
     },
     gainExp() {
@@ -87,6 +90,7 @@ addLayer("mn", {
     },
     moonEnergyMult() {
         let mult = player.mn.points.pow(0.75)
+        if (hasUpgrade('dk', 12)) mult = mult.mul(upgradeEffect('dk', 12))
         return mult
     },
     moonEnergyEffect() {
@@ -238,6 +242,7 @@ addLayer("mn", {
             cost(x) {
                 let cost = new Decimal(100).mul(x.mul(1.25).add(1)).mul(new Decimal(1.25).pow(x))
                 if (x.gte(15)) cost = cost.pow(1.25)
+                if (hasUpgrade('dk', 13)) cost = cost.div(upgradeEffect('dk', 13))
                 return cost
             },
             display() { 
@@ -271,13 +276,33 @@ addLayer("mn", {
             unlocked() {return hasMilestone('mn', 0)}
         },
         12: {
-            title() {return "Spacier Spacetime (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
+            title() {
+                if (inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 1) return "Spacier <s>Spacetime</s> Generators (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"
+                return "Spacier Spacetime (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"
+            },
             cost(x) {
                 let cost = new Decimal(100000).mul(x.mul(1.25).add(1)).mul(new Decimal(1.25).pow(x))
+                if (inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 1) cost = cost.div(1000)
                 if (x.gte(15)) cost = cost.pow(1.25)
+                if (hasUpgrade('dk', 13)) cost = cost.div(upgradeEffect('dk', 13))
                 return cost
             },
             display() { 
+                if (inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 1) {
+                    if (getBuyableAmount('mn', 12).gte(15)) {
+                        return "\
+                        Dividing lunar generator req by /"+ format(this.effectBase()) +" each\n\
+                        Currently: /" + format(this.effect()) + "\n\
+                        Cost: "+ format(this.cost()) +" space\n\
+                        <b style='color: #ff0000'>[SOFTCAPPED]<b>" 
+                    } else {
+                        return "\
+                        Dividing lunar generator req by /"+ format(this.effectBase()) +" each\n\
+                        Currently: /" + format(this.effect()) + "\n\
+                        Cost: "+ format(this.cost()) +" space\n\
+                        " 
+                    }
+                }
                 if (getBuyableAmount('mn', 12).gte(15)) {
                     return "\
                     Multiplying spacetime gain by x"+ format(this.effectBase()) +" each\n\
@@ -294,6 +319,7 @@ addLayer("mn", {
             },
             effectBase() {
                 let base = new Decimal(1.075)
+                if (inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 1) base = new Decimal(1.5)
                 return base
             },
             effect() {
@@ -308,13 +334,33 @@ addLayer("mn", {
             unlocked() {return hasMilestone('mn', 100)}
         },
         13: {
-            title() {return "Space Essence (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
+            title() {
+                if (inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 1) return "Space <s>Essence</s> Power (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"
+                return "Space Essence (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"
+            },
             cost(x) {
                 let cost = new Decimal(10000000).mul(x.mul(1.25).add(1)).mul(new Decimal(1.25).pow(x))
+                if (inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 1) cost = cost.div(10000)
                 if (x.gte(15)) cost = cost.pow(1.25)
+                if (hasUpgrade('dk', 13)) cost = cost.div(upgradeEffect('dk', 13))
                 return cost
             },
             display() { 
+                if (inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 1) {
+                    if (getBuyableAmount('mn', 13).gte(15)) {
+                        return "\
+                        Multiplying lunar generator power generation by x"+ format(this.effectBase()) +" each\n\
+                        Currently: x" + format(this.effect()) + "\n\
+                        Cost: "+ format(this.cost()) +" space\n\
+                        <b style='color: #ff0000'>[SOFTCAPPED]<b>" 
+                    } else {
+                        return "\
+                        Multiplying lunar generator power generation by x"+ format(this.effectBase()) +" each\n\
+                        Currently: x" + format(this.effect()) + "\n\
+                        Cost: "+ format(this.cost()) +" space\n\
+                        " 
+                    }
+                }
                 if (getBuyableAmount('mn', 13).gte(15)) {
                     return "\
                     Multiplying moon essence gain by x"+ format(this.effectBase()) +" each\n\
@@ -331,6 +377,7 @@ addLayer("mn", {
             },
             effectBase() {
                 let base = new Decimal(1.05)
+                if (inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 1) base = new Decimal(1.5)
                 return base
             },
             effect() {
@@ -427,7 +474,7 @@ addLayer("mn", {
                `
             },
             currenciesAffectedDisplay() {
-                return ['Spacetime', 'Spactime, Moon Essence, and Moon Energy']
+                return ['Spacetime', 'Spacetime, Moon Essence, and Moon Energy', 'Spacetime, Moon Essence, Moon Energy, Moonstone, and Radiance']
             },
             onEnter() {
                 doReset('mn', true)
@@ -446,7 +493,7 @@ addLayer("mn", {
                 setBuyableAmount('dk', 12, new Decimal(0))
             },
             goals() {
-                return [new Decimal(10000000), new Decimal(1e15)]
+                return [new Decimal(10000000), new Decimal(1e15), new Decimal(1e100)]
             },
             canComplete() {return player.dk.darkness.gte(this.goals()[challengeCompletions('mn', 11)])},
             style() {return {
@@ -528,12 +575,12 @@ addLayer("mn", {
     },
     tabFormat: [
         ["row", [
-            () => {if (!(inChallenge('mn', 11) && challengeCompletions('mn', 11) > 0)) return "main-display"},
-            ["display-text", () => {if (inChallenge('mn', 11) && challengeCompletions('mn', 11) > 0) return "You have <h2 style='color: #3f3f3f; text-shadow: 0px 0px 10px #3f3f3f'>" + formatWhole(player.mn.points) + "</h2> <h3 style='color: #4f4f4f; text-shadow: 0px 0px 10px #4f4f4f'>dark</h3> moon essence, " + layers.mn.effectDescription() + "<br><br>"}],
+            () => {if (!(inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 1)) return "main-display"},
+            ["display-text", () => {if (inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 1) return "You have <h2 style='color: #3f3f3f; text-shadow: 0px 0px 10px #3f3f3f'>" + formatWhole(player.mn.points) + "</h2> <h3 style='color: #4f4f4f; text-shadow: 0px 0px 10px #4f4f4f'>dark</h3> moon essence, " + layers.mn.effectDescription() + "<br><br>"}],
         ]],        "prestige-button",
         "blank",
         ["display-text", () => {
-            if (inChallenge('mn', 11) && challengeCompletions('mn', 11) > 0) {
+            if (inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 1) {
                 if (tmp.mn.moonEnergyEffect.gte(10)) {
                     return "You have <h2 style='color: #7f7f7f; text-shadow: 0px 0px 10px #7f7f7f'>" + format(player.mn.moonEnergy) + "</h2> <h3 style='color: #4f4f4f; text-shadow: 0px 0px 10px #4f4f4f'>dark</h3> moon energy, (+" + format(new Decimal(0.01).mul(tmp.mn.moonEnergyMult)) + "/s) which multiplies space gain from all sources by x" + format(tmp.mn.moonEnergyEffect) + " <b style='color: #ff0000'>[SOFTCAPPED]<b>"
                 } else {
@@ -546,7 +593,12 @@ addLayer("mn", {
                 return "You have <h2 style='color: #7f7f7f; text-shadow: 0px 0px 10px #7f7f7f'>" + format(player.mn.moonEnergy) + "</h2> moon energy, (+" + format(new Decimal(0.01).mul(tmp.mn.moonEnergyMult)) + "/s) which multiplies space gain from all sources by x" + format(tmp.mn.moonEnergyEffect)
             }
         }],
-        ["display-text", () => {return "You have <h2 style='color: #000000; text-shadow: 0px 0px 10px #ffffff'>" + format(player.mn.absoluteSpace) + "</h2> absolute space, which multiplies spacetime gain by x" + format(tmp.mn.absoluteSpaceEffect)}],
+        ["display-text", () => {
+            if (inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 1) {
+                return "You have <h2 style='color: #000000; text-shadow: 0px 0px 10px #ffffff'>" + format(player.mn.absoluteSpace) + "</h2> absolute space, which multiplies <s>spacetime gain</s> lunar AC/DC generation by x" + format(tmp.mn.absoluteSpaceEffect)
+            }
+            if (hasMilestone('mn', 0)) return "You have <h2 style='color: #000000; text-shadow: 0px 0px 10px #ffffff'>" + format(player.mn.absoluteSpace) + "</h2> absolute space, which multiplies spacetime gain by x" + format(tmp.mn.absoluteSpaceEffect)
+        }],
         "blank",
         ["milestones", [1, 2, 3]],
         ["microtabs", "moon"]
