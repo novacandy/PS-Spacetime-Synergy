@@ -239,6 +239,7 @@ addLayer("dk", {
             currencyLayer: "dk",
             currencyDisplayName: "lunar generator power",
             currencyInternalName: "lunarGenPower",
+            unlocked() {return challengeCompletions('mn', 11) >= 2}
         },
         22: {
             description: "Keep above upgrade when leaving DSoTM",
@@ -246,6 +247,7 @@ addLayer("dk", {
             currencyLayer: "dk",
             currencyDisplayName: "lunar generator power",
             currencyInternalName: "lunarGenPower",
+            unlocked() {return challengeCompletions('mn', 11) >= 2}
         },
         23: {
             description: "Keep above upgrade when leaving DSoTM",
@@ -253,6 +255,7 @@ addLayer("dk", {
             currencyLayer: "dk",
             currencyDisplayName: "lunar generator power",
             currencyInternalName: "lunarGenPower",
+            unlocked() {return challengeCompletions('mn', 11) >= 2}
         },
         24: {
             description: "Keep above upgrade when leaving DSoTM",
@@ -260,6 +263,7 @@ addLayer("dk", {
             currencyLayer: "dk",
             currencyDisplayName: "lunar generator power",
             currencyInternalName: "lunarGenPower",
+            unlocked() {return challengeCompletions('mn', 11) >= 2}
         },
         25: {
             description: "Keep above upgrade when leaving DSoTM",
@@ -267,6 +271,7 @@ addLayer("dk", {
             currencyLayer: "dk",
             currencyDisplayName: "lunar generator power",
             currencyInternalName: "lunarGenPower",
+            unlocked() {return challengeCompletions('mn', 11) >= 2}
         },
     }, 
     buyables: {
@@ -440,7 +445,7 @@ addLayer("dk", {
                     "blank",
                     ["display-text", () => {
                         if (challengeCompletions('mn', 11) >= 1) {
-                            return "Lunar generator upgrades are kept after leaving DSoTM, but only after you complete the depth it was unlocked in."
+                            return "unar generator upgrades are reset after leaving DSoTM"
                         } else {
                             return "Reach Depth 1 to unlock Lunar Generator Upgrades"
                         }
