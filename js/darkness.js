@@ -233,6 +233,41 @@ addLayer("dk", {
             currencyInternalName: "lunarGenPower",
             unlocked() {return challengeCompletions('mn', 11) >= 1}
         },
+        21: {
+            description: "Keep above upgrade when leaving DSoTM",
+            cost: new Decimal(1e16),
+            currencyLayer: "dk",
+            currencyDisplayName: "lunar generator power",
+            currencyInternalName: "lunarGenPower",
+        },
+        22: {
+            description: "Keep above upgrade when leaving DSoTM",
+            cost: new Decimal(1e32),
+            currencyLayer: "dk",
+            currencyDisplayName: "lunar generator power",
+            currencyInternalName: "lunarGenPower",
+        },
+        23: {
+            description: "Keep above upgrade when leaving DSoTM",
+            cost: new Decimal(1e48),
+            currencyLayer: "dk",
+            currencyDisplayName: "lunar generator power",
+            currencyInternalName: "lunarGenPower",
+        },
+        24: {
+            description: "Keep above upgrade when leaving DSoTM",
+            cost: new Decimal(1e64),
+            currencyLayer: "dk",
+            currencyDisplayName: "lunar generator power",
+            currencyInternalName: "lunarGenPower",
+        },
+        25: {
+            description: "Keep above upgrade when leaving DSoTM",
+            cost: new Decimal(1e80),
+            currencyLayer: "dk",
+            currencyDisplayName: "lunar generator power",
+            currencyInternalName: "lunarGenPower",
+        },
     }, 
     buyables: {
         11: {
@@ -412,7 +447,7 @@ addLayer("dk", {
                         
                     }],
                     "blank",
-                    ["upgrades", [1]]
+                    ["upgrades", [1, 2]]
                 ]
             },
             "Lunar Alternators": {
@@ -430,7 +465,7 @@ addLayer("dk", {
                     "blank",
                     ["buyables", [2]],
                     "blank",
-                    ["upgrades", [2]]
+                    ["upgrades", [3, 4]]
                 ]
             },
             "Lunar Dynamos": {
@@ -448,7 +483,7 @@ addLayer("dk", {
                     "blank",
                     ["buyables", [3]],
                     "blank",
-                    ["upgrades", [3]]
+                    ["upgrades", [5, 6]]
                 ]
             },
         },

@@ -232,6 +232,11 @@ addLayer("mn", {
             requirementDescription: "Complete Depth 0",
             effectDescription: "Unlock two new space buyables and more moonstone content",
             done() {return challengeCompletions('mn', 11) >= 1}
+        },
+        101: {
+            requirementDescription: "Complete Depth 1",
+            effectDescription: "Unlock Absolute Space Buildings and more moonstone upgrades",
+            done() {return challengeCompletions('mn', 11) >= 2}
         }
     },
     clickables: {
@@ -489,8 +494,23 @@ addLayer("mn", {
                 player.dk.darkness = new Decimal(0)
                 player.dk.lunarGenerators = new Decimal(0)
                 player.dk.lunarGenPower = new Decimal(0)
+                player.dk.lunarAlternators = new Decimal(0)
+                player.dk.lunarAC = new Decimal(0)
+                player.dk.lunarDynamos = new Decimal(0)
+                player.dk.lunarDC = new Decimal(0)
                 setBuyableAmount('dk', 11, new Decimal(0))
                 setBuyableAmount('dk', 12, new Decimal(0))
+
+                let keptUpgrades = []
+
+                if(hasUpgrade('dk', 21)) keptUpgrades.push(11, 21)
+                if(hasUpgrade('dk', 22)) keptUpgrades.push(12, 22)
+                if(hasUpgrade('dk', 23)) keptUpgrades.push(13, 23)
+                if(hasUpgrade('dk', 24)) keptUpgrades.push(14, 24)
+                if(hasUpgrade('dk', 25)) keptUpgrades.push(15, 25)
+
+                player.dk.upgrades = []
+                player.dk.push(...keptUpgrades)
             },
             goals() {
                 return [new Decimal(10000000), new Decimal(1e15), new Decimal(1e100)]
@@ -554,7 +574,7 @@ addLayer("mn", {
                     "blank",
                     "challenges",
                     "blank",
-                    ["milestones", [100]]
+                    ["milestones", [100, 101]]
                 ]
             }
         }
