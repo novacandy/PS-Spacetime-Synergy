@@ -260,13 +260,21 @@ addLayer("mn", {
         },
         34: {
             title: "All At Once",
-            description() {return "Unlock the Quinary Ω-Space Building. Ω-space requirement scales 25% slower."},
+            description() {return "Unlock the Quinary Ω-Space Building. Ω-space requirement scales 50% slower."},
             cost: new Decimal(1e18),
             currencyLayer: "mn",
             currencyDisplayName: "moonstone",
             currencyInternalName: "moonstone",
             unlocked() {return challengeCompletions('mn', 11) >= 2}
         },
+        41: {
+            fullDisplay() {return `<h3>Bright Side of The Moon?</h3><br>
+                Unlock Lunarity.<br><br>
+                Cost: 1e24 moonstone, 1e28 radiance`},
+            canAfford() {return player.mn.moonstone.gte(1e24) && player.mn.radiance.gte(1e28)},
+            pay() {player.mn.moonstone = player.mn.moonstone.sub(1e24), player.mn.radiance = player.mn.radiance.sub(1e28)},
+            unlocked() {return hasUpgrade('mn', 34)}
+        }
     },
     milestones: {
         0: {
@@ -630,7 +638,7 @@ addLayer("mn", {
                     "blank",
                     ["buyables", [2]],
                     "blank",
-                    ["upgrades", [1, 2, 3]]
+                    ["upgrades", [1, 2, 3, 4]],
                 ]
             },
             "Dark Side of The Moon": {

@@ -153,7 +153,7 @@ addLayer("st", {
     },
     getBaseOmegaSpace() {
         let space = tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims).div(1e11).add(1).log(10).pow(0.6)
-        if (hasUpgrade('mn', 34)) space = tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims).div(1e11).add(1).log(10).pow(0.6).div(0.67)
+        if (hasUpgrade('mn', 34)) space = tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims).div(1e11).add(1).log(10).pow(0.6).div(0.50)
         return space.floor()
     },
     getOmegaSpace() {
@@ -162,12 +162,12 @@ addLayer("st", {
         return space.floor()
     },
     getSpentOmegaSpace() {
-        let spent = getBuyableAmount('st', 41).add(getBuyableAmount('st', 42).mul(2)).add(getBuyableAmount('st', 43).mul(3)).add(getBuyableAmount('st', 44).mul(4))
+        let spent = getBuyableAmount('st', 41).add(getBuyableAmount('st', 42).mul(2)).add(getBuyableAmount('st', 43).mul(3)).add(getBuyableAmount('st', 44).mul(4)).add(getBuyableAmount('st', 45).mul(12))
         return spent
     },
     getNextOmegaSpace() {
         let next = new Decimal(10).pow(new Decimal(tmp.st.getBaseOmegaSpace.add(1)).root(0.6)).mul(1e11)
-        if (hasUpgrade('mn', 34)) next = new Decimal(10).pow(new Decimal(tmp.st.getBaseOmegaSpace.mul(0.67).add(1)).root(0.6)).mul(1e11)
+        if (hasUpgrade('mn', 34)) next = new Decimal(10).pow(new Decimal(tmp.st.getBaseOmegaSpace.add(1).mul(0.50)).root(0.6)).mul(1e11)
         return next
     },
     hotkeys: [
@@ -717,6 +717,7 @@ addLayer("st", {
             freeLevels() {
                 let lvl = new Decimal(0)
                 if (hasUpgrade('dk', 31) && this.unlocked()) lvl = lvl.add(1)
+                lvl = lvl.add(buyableEffect('st', 45))
                 return lvl
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) && tmp.st.getOmegaSpace.gte(1)},
@@ -739,20 +740,20 @@ addLayer("st", {
             display() {
                 if (this.effect().gte(9999)) { // placeholder
                     return "\
-                    Raising time amount in <b>" + tmp.st.upgrades[14].title + "</b>'s effect by ^"+ format(this.effectBase()) +" each (effect decays with amount)\n\
+                    Raising time amount in <b>" + tmp.st.upgrades[14].title + "</b>'s effect by +^"+ format(this.effectBase()) +" each (effect decays with amount)\n\
                     Currently: ^" + format(this.effect()) + "\n\
                     Cost: "+ format(this.cost()) +" spacetime and 2 Ω-space\n\
                     <b style='color: #ff0000'>[EFFECT SOFTCAPPED]<b>"
                 } else {
                     return "\
-                    Raising time amount in <b>" + tmp.st.upgrades[14].title + "</b>'s effect by ^"+ format(this.effectBase()) +" each (effect decays with amount)\n\
+                    Raising time amount in <b>" + tmp.st.upgrades[14].title + "</b>'s effect by +^"+ format(this.effectBase()) +" each (effect decays with amount)\n\
                     Currently: ^" + format(this.effect()) + "\n\
                     Cost: "+ format(this.cost()) +" spacetime and 2 Ω-space\n\
                     "
                 }
             },
             effectBase() {
-                let base = new Decimal(0.75)
+                let base = new Decimal(1.5)
                 base = base.mul(tmp.st.getSpaceBuildingPower)
                 return base
             },
@@ -767,6 +768,7 @@ addLayer("st", {
             freeLevels() {
                 let lvl = new Decimal(0)
                 if (hasUpgrade('dk', 31) && this.unlocked()) lvl = lvl.add(1)
+                lvl = lvl.add(buyableEffect('st', 45))
                 return lvl
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) && tmp.st.getOmegaSpace.gte(2)},
@@ -817,6 +819,7 @@ addLayer("st", {
             freeLevels() {
                 let lvl = new Decimal(0)
                 if (hasUpgrade('dk', 31) && this.unlocked()) lvl = lvl.add(1)
+                lvl = lvl.add(buyableEffect('st', 45))
                 return lvl
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) && tmp.st.getOmegaSpace.gte(3)},
@@ -867,9 +870,60 @@ addLayer("st", {
             freeLevels() {
                 let lvl = new Decimal(0)
                 if (hasUpgrade('dk', 31) && this.unlocked()) lvl = lvl.add(1)
+                lvl = lvl.add(buyableEffect('st', 45))
                 return lvl
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) && tmp.st.getOmegaSpace.gte(4)},
+            canSellOne() {return hasUpgrade('mn', 31)},
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            sellOne() {
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).sub(1).max(0))
+            },
+            unlocked() {return hasMilestone('mn', 101) && hasUpgrade('mn', 33)}
+        },
+        45: {
+            title() {return "Quinary Ω-Space Building (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")" + (this.freeLevels().gte(1) ? ("(+" + formatWhole(this.freeLevels())) + ")": "")},
+            cost(x) { 
+                let cost = new Decimal(1e32).mul(new Decimal(1e6).pow(x.pow(1.25)))
+                return cost
+            },
+            display() {
+                if (this.effect().gte(9999)) { // placeholder
+                    return "\
+                    Adding +"+ format(this.effectBase()) +" extra levels to previous Ω-space buildings each \n\
+                    Currently: +" + format(this.effect()) + "\n\
+                    Cost: "+ format(this.cost()) +" spacetime and 12 Ω-space\n\
+                    <b style='color: #ff0000'>[EFFECT SOFTCAPPED]<b>"
+                } else {
+                    return "\
+                    Adding +"+ format(this.effectBase()) +" extra levels to previous Ω-space buildings each \n\
+                    Currently: +" + format(this.effect()) + "\n\
+                    Cost: "+ format(this.cost()) +" spacetime and 12 Ω-space\n\
+                    "
+                }
+            },
+            effectBase() {
+                let base = new Decimal(1)
+                base = base.mul(tmp.st.getSpaceBuildingPower)
+                return base
+            },
+            effect() {
+                let effect = this.effectBase().mul(getBuyableAmount(this.layer, this.id).add(this.freeLevels()))
+                return effect.floor()
+            },
+            purchaseLimit() {
+                let limit = tmp.st.getSpaceBuildingCap
+                return limit
+            },
+            freeLevels() {
+                let lvl = new Decimal(0)
+                if (hasUpgrade('dk', 31) && this.unlocked()) lvl = lvl.add(1)
+                return lvl
+            },
+            canAfford() { return player[this.layer].points.gte(this.cost()) && tmp.st.getOmegaSpace.gte(12)},
             canSellOne() {return hasUpgrade('mn', 31)},
             buy() {
                 player[this.layer].points = player[this.layer].points.sub(this.cost())
