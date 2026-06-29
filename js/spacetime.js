@@ -146,21 +146,25 @@ addLayer("st", {
         let cap = tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims).add(1).log(1e12).pow(1.25)
         return cap.floor()
     },
-    getOmegaSpace() {
-        let space = tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims).add(1).div(1e11).log(10).pow(0.8)
-        space = space.sub(tmp.st.getSpentOmegaSpace)
-        return space.floor()
-    },
     getNextSpaceBuildingCap() {
         let next = new Decimal(1e12).pow(new Decimal(tmp.st.getSpaceBuildingCap.add(1)).pow(0.8))
         return next
     },
+    getBaseOmegaSpace() {
+        let space = tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims).add(1).div(1e11).log(10).pow(0.6)
+        return space.floor()
+    },
+    getOmegaSpace() {
+        let space = tmp.st.getBaseOmegaSpace
+        space = space.sub(tmp.st.getSpentOmegaSpace)
+        return space.floor()
+    },
     getSpentOmegaSpace() {
-        let spent = getBuyableAmount('st', 41).add(0)
+        let spent = getBuyableAmount('st', 41).add(getBuyableAmount('st', 42).mul(2)).add(0)
         return spent
     },
     getNextOmegaSpace() {
-        let next = new Decimal(10).pow(new Decimal(tmp.st.getOmegaSpace.add(tmp.st.getSpentOmegaSpace).add(1)).pow(1.25)).mul(1e11)
+        let next = new Decimal(10).pow(new Decimal(tmp.st.getBaseOmegaSpace.add(1)).root(0.6)).mul(1e11)
         return next
     },
     hotkeys: [
@@ -224,7 +228,7 @@ addLayer("st", {
             },
             cost: new Decimal(25),
             effect() {
-                let effect = player.timePoints.add(1).log(2).add(1)
+                let effect = player.timePoints.pow(buyableEffect('st', 42)).add(1).log(2).add(1)
                 return effect
             },
             style() {
@@ -671,7 +675,7 @@ addLayer("st", {
         41: {
             title() {return "Primary Ω-Space Building (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")" + (this.freeLevels().gte(1) ? ("(+" + formatWhole(this.freeLevels())) + ")": "")},
             cost(x) { 
-                let cost = new Decimal(1e18).mul(new Decimal(10).pow(x))
+                let cost = new Decimal(1e18).mul(new Decimal(100).pow(x.pow(1.5)))
                 return cost
             },
             display() {
@@ -712,6 +716,51 @@ addLayer("st", {
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
             unlocked() {return hasMilestone('mn', 101)}
+        },
+        42: {
+            title() {return "Secondary Ω-Space Building (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")" + (this.freeLevels().gte(1) ? ("(+" + formatWhole(this.freeLevels())) + ")": "")},
+            cost(x) { 
+                let cost = new Decimal(1e21).mul(new Decimal(100).pow(x.pow(1.25)))
+                return cost
+            },
+            display() {
+                if (this.effect().gte(9999)) { // placeholder
+                    return "\
+                    Raising time amount in <b>" + tmp.st.upgrades[14].title + "</b>'s effect by ^"+ format(this.effectBase()) +" each (effect decays with amount)\n\
+                    Currently: ^" + format(this.effect()) + "\n\
+                    Cost: "+ format(this.cost()) +" spacetime and 2 Ω-space\n\
+                    <b style='color: #ff0000'>[EFFECT SOFTCAPPED]<b>"
+                } else {
+                    return "\
+                    Raising time amount in <b>" + tmp.st.upgrades[14].title + "</b>'s effect by ^"+ format(this.effectBase()) +" each (effect decays with amount)\n\
+                    Currently: ^" + format(this.effect()) + "\n\
+                    Cost: "+ format(this.cost()) +" spacetime and 2 Ω-space\n\
+                    "
+                }
+            },
+            effectBase() {
+                let base = new Decimal(0.75)
+                base = base.mul(tmp.st.getSpaceBuildingPower)
+                return base
+            },
+            effect() {
+                let effect = this.effectBase().mul(getBuyableAmount(this.layer, this.id).add(this.freeLevels()).pow(0.5)).add(1)
+                return effect
+            },
+            purchaseLimit() {
+                let limit = tmp.st.getSpaceBuildingCap
+                return limit
+            },
+            freeLevels() {
+                let lvl = new Decimal(0)
+                return lvl
+            },
+            canAfford() { return player[this.layer].points.gte(this.cost()) && tmp.st.getOmegaSpace.gte(2)},
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            unlocked() {return hasMilestone('mn', 101) && hasUpgrade('mn', 31)}
         },
     },
     infoboxes: {

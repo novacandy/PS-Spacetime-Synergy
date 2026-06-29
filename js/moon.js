@@ -211,6 +211,33 @@ addLayer("mn", {
             currencyInternalName: "moonstone",
             unlocked() {return challengeCompletions('mn', 11) >= 1}
         },
+        31: {
+            title: "Spacetime Compression",
+            description() {return "Unlock the Secondary Ω-Space Building. Unlock the ability to destroy individual Ω-buildings."},
+            cost: new Decimal(1e12),
+            currencyLayer: "mn",
+            currencyDisplayName: "moonstone",
+            currencyInternalName: "moonstone",
+            unlocked() {return challengeCompletions('mn', 11) >= 2}
+        },
+        32: {
+            title: "Bright Side of The Moon",
+            description() {return "Unlock the Tertiary Ω-Space Building. Remember that there's useful upgrades in DSoTM you can obtain! :>"},
+            cost: new Decimal(1e23),
+            currencyLayer: "mn",
+            currencyDisplayName: "radiance",
+            currencyInternalName: "radiance",
+            unlocked() {return challengeCompletions('mn', 11) >= 2}
+        },
+        33: {
+            title: "Less Is More",
+            description() {return "Unlock the Quaternary Ω-Space Building."},
+            cost: new Decimal(1e300),
+            currencyLayer: "mn",
+            currencyDisplayName: "moonstone",
+            currencyInternalName: "moonstone",
+            unlocked() {return challengeCompletions('mn', 11) >= 2}
+        },
     },
     milestones: {
         0: {
@@ -561,7 +588,7 @@ addLayer("mn", {
                     "blank",
                     ["buyables", [2]],
                     "blank",
-                    ["upgrades", [1, 2]]
+                    ["upgrades", [1, 2, 3]]
                 ]
             },
             "Dark Side of The Moon": {
