@@ -620,7 +620,7 @@ addLayer("mn", {
             if (hasMilestone('mn', 0)) return "You have <h2 style='color: #000000; text-shadow: 0px 0px 10px #ffffff'>" + format(player.mn.absoluteSpace) + "</h2> absolute space, which multiplies spacetime gain by x" + format(tmp.mn.absoluteSpaceEffect)
         }],
         "blank",
-        ["milestones", [1, 2, 3]],
+        ["milestones", [0, 1, 2, 3]],
         ["microtabs", "moon"]
     ],
     update(diff) {
