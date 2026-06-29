@@ -19,13 +19,6 @@ addLayer("mn", {
         radiance: new Decimal(0),
         darkEssence: new Decimal(0),
     }},
-    tooltip() {
-        if (!player.mn.unlocked) {
-            return "(Requires 25000 space)"
-        } else {
-            return format(player.mn.points, 0) + " moon essence"
-        }
-    },
     onPrestige() {
         player.spacePoints = new Decimal(15)
         player.timePoints = new Decimal(5)
@@ -74,7 +67,8 @@ addLayer("mn", {
     resource() {
         if (inChallenge('mn', 11)) return "dark moon essence"
         return "moon essence"
-    },    baseResource: "space",
+    },    
+    baseResource: "space",
     baseAmount() {return player.spacePoints},
     type: "normal",
     exponent: 0.9,
@@ -176,6 +170,19 @@ addLayer("mn", {
             currencyInternalName: "radiance",
             unlocked() {return challengeCompletions('mn', 11) >= 1}
         },
+        14: {
+            title: "Absolute Space Galaxy?",
+            description() {return "Quaternary Ω-space building increases <b>Dimension Shift</b> limit at 20% efficiency. Currently: +" + format(this.effect())},
+            cost: new Decimal(1e24),
+            effect() {
+                let effect = buyableEffect('st', 44).div(5).floor()
+                return effect
+            },
+            currencyLayer: "mn",
+            currencyDisplayName: "radiance",
+            currencyInternalName: "radiance",
+            unlocked() {return challengeCompletions('mn', 11) >= 1}
+        },
         21: {
             title: "Enhancing Exponentially",
             description() {return "Raise <b>Radiant Enhancement Type-B</b>'s effect to the power of ^1.5."},
@@ -211,6 +218,19 @@ addLayer("mn", {
             currencyInternalName: "moonstone",
             unlocked() {return challengeCompletions('mn', 11) >= 1}
         },
+        24: {
+            title: "Will I Ever Fill This Up?",
+            description() {return "Earn a multiplier to points based on point capacity. Effect: x" + format(this.effect())},
+            cost: new Decimal(1e17),
+            effect() {
+                let effect = getPointCapacity().add(1).log(10).pow(1.25).add(1)
+                return effect
+            },
+            currencyLayer: "mn",
+            currencyDisplayName: "moonstone",
+            currencyInternalName: "moonstone",
+            unlocked() {return challengeCompletions('mn', 11) >= 1}
+        },
         31: {
             title: "Spacetime Compression",
             description() {return "Unlock the Secondary Ω-Space Building. Unlock the ability to destroy individual Ω-buildings."},
@@ -221,7 +241,7 @@ addLayer("mn", {
             unlocked() {return challengeCompletions('mn', 11) >= 2}
         },
         32: {
-            title: "Bright Side of The Moon",
+            title: "Less Is More",
             description() {return "Unlock the Tertiary Ω-Space Building. Remember that there's useful upgrades in DSoTM you can obtain! :>"},
             cost: new Decimal(1e23),
             currencyLayer: "mn",
@@ -230,9 +250,18 @@ addLayer("mn", {
             unlocked() {return challengeCompletions('mn', 11) >= 2}
         },
         33: {
-            title: "Less Is More",
+            title: "Past Your Limits",
             description() {return "Unlock the Quaternary Ω-Space Building."},
-            cost: new Decimal(1e300),
+            cost: new Decimal(1e18),
+            currencyLayer: "mn",
+            currencyDisplayName: "moonstone",
+            currencyInternalName: "moonstone",
+            unlocked() {return challengeCompletions('mn', 11) >= 2}
+        },
+        34: {
+            title: "All At Once",
+            description() {return "Unlock the Quinary Ω-Space Building. Ω-space requirement scales 50% slower."},
+            cost: new Decimal(1e18),
             currencyLayer: "mn",
             currencyDisplayName: "moonstone",
             currencyInternalName: "moonstone",
@@ -515,6 +544,15 @@ addLayer("mn", {
                 if (challengeCompletions('mn', 11) >= 1) {
                     player.mn.points = new Decimal(0)
                     player.mn.moonEnergy = new Decimal(0)
+                    setBuyableAmount('mn', 11, new Decimal(0))
+                    setBuyableAmount('mn', 12, new Decimal(0))
+                    setBuyableAmount('mn', 13, new Decimal(0))
+                }
+                if (challengeCompletions('mn', 11) >= 2) {
+                    player.mn.moonstone = new Decimal(0)
+                    player.mn.radiance = new Decimal(0)
+                    setBuyableAmount('mn', 21, new Decimal(0))
+                    setBuyableAmount('mn', 22, new Decimal(0))
                 }
             },
             onExit() {
@@ -536,8 +574,12 @@ addLayer("mn", {
                 if(hasUpgrade('dk', 24)) keptUpgrades.push(14, 24)
                 if(hasUpgrade('dk', 25)) keptUpgrades.push(15, 25)
 
+                if(hasUpgrade('dk', 41)) keptUpgrades.push(31, 41)
+                if(hasUpgrade('dk', 42)) keptUpgrades.push(32, 42)
+
+                console.log(keptUpgrades)
                 player.dk.upgrades = []
-                player.dk.push(...keptUpgrades)
+                player.dk.upgrades.push(...keptUpgrades)
             },
             goals() {
                 return [new Decimal(10000000), new Decimal(1e15), new Decimal(1e100)]

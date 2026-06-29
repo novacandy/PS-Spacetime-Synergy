@@ -166,7 +166,7 @@ addLayer("dk", {
         return freeDyns
     },
     getLunarDynReq() {
-        let req = new Decimal(1e25).mul(new Decimal(12.5).pow(player.dk.lunarDynamos))
+        let req = new Decimal(1e49).mul(new Decimal(625).pow(player.dk.lunarDynamos.pow(2.5)))
         return req
     },
     getLunarDCMult() {
@@ -243,7 +243,7 @@ addLayer("dk", {
         },
         22: {
             description: "Keep above upgrade when leaving DSoTM",
-            cost: new Decimal(1e32),
+            cost: new Decimal(1e25),
             currencyLayer: "dk",
             currencyDisplayName: "lunar generator power",
             currencyInternalName: "lunarGenPower",
@@ -251,7 +251,7 @@ addLayer("dk", {
         },
         23: {
             description: "Keep above upgrade when leaving DSoTM",
-            cost: new Decimal(1e48),
+            cost: new Decimal(1e36),
             currencyLayer: "dk",
             currencyDisplayName: "lunar generator power",
             currencyInternalName: "lunarGenPower",
@@ -259,7 +259,7 @@ addLayer("dk", {
         },
         24: {
             description: "Keep above upgrade when leaving DSoTM",
-            cost: new Decimal(1e64),
+            cost: new Decimal(1e49),
             currencyLayer: "dk",
             currencyDisplayName: "lunar generator power",
             currencyInternalName: "lunarGenPower",
@@ -267,10 +267,44 @@ addLayer("dk", {
         },
         25: {
             description: "Keep above upgrade when leaving DSoTM",
-            cost: new Decimal(1e80),
+            cost: new Decimal(1e64),
             currencyLayer: "dk",
             currencyDisplayName: "lunar generator power",
             currencyInternalName: "lunarGenPower",
+            unlocked() {return challengeCompletions('mn', 11) >= 2}
+        },
+        31: {
+            title: "Ω-Space Starter Pack",
+            description() {return "Grants a free level to the first five Ω-space buildings."},
+            cost: new Decimal(1),
+            currencyLayer: "dk",
+            currencyDisplayName: "lunar AC",
+            currencyInternalName: "lunarAC",
+            unlocked() {return challengeCompletions('mn', 11) >= 2}
+        },
+        32: {
+            title: "Automatic Lunar Generation",
+            description() {return "Instantly earn levels of <b>Lunar Generator Base</b> and <b>Free Lunar Generators</b> whenever affordable."},
+            cost: new Decimal(1e6),
+            currencyLayer: "dk",
+            currencyDisplayName: "lunar AC",
+            currencyInternalName: "lunarAC",
+            unlocked() {return challengeCompletions('mn', 11) >= 2}
+        },
+        41: {
+            description: "Keep above upgrade when leaving DSoTM",
+            cost: new Decimal(1e6),
+            currencyLayer: "dk",
+            currencyDisplayName: "lunar AC",
+            currencyInternalName: "lunarAC",
+            unlocked() {return challengeCompletions('mn', 11) >= 2}
+        },
+        42: {
+            description: "Keep above upgrade when leaving DSoTM",
+            cost: new Decimal(1e12),
+            currencyLayer: "dk",
+            currencyDisplayName: "lunar AC",
+            currencyInternalName: "lunarAC",
             unlocked() {return challengeCompletions('mn', 11) >= 2}
         },
     }, 
@@ -445,7 +479,7 @@ addLayer("dk", {
                     "blank",
                     ["display-text", () => {
                         if (challengeCompletions('mn', 11) >= 1) {
-                            return "unar generator upgrades are reset after leaving DSoTM"
+                            return "Lunar generator upgrades are reset after leaving DSoTM"
                         } else {
                             return "Reach Depth 1 to unlock Lunar Generator Upgrades"
                         }
@@ -508,6 +542,10 @@ addLayer("dk", {
             player.dk.lunarGenPower = player.dk.lunarGenPower.add(tmp.dk.getLunarGenEffect.mul(tmp.dk.getLunarGenPowerMult).mul(diff))
             player.dk.lunarAC = player.dk.lunarAC.add(tmp.dk.getLunarAltEffect.mul(tmp.dk.getLunarACMult).mul(diff))
             player.dk.lunarDC = player.dk.lunarDC.add(tmp.dk.getLunarDynEffect.mul(tmp.dk.getLunarDCMult).mul(diff))
+            if (hasUpgrade('dk', 32)) {
+                if (tmp.dk.buyables[11].canAfford) setBuyableAmount('dk', 11, getBuyableAmount('dk', 11).add(1))
+                if (tmp.dk.buyables[12].canAfford) setBuyableAmount('dk', 12, getBuyableAmount('dk', 12).add(1))
+            }
         }
     },
     layerShown() {return inChallenge('mn', 11)}
