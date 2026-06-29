@@ -260,7 +260,7 @@ addLayer("mn", {
         },
         34: {
             title: "All At Once",
-            description() {return "Unlock the Quinary Ω-Space Building. Ω-space requirement scales 50% slower."},
+            description() {return "Unlock the Quinary Ω-Space Building. Ω-space requirement scales 25% slower."},
             cost: new Decimal(1e18),
             currencyLayer: "mn",
             currencyDisplayName: "moonstone",

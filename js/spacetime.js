@@ -153,6 +153,7 @@ addLayer("st", {
     },
     getBaseOmegaSpace() {
         let space = tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims).div(1e11).add(1).log(10).pow(0.6)
+        if (hasUpgrade('mn', 34)) space = tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims).div(1e11).add(1).log(10).pow(0.6).div(0.67)
         return space.floor()
     },
     getOmegaSpace() {
@@ -166,6 +167,7 @@ addLayer("st", {
     },
     getNextOmegaSpace() {
         let next = new Decimal(10).pow(new Decimal(tmp.st.getBaseOmegaSpace.add(1)).root(0.6)).mul(1e11)
+        if (hasUpgrade('mn', 34)) next = new Decimal(10).pow(new Decimal(tmp.st.getBaseOmegaSpace.mul(0.67).add(1)).root(0.6)).mul(1e11)
         return next
     },
     hotkeys: [
@@ -826,7 +828,7 @@ addLayer("st", {
             sellOne() {
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).sub(1).max(0))
             },
-            unlocked() {return hasMilestone('mn', 101) && hasUpgrade('mn', 31)}
+            unlocked() {return hasMilestone('mn', 101) && hasUpgrade('mn', 32)}
         },
         44: {
             title() {return "Quaternary Ω-Space Building (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")" + (this.freeLevels().gte(1) ? ("(+" + formatWhole(this.freeLevels())) + ")": "")},
@@ -876,7 +878,7 @@ addLayer("st", {
             sellOne() {
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).sub(1).max(0))
             },
-            unlocked() {return hasMilestone('mn', 101) && hasUpgrade('mn', 31)}
+            unlocked() {return hasMilestone('mn', 101) && hasUpgrade('mn', 33)}
         },
     },
     infoboxes: {
