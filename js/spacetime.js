@@ -65,6 +65,11 @@ addLayer("st", {
     baseAmount() {return player.points},
     type: "normal",
     exponent: 0.5,
+    
+    passiveGeneration() {
+        return buyableEffect('mn', 31)
+    },
+
     gainMult() {
         mult = new Decimal(1)
         if (hasUpgrade('st', 14)) mult = mult.mul(upgradeEffect('st', 14))
@@ -90,7 +95,8 @@ addLayer("st", {
         let reduction = new Decimal(0.25)
         if (hasUpgrade('st', 24)) reduction = reduction.div(2)
         if (hasUpgrade('mn', 22)) reduction = reduction.div(upgradeEffect('mn', 22))
-            reduction = reduction.div(buyableEffect('st', 43))
+        reduction = reduction.div(buyableEffect('st', 43))
+        reduction = reduction.mul(tmp.st.getConvertPenaltySoftcapMult)
         return reduction
     },
     getConvertInputs() {
@@ -109,6 +115,14 @@ addLayer("st", {
         if (hasUpgrade('st', 21)) mult = mult.mul(1.75)
         if (hasUpgrade('st', 23)) mult = mult.mul(upgradeEffect('st', 23))
         mult = mult.mul(tmp.st.getStoredAbsSpaceEffect)
+        return mult
+    },
+    getConvertPenaltySoftcap() {
+        let softcap = new Decimal(250)
+        return softcap
+    },
+    getConvertPenaltySoftcapMult() {
+        let mult = tmp.st.getConvertRate.div(250).pow(10).max(1)
         return mult
     },
     getAbsSpaceName() {
@@ -789,7 +803,7 @@ addLayer("st", {
                 return cost
             },
             display() {
-                if (this.effect().gte(9999)) { // placeholder
+                if (this.effect().gte(1e99)) { // placeholder
                     return "\
                     Dividing convert rate penalty by /"+ format(this.effectBase()) +" each\n\
                     Currently: /" + format(this.effect()) + "\n\
@@ -996,6 +1010,9 @@ addLayer("st", {
                     }],
                     ["display-text", () => {
                         if (tmp.st.getConvertRate.gt(1)) return "Convert rate is dividing convert output by /" + format(new Decimal(1).div(new Decimal(1).sub(tmp.st.getConvertReduction).pow(tmp.st.getConvertRate)))
+                    }],
+                    ["display-text", () => {
+                        if (tmp.st.getConvertRate.gte(250)) return "<br><b style='color: #ff0000; text-shadow: 0px 0px 10px #ff0000'>[SOFTCAPPED: CONVERT RATE PAST " + format(tmp.st.getConvertPenaltySoftcap) + " MULTIPLIES CONVERT PENALTY BY " + format(tmp.st.getConvertPenaltySoftcapMult) + "]</b>"
                     }],
                     "blank",
                     ["display-text", () => {

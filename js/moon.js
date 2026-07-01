@@ -72,6 +72,19 @@ addLayer("mn", {
     baseAmount() {return player.spacePoints},
     type: "normal",
     exponent: 0.9,
+
+    softcap() {
+        let softcap = new Decimal(1e36)
+        return softcap
+    },
+    softcapPower() {
+        let power = new Decimal(0.1)
+        return power
+    },
+    passiveGeneration() {
+        return buyableEffect('mn', 31)
+    },
+
     gainMult() {
         let mult = new Decimal(1)
         mult = mult.mul(buyableEffect('mn', 13))
@@ -84,6 +97,7 @@ addLayer("mn", {
     },
     moonEnergyMult() {
         let mult = player.mn.points.pow(0.75)
+        if (hasUpgrade('mn', 42)) mult = player.mn.points.pow(0.775)
         if (hasUpgrade('dk', 12)) mult = mult.mul(upgradeEffect('dk', 12))
         return mult
     },
@@ -269,11 +283,22 @@ addLayer("mn", {
         },
         41: {
             fullDisplay() {return `<h3>Bright Side of The Moon?</h3><br>
-                Unlock Lunarity.<br><br>
-                Cost: 1e24 moonstone, 1e28 radiance`},
+                Unlock the Lunarity Module.<br><br>
+                Cost: 1e24 moonstone, 1e28 radiance`
+            },
             canAfford() {return player.mn.moonstone.gte(1e24) && player.mn.radiance.gte(1e28)},
             pay() {player.mn.moonstone = player.mn.moonstone.sub(1e24), player.mn.radiance = player.mn.radiance.sub(1e28)},
             unlocked() {return hasUpgrade('mn', 34)}
+        },
+        42: {
+            fullDisplay() {return `
+                <h3>Energized Moon</h3><br>
+                Improve moon essence to moon energy exponent. (0.75 -> 0.775)<br><br>
+                Cost: 1e26 moonstone, 100 lunarity`
+            },
+            canAfford() {return player.mn.moonstone.gte(1e26) && getBuyableAmount('mn', 31).gte(100)},
+            pay() {player.mn.moonstone = player.mn.moonstone.sub(1e26), setBuyableAmount('mn', 31, getBuyableAmount('mn', 31).sub(100))},
+            unlocked() {return hasUpgrade('mn', 41)}
         }
     },
     milestones: {
@@ -307,7 +332,7 @@ addLayer("mn", {
     },
     buyables: {
         11: {
-            title() {return "Space Points (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
+            title() {return "Space Points (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")"},
             cost(x) {
                 let cost = new Decimal(100).mul(x.mul(1.25).add(1)).mul(new Decimal(1.25).pow(x))
                 if (x.gte(15)) cost = cost.pow(1.25)
@@ -337,6 +362,10 @@ addLayer("mn", {
                 let effect = this.effectBase().pow(getBuyableAmount(this.layer, this.id))
                 return effect
             },
+            purchaseLimit() {
+                let limit = new Decimal(250)
+                return limit
+            },
             canAfford() { return player.spacePoints.gte(this.cost()) },
             buy() {
                 player.spacePoints = player.spacePoints.sub(this.cost())
@@ -346,7 +375,7 @@ addLayer("mn", {
         },
         12: {
             title() {
-                if (inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 1) return "Spacier <s>Spacetime</s> Generators (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"
+                if (inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 1) return "Spacier <s>Spacetime</s> Generators (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")"
                 return "Spacier Spacetime (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"
             },
             cost(x) {
@@ -395,6 +424,10 @@ addLayer("mn", {
                 let effect = this.effectBase().pow(getBuyableAmount(this.layer, this.id))
                 return effect
             },
+            purchaseLimit() {
+                let limit = new Decimal(250)
+                return limit
+            },
             canAfford() { return player.spacePoints.gte(this.cost()) },
             buy() {
                 player.spacePoints = player.spacePoints.sub(this.cost())
@@ -404,7 +437,7 @@ addLayer("mn", {
         },
         13: {
             title() {
-                if (inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 1) return "Space <s>Essence</s> Power (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"
+                if (inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 1) return "Space <s>Essence</s> Power (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")"
                 return "Space Essence (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"
             },
             cost(x) {
@@ -452,6 +485,10 @@ addLayer("mn", {
             effect() {
                 let effect = this.effectBase().pow(getBuyableAmount(this.layer, this.id))
                 return effect
+            },
+            purchaseLimit() {
+                let limit = new Decimal(250)
+                return limit
             },
             canAfford() { return player.spacePoints.gte(this.cost()) },
             buy() {
@@ -533,6 +570,29 @@ addLayer("mn", {
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
         },
+        31: {
+            title() {return "Lunarity (" + format(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost() { // Return gain
+                let gain = player.mn.points.div(1e36).pow(0.9)
+                return gain
+            },
+            display() {
+                return "\
+                Sacrifice all your Moon Essence for " + format(this.cost()) + " Lunarity\n\
+                Generates " + format(this.effect().mul(100)) + "% of Spacetime and Moon Essence gain on reset per second\n\
+                Requires: 1e36 moon essence\n\
+                " 
+            },
+            effect() {
+                let effect = Decimal.sub(1, Decimal.div(1, getBuyableAmount('mn', 31).add(1).pow(0.25))).pow(3)
+                return effect
+            },
+            canAfford() { return player.mn.points.gte(1e36) },
+            buy() {
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(this.cost()))
+                player.mn.points = new Decimal(0)
+            },
+        }
     },
     challenges: {
         11: {
@@ -623,6 +683,13 @@ addLayer("mn", {
                 ],
                 unlocked() {return hasMilestone('mn', 2)}
             },
+            "Lunarity Module": {
+                content: [
+                    "blank",
+                    ["buyables", [3, 4]]
+                ],
+                unlocked() {return hasUpgrade('mn', 41)}
+            }
         },
         darkSide: {
             "Moonstone Sub-Module": {
@@ -676,6 +743,7 @@ addLayer("mn", {
             ["display-text", () => {if (inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 1) return "You have <h2 style='color: #3f3f3f; text-shadow: 0px 0px 10px #3f3f3f'>" + formatWhole(player.mn.points) + "</h2> <h3 style='color: #4f4f4f; text-shadow: 0px 0px 10px #4f4f4f'>dark</h3> moon essence, " + layers.mn.effectDescription() + "<br><br>"}],
         ]],        "prestige-button",
         "blank",
+        ["display-text", () => {if (getResetGain('mn').gte(1e36) || player.mn.points.gte(1e36)) return "<b style='color: #ff0000; text-shadow: 0px 0px 10px #ff0000'>[SOFTCAPPED: GAIN PAST " + format(tmp.mn.softcap) + " IS RAISED TO THE POWER OF " + format(tmp.mn.softcapPower) + "]</b><br><br>"}],
         ["display-text", () => {
             if (inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 1) {
                 if (tmp.mn.moonEnergyEffect.gte(10)) {
