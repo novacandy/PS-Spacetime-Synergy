@@ -23,7 +23,10 @@ addLayer("mn", {
         player.spacePoints = new Decimal(15)
         player.timePoints = new Decimal(5)
         player.mn.moonEnergy = new Decimal(0)
-        if (hasMilestone('mn', 1)) player.mn.absoluteSpace = player.mn.absoluteSpace.add(tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims))
+        if (hasMilestone('mn', 1)) {
+            player.mn.absoluteSpace = player.mn.absoluteSpace.add(tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims))
+            
+        }
     },
     effectDescription() {
        return "which multiplies point capacity by x" + format(tmp.mn.effect)
@@ -309,23 +312,33 @@ addLayer("mn", {
         },
         1: {
             requirementDescription: "10 moon essence",
-            effectDescription: "Unlock the Absolute Space Module (in Spacetime)",
+            effectDescription: "Start resets with all Spacetime upgrades, 50 Point Enhancement levels, and 25 Spacetime, Space, and Time Enhancement levels. Unlock the Absolute Space Module (in Spacetime)",
             done() {return player.mn.points.gte(10)}
         },
         2: {
             requirementDescription: "1000 moon essence",
-            effectDescription: "Unlock Dark Side Module and a new spacetime conversion input",
+            effectDescription: "Start resets with 100 Convert Rate levels, unlock Dark Side Module and a new spacetime conversion input",
             done() {return player.mn.points.gte(1000)}
         },
         100: {
             requirementDescription: "Complete Depth 0",
-            effectDescription: "Unlock two new space buyables and more moonstone content",
+            effectDescription: "You can buy max Convert Rate and Lengtheners, unlock two new space buyables and more moonstone upgrades",
             done() {return challengeCompletions('mn', 11) >= 1}
         },
         101: {
             requirementDescription: "Complete Depth 1",
-            effectDescription: "Unlock Absolute Space Buildings and more moonstone upgrades",
+            effectDescription: "You can buy max spacetime enhancement buyables, unlock Absolute Space Buildings and even more moonstone upgrades",
             done() {return challengeCompletions('mn', 11) >= 2}
+        },
+        102: {
+            requirementDescription: "Complete Depth 2",
+            effectDescription: "Re-unlock the Sun",
+            done() {return challengeCompletions('mn', 11) >= 3}
+        },
+        200: {
+            requirementDescription: "1000 lunarity",
+            effectDescription: "Generate 5% of lunarity gain per second",
+            done() {return getBuyableAmount('mn', 31).gte(1000)}
         }
     },
     clickables: {
@@ -574,6 +587,7 @@ addLayer("mn", {
             title() {return "Lunarity (" + format(getBuyableAmount(this.layer, this.id)) + ")"},
             cost() { // Return gain
                 let gain = player.mn.points.div(1e36).pow(0.9)
+                gain = gain.mul(buyableEffect('mn', 41))
                 return gain
             },
             display() {
@@ -590,7 +604,82 @@ addLayer("mn", {
             canAfford() { return player.mn.points.gte(1e36) },
             buy() {
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(this.cost()))
+                doReset('mn', true)
                 player.mn.points = new Decimal(0)
+            },
+        },
+        41: {
+            title() {return "Lunar Cores (" + format(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost() { // Return gain
+                let gain = getBuyableAmount('mn', 31).div(10).pow(0.25)
+                return gain
+            },
+            display() {
+                return "\
+                Sacrifice all your Lunarity for " + format(this.cost()) + " Lunar Cores\n\
+                Multiplies lunarity gain by " + format(this.effect()) + "\n\
+                Requires: 10 lunarity\n\
+                " 
+            },
+            effect() {
+                let effect = getBuyableAmount('mn', 41).add(1).log(2).add(1).log(2).add(1)
+                return effect
+            },
+            canAfford() { return getBuyableAmount('mn', 31).gte(10) },
+            buy() {
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(this.cost()))
+                doReset('mn', true)
+                setBuyableAmount('mn', 31, new Decimal(0))
+            },
+        },
+        42: {
+            title() {return "Regolith Dust (" + format(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost() { // Return gain
+                let gain = getBuyableAmount('mn', 31).div(100).pow(0.5).mul(player.mn.moonEnergy.div(1e30).pow(0.75))
+                return gain
+            },
+            display() {
+                return "\
+                Sacrifice all your Lunarity and Moon Energy for " + format(this.cost()) + " Regolith Dust\n\
+                Multiplies " + tmp.st.getAbsSpaceName + " side lengths by " + format(this.effect()) + "\n\
+                Requires: 100 lunarity, 1e30 moon energy\n\
+                " 
+            },
+            effect() {
+                let effect = getBuyableAmount('mn', 42).add(1).log(10).pow(0.9).add(1)
+                return effect
+            },
+            canAfford() { return getBuyableAmount('mn', 31).gte(100) && player.mn.moonEnergy.gte(1e30) },
+            buy() {
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(this.cost()))
+                doReset('mn', true)
+                setBuyableAmount('mn', 31, new Decimal(0))
+                player.mn.moonEnergy = new Decimal(0)
+            },
+        },
+        43: {
+            title() {return "Impact Craters (" + format(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost() { // Return gain
+                let gain = getBuyableAmount('mn', 31).div(500).pow(0.5).mul(player.mn.moonstone.div(1e27).pow(0.75))
+                return gain
+            },
+            display() {
+                return "\
+                Sacrifice all your Lunarity and Moonstone for " + format(this.cost()) + " Impact Craters\n\
+                Increases Ω-Space Building Power by " + format(this.effect().mul(100)) + "%\n\
+                Requires: 500 lunarity, 1e30 moonstone\n\
+                " 
+            },
+            effect() {
+                let effect = getBuyableAmount('mn', 43).add(1).log(10).add(1).log(10).div(10)
+                return effect
+            },
+            canAfford() { return getBuyableAmount('mn', 31).gte(500) && player.mn.moonstone.gte(1e30) },
+            buy() {
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(this.cost()))
+                doReset('mn', true)
+                setBuyableAmount('mn', 31, new Decimal(0))
+                player.mn.moonstone = new Decimal(0)
             },
         }
     },
@@ -686,6 +775,10 @@ addLayer("mn", {
             "Lunarity Module": {
                 content: [
                     "blank",
+                    ["display-text", "All lunarity buyables will force a Moon reset"],
+                    "blank",
+                    ["milestones", [200]],
+                    "blank",
                     ["buyables", [3, 4]]
                 ],
                 unlocked() {return hasUpgrade('mn', 41)}
@@ -772,6 +865,7 @@ addLayer("mn", {
         player.mn.moonEnergy = player.mn.moonEnergy.add(new Decimal(0.01).mul(tmp.mn.moonEnergyMult).mul(diff))
         player.mn.radiance = player.mn.radiance.root(tmp.mn.getRadianceExponent).add(tmp.mn.getRadianceGen.mul(diff)).pow(tmp.mn.getRadianceExponent)
         if (player.mn.radiance.gte(tmp.mn.getRadianceOverflowStart)) player.mn.radiance = player.mn.radiance.div(tmp.mn.getRadianceOverflowDiv.pow(diff))
+        if (hasMilestone('mn', 200)) setBuyableAmount('mn', 31, getBuyableAmount('mn', 31).add(tmp.mn.buyables[31].cost.mul(0.05).mul(diff)))
     },
     layerShown() {return hasUpgrade('st', 24) || player.mn.unlocked}
 })

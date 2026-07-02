@@ -97,7 +97,7 @@ addLayer("st", {
         if (hasUpgrade('mn', 22)) reduction = reduction.div(upgradeEffect('mn', 22))
         reduction = reduction.div(buyableEffect('st', 43))
         reduction = reduction.mul(tmp.st.getConvertPenaltySoftcapMult)
-        return reduction
+        return reduction.min(0.99)
     },
     getConvertInputs() {
         let inputs = ['SPACETIME']
@@ -136,7 +136,7 @@ addLayer("st", {
         if (tmp.st.getAbsoluteSpaceDims.eq(8)) return "Octeract"
         if (tmp.st.getAbsoluteSpaceDims.eq(9)) return "Enneract"
         if (tmp.st.getAbsoluteSpaceDims.eq(10)) return "Dekeract"
-        return format(tmp.st.getAbsoluteSpaceDims) + "-eract"
+        return formatWhole(tmp.st.getAbsoluteSpaceDims) + "-eract"
     },
     getStoredAbsSpaceEffect() {
         let effect = tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims).pow(0.33)
@@ -146,6 +146,7 @@ addLayer("st", {
         let len = new Decimal(1)
         len = len.add(buyableEffect('st', 31))
         if (hasUpgrade('mn', 13)) len = len.mul(upgradeEffect('mn', 13))
+        len = len.mul(buyableEffect('mn', 42))
         return len
     },
     getAbsoluteSpaceDims() {
@@ -155,6 +156,7 @@ addLayer("st", {
     },
     getSpaceBuildingPower() {
         let power = new Decimal(1)
+        power = power.add(buyableEffect('mn', 43))
         return power
     },
     getSpaceBuildingCap() {
@@ -427,6 +429,15 @@ addLayer("st", {
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
+                if (hasMilestone('mn', 101)) { // Buy max
+                    let amountToBuy = getBuyableAmount(this.layer, this.id) 
+                    while (player.st.points.gte(this.cost(amountToBuy)) && amountToBuy.lt(this.purchaseLimit())) {
+                        player.st.points = player.st.points.sub(this.cost(amountToBuy))
+                        amountToBuy = amountToBuy.add(1)
+                    }
+                    setBuyableAmount(this.layer, this.id, amountToBuy)
+                    return
+                }
                 player[this.layer].points = player[this.layer].points.sub(this.cost())
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
@@ -489,6 +500,15 @@ addLayer("st", {
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
+                if (hasMilestone('mn', 101)) { // Buy max
+                    let amountToBuy = getBuyableAmount(this.layer, this.id) 
+                    while (player.st.points.gte(this.cost(amountToBuy)) && amountToBuy.lt(this.purchaseLimit())) {
+                        player.st.points = player.st.points.sub(this.cost(amountToBuy))
+                        amountToBuy = amountToBuy.add(1)
+                    }
+                    setBuyableAmount(this.layer, this.id, amountToBuy)
+                    return
+                }
                 player[this.layer].points = player[this.layer].points.sub(this.cost())
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
@@ -533,6 +553,15 @@ addLayer("st", {
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
+                if (hasMilestone('mn', 101)) { // Buy max
+                    let amountToBuy = getBuyableAmount(this.layer, this.id) 
+                    while (player.st.points.gte(this.cost(amountToBuy)) && amountToBuy.lt(this.purchaseLimit())) {
+                        player.st.points = player.st.points.sub(this.cost(amountToBuy))
+                        amountToBuy = amountToBuy.add(1)
+                    }
+                    setBuyableAmount(this.layer, this.id, amountToBuy)
+                    return
+                }
                 player[this.layer].points = player[this.layer].points.sub(this.cost())
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
@@ -576,6 +605,15 @@ addLayer("st", {
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
+                if (hasMilestone('mn', 101)) { // Buy max
+                    let amountToBuy = getBuyableAmount(this.layer, this.id) 
+                    while (player.st.points.gte(this.cost(amountToBuy)) && amountToBuy.lt(this.purchaseLimit())) {
+                        player.st.points = player.st.points.sub(this.cost(amountToBuy))
+                        amountToBuy = amountToBuy.add(1)
+                    }
+                    setBuyableAmount(this.layer, this.id, amountToBuy)
+                    return
+                }
                 player[this.layer].points = player[this.layer].points.sub(this.cost())
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
@@ -613,9 +651,17 @@ addLayer("st", {
             },
             canAfford() { return player.points.gte(this.cost()) },
             buy() {
+                if (hasMilestone('mn', 100)) { // Buy max
+                    let amountToBuy = getBuyableAmount(this.layer, this.id) 
+                    while (player.points.gte(this.cost(amountToBuy))) {
+                        player.points = player.points.sub(this.cost(amountToBuy))
+                        amountToBuy = amountToBuy.add(1)
+                    }
+                    setBuyableAmount(this.layer, this.id, amountToBuy)
+                    return
+                }
                 player.points = player.points.sub(this.cost())
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
-                player.st.convertBuyableAmount = player.st.convertBuyableAmount.add(1)
             },
             unlocked() {return hasMilestone('st', 2)}
         },
@@ -650,6 +696,16 @@ addLayer("st", {
             },
             canAfford() { return player.mn.moonEnergy.gte(this.cost()) },
             buy() {
+                if (hasMilestone('mn', 100)) { // Buy max
+                    let currency = player.mn.moonEnergy
+                    let amountToBuy = getBuyableAmount(this.layer, this.id) 
+                    while (currency.gte(this.cost(amountToBuy))) {
+                        player.mn.moonEnergy = player.mn.moonEnergy.sub(this.cost(amountToBuy))
+                        amountToBuy = amountToBuy.add(1)
+                    }
+                    setBuyableAmount(this.layer, this.id, amountToBuy)
+                    return
+                }
                 player.mn.moonEnergy = player.mn.moonEnergy.sub(this.cost())
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
@@ -1131,7 +1187,17 @@ addLayer("st", {
         if (layers[resettingLayer].row <= this.row) return;
         let keep = [];
         keep.push("milestones")
+        if (hasMilestone('mn', 1)) keep.push("upgrades")
         layerDataReset(this.layer, keep);
+        if (hasMilestone('mn', 1)) {
+            setBuyableAmount('st', 11, new Decimal(50))
+            setBuyableAmount('st', 12, new Decimal(25))
+            setBuyableAmount('st', 13, new Decimal(25))
+            setBuyableAmount('st', 14, new Decimal(25))
+        }
+        if (hasMilestone('mn', 2)) {
+            setBuyableAmount('st', 21, new Decimal(100))
+        }
     },
     update(diff) {
         if (player.points.gte(getPointCapacity())) player.points = getPointCapacity()
