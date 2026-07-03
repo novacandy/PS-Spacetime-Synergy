@@ -91,6 +91,7 @@ addLayer("dk", {
     type: "none",
     getDarknessGen() {
         let gen = tmp.mn.getDarkEssenceEffect
+        gen = gen.pow(buyableEffect('mn', 51))
         if (hasUpgrade('st', 14)) gen = gen.mul(upgradeEffect('st', 14))
         gen = gen.mul(buyableEffect('st', 12))
         gen = gen.mul(tmp.dk.getLunarGenPowerEffect)

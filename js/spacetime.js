@@ -697,9 +697,8 @@ addLayer("st", {
             canAfford() { return player.mn.moonEnergy.gte(this.cost()) },
             buy() {
                 if (hasMilestone('mn', 100)) { // Buy max
-                    let currency = player.mn.moonEnergy
                     let amountToBuy = getBuyableAmount(this.layer, this.id) 
-                    while (currency.gte(this.cost(amountToBuy))) {
+                    while (player.mn.moonEnergy.gte(this.cost(amountToBuy))) {
                         player.mn.moonEnergy = player.mn.moonEnergy.sub(this.cost(amountToBuy))
                         amountToBuy = amountToBuy.add(1)
                     }
@@ -912,13 +911,13 @@ addLayer("st", {
             display() {
                 if (this.effect().gte(9999)) { // placeholder
                     return "\
-                    Extending spacetime enhancement buyable caps by +"+ format(this.effectBase()) +" each (2x effective on <b>Point Enhancement</b>)\n\
+                    Extending spacetime enhancement buyable caps by +"+ format(this.effectBase()) +" each (2x effective on <b>Point Enhancement</b>, effect floored)\n\
                     Currently: +" + format(this.effect()) + "\n\
                     Cost: "+ format(this.cost()) +" spacetime and 4 Ω-space\n\
                     <b style='color: #ff0000'>[EFFECT SOFTCAPPED]<b>"
                 } else {
                     return "\
-                    Extending spacetime enhancement buyable caps by +"+ format(this.effectBase()) +" each (2x effective on <b>Point Enhancement</b>)\n\
+                    Extending spacetime enhancement buyable caps by +"+ format(this.effectBase()) +" each (2x effective on <b>Point Enhancement</b>, effect floored)\n\
                     Currently: +" + format(this.effect()) + "\n\
                     Cost: "+ format(this.cost()) +" spacetime and 4 Ω-space\n\
                     "
@@ -963,13 +962,13 @@ addLayer("st", {
             display() {
                 if (this.effect().gte(9999)) { // placeholder
                     return "\
-                    Adding +"+ format(this.effectBase()) +" extra levels to previous Ω-space buildings each \n\
+                    Adding +"+ format(this.effectBase()) +" extra levels to previous Ω-space buildings each (effect floored)\n\
                     Currently: +" + format(this.effect()) + "\n\
                     Cost: "+ format(this.cost()) +" spacetime and 12 Ω-space\n\
                     <b style='color: #ff0000'>[EFFECT SOFTCAPPED]<b>"
                 } else {
                     return "\
-                    Adding +"+ format(this.effectBase()) +" extra levels to previous Ω-space buildings each \n\
+                    Adding +"+ format(this.effectBase()) +" extra levels to previous Ω-space buildings each (effect floored)\n\
                     Currently: +" + format(this.effect()) + "\n\
                     Cost: "+ format(this.cost()) +" spacetime and 12 Ω-space\n\
                     "
@@ -978,6 +977,7 @@ addLayer("st", {
             effectBase() {
                 let base = new Decimal(1)
                 base = base.mul(tmp.st.getSpaceBuildingPower)
+                if (hasUpgrade('mn', 43)) base = base.mul(2)
                 return base
             },
             effect() {
@@ -991,6 +991,7 @@ addLayer("st", {
             freeLevels() {
                 let lvl = new Decimal(0)
                 if (hasUpgrade('dk', 31) && this.unlocked()) lvl = lvl.add(1)
+                if (hasUpgrade('mn', 43)) lvl = lvl.add(1)
                 return lvl
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) && tmp.st.getOmegaSpace.gte(12)},
@@ -1197,6 +1198,7 @@ addLayer("st", {
         }
         if (hasMilestone('mn', 2)) {
             setBuyableAmount('st', 21, new Decimal(100))
+            player.st.convertBuyableAmount = new Decimal(100)
         }
     },
     update(diff) {

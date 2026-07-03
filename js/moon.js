@@ -302,6 +302,26 @@ addLayer("mn", {
             canAfford() {return player.mn.moonstone.gte(1e26) && getBuyableAmount('mn', 31).gte(100)},
             pay() {player.mn.moonstone = player.mn.moonstone.sub(1e26), setBuyableAmount('mn', 31, getBuyableAmount('mn', 31).sub(100))},
             unlocked() {return hasUpgrade('mn', 41)}
+        },
+        43: {
+            fullDisplay() {return `
+                <h3>This Building Sucks!</h3><br>
+                Double the Quinary Ω-Space Building's base effect and give it a free level.<br><br>
+                Cost: 1e34 radiance, 1,000,000 lunarity`
+            },
+            canAfford() {return player.mn.radiance.gte(1e34) && getBuyableAmount('mn', 31).gte(1e6)},
+            pay() {player.mn.moonstone = player.mn.radiance.sub(1e34), setBuyableAmount('mn', 31, getBuyableAmount('mn', 31).sub(1e6))},
+            unlocked() {return hasUpgrade('mn', 41)}
+        },
+        44: {
+            fullDisplay() {return `
+                <h3>You Know What Sucks More, Though?</h3><br>
+                Unlock Total Eclipses. See you on the other side... :><br><br>
+                Cost: 1e43 moonstone, 1e9 regolith dust`
+            },
+            canAfford() {return player.mn.moonstone.gte(1e43) && getBuyableAmount('mn', 43).gte(1e9)},
+            pay() {player.mn.moonstone = player.mn.moonstone.sub(1e43), setBuyableAmount('mn', 43, getBuyableAmount('mn', 43).sub(1e9))},
+            unlocked() {return hasUpgrade('mn', 41)}
         }
     },
     milestones: {
@@ -617,7 +637,7 @@ addLayer("mn", {
             display() {
                 return "\
                 Sacrifice all your Lunarity for " + format(this.cost()) + " Lunar Cores\n\
-                Multiplies lunarity gain by " + format(this.effect()) + "\n\
+                Multiplies lunarity gain by x" + format(this.effect()) + "\n\
                 Requires: 10 lunarity\n\
                 " 
             },
@@ -633,15 +653,15 @@ addLayer("mn", {
             },
         },
         42: {
-            title() {return "Regolith Dust (" + format(getBuyableAmount(this.layer, this.id)) + ")"},
+            title() {return "Impact Craters (" + format(getBuyableAmount(this.layer, this.id)) + ")"},
             cost() { // Return gain
                 let gain = getBuyableAmount('mn', 31).div(100).pow(0.5).mul(player.mn.moonEnergy.div(1e30).pow(0.75))
                 return gain
             },
             display() {
                 return "\
-                Sacrifice all your Lunarity and Moon Energy for " + format(this.cost()) + " Regolith Dust\n\
-                Multiplies " + tmp.st.getAbsSpaceName + " side lengths by " + format(this.effect()) + "\n\
+                Sacrifice all your Lunarity and Moon Energy for " + format(this.cost()) + " Impact Craters\n\
+                Multiplies " + tmp.st.getAbsSpaceName + " side lengths by x" + format(this.effect()) + "\n\
                 Requires: 100 lunarity, 1e30 moon energy\n\
                 " 
             },
@@ -658,15 +678,15 @@ addLayer("mn", {
             },
         },
         43: {
-            title() {return "Impact Craters (" + format(getBuyableAmount(this.layer, this.id)) + ")"},
+            title() {return "Regolith Dust (" + format(getBuyableAmount(this.layer, this.id)) + ")"},
             cost() { // Return gain
-                let gain = getBuyableAmount('mn', 31).div(500).pow(0.5).mul(player.mn.moonstone.div(1e27).pow(0.75))
+                let gain = getBuyableAmount('mn', 31).div(500).pow(0.5).mul(player.mn.moonstone.div(1e27).pow(0.4))
                 return gain
             },
             display() {
                 return "\
-                Sacrifice all your Lunarity and Moonstone for " + format(this.cost()) + " Impact Craters\n\
-                Increases Ω-Space Building Power by " + format(this.effect().mul(100)) + "%\n\
+                Sacrifice all your Lunarity and Moonstone for " + format(this.cost()) + " Regolith Dust\n\
+                Increases Ω-Space Building Power by +" + format(this.effect().mul(100)) + "%\n\
                 Requires: 500 lunarity, 1e30 moonstone\n\
                 " 
             },
@@ -675,6 +695,31 @@ addLayer("mn", {
                 return effect
             },
             canAfford() { return getBuyableAmount('mn', 31).gte(500) && player.mn.moonstone.gte(1e30) },
+            buy() {
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(this.cost()))
+                doReset('mn', true)
+                setBuyableAmount('mn', 31, new Decimal(0))
+                player.mn.moonstone = new Decimal(0)
+            },
+        },
+        51: {
+            title() {return "Total Eclipses (" + format(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost() { // Return gain
+                let gain = getBuyableAmount('mn', 31).div(5000000).pow(0.33).mul(player.mn.darkEssence.div(1e43).pow(0.33))
+                return gain
+            },
+            display() {
+                return "\
+                Sacrifice all your Lunarity and Dark Essence for " + format(this.cost()) + " Total Penumbral Eclipses\n\
+                Raises base darkness gain to the power of ^" + format(this.effect()) + "\n\
+                Requires: 5,000,000 lunarity, 1e43 dark essence\n\
+                " 
+            },
+            effect() {
+                let effect = getBuyableAmount('mn', 51).add(1).log(2).add(1).log(2).add(1)
+                return effect
+            },
+            canAfford() { return getBuyableAmount('mn', 31).gte(5000000) && player.mn.darkEssence.gte(1e43) },
             buy() {
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(this.cost()))
                 doReset('mn', true)
@@ -779,7 +824,7 @@ addLayer("mn", {
                     "blank",
                     ["milestones", [200]],
                     "blank",
-                    ["buyables", [3, 4]]
+                    ["buyables", [3, 4, 5]]
                 ],
                 unlocked() {return hasUpgrade('mn', 41)}
             }
