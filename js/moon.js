@@ -784,7 +784,7 @@ addLayer("mn", {
                 player.dk.upgrades.push(...keptUpgrades)
             },
             goals() {
-                return [new Decimal(10000000), new Decimal(1e15), new Decimal(1e100)]
+                return [new Decimal(10000000), new Decimal(1e15), new Decimal(1e36), new Decimal(1e100)]
             },
             canComplete() {return player.dk.darkness.gte(this.goals()[challengeCompletions('mn', 11)])},
             style() {return {
