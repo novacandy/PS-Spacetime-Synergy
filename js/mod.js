@@ -42,13 +42,19 @@ function getPointGen() {
 		return new Decimal(0)
 
 	let gain = new Decimal(1)
+
 	if (hasUpgrade('st', 11)) gain = gain.mul(2)
 	if (hasUpgrade('st', 13)) gain = gain.mul(upgradeEffect('st', 13))
 	gain = gain.mul(buyableEffect('st', 11))
 	if (hasUpgrade('st', 23)) gain = gain.mul(upgradeEffect('st', 23))
+
 	gain = gain.mul(buyableEffect('mn', 11))
 	if (hasUpgrade('dk', 11)) gain = gain.mul(10)
 	if (hasUpgrade('mn', 24)) gain = gain.mul(upgradeEffect('mn', 24))
+
+	gain = gain.mul(tmp.sn.effect)
+	gain = gain.mul(buyableEffect('sn', 11))
+
 	return gain
 }
 
@@ -68,6 +74,7 @@ function getPointTime() {
 function getTimeConsumptionMultis() {
 	let mult = new Decimal(1)
 	if (hasUpgrade('st', 23)) mult = mult.mul(upgradeEffect('st', 23))
+	mult = mult.mul(tmp.sn.effect)
 	return mult
 }
 
@@ -82,6 +89,7 @@ function getSpaceMultis() {
 function getTimeMultis() {
 	let mult = new Decimal(1)
 	mult = mult.mul(buyableEffect('st', 14))
+	mult = mult.mul(tmp.sn.sunEnergyEffect)
 	return mult
 }
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values

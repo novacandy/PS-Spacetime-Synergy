@@ -108,7 +108,7 @@ addLayer("mn", {
     },
     moonEnergyEffect() {
         let effect = player.mn.moonEnergy.pow(0.5).add(1)
-        if (effect.gte(10)) effect = effect.sub(10).pow(0.75).add(10)
+        if (effect.gte(10)) effect = effect.div(10).pow(0.75).mul(10)
         return effect
     },
     absoluteSpaceEffect() {
@@ -943,7 +943,7 @@ addLayer("mn", {
         if (player.mn.radiance.gte(tmp.mn.getRadianceOverflowStart)) player.mn.radiance = player.mn.radiance.div(tmp.mn.getRadianceOverflowDiv.pow(diff))
         if (hasMilestone('mn', 200)) setBuyableAmount('mn', 31, getBuyableAmount('mn', 31).add(tmp.mn.buyables[31].cost.mul(0.05).mul(diff)))
     },
-    layerShown() {return hasUpgrade('st', 24) || player.mn.unlocked}
+    layerShown() {return hasUpgrade('st', 24) || player.mn.unlocked && !player.sn.unlocked}
 })
 const moonOrbit = document.createElement('style'); // orbit code stolen from Gods of Incremental adkv
 moonOrbit.innerHTML = `
