@@ -275,6 +275,7 @@ addLayer("st", {
             cost: new Decimal(100000),
             effect() {
                 let effect = player.spacePoints.pow(0.25).div(5).add(1)
+                if (effect.gte(5)) effect = effect.div(10).pow(0.1).mul(5)
                 return effect
             },
             unlocked() {return hasMilestone('st', 2)},

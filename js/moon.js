@@ -29,10 +29,12 @@ addLayer("mn", {
         }
     },
     effectDescription() {
-       return "which multiplies point capacity by x" + format(tmp.mn.effect)
+        if (tmp.mn.effect.gte(1000)) return "which multiplies point capacity by x" + format(tmp.mn.effect) + " <b style='color: #ff0000'>[SOFTCAPPED]<b>"
+        return "which multiplies point capacity by x" + format(tmp.mn.effect)
     },
     effect() {
         let effect = new Decimal(1).mul(player.mn.points.pow(0.5)).add(1)
+        if (effect.gte(1000)) effect = effect.div(1000).pow(0.25).mul(1000)
         return effect
     },
     nodeStyle() {
