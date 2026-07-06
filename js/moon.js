@@ -364,7 +364,10 @@ addLayer("mn", {
         102: {
             requirementDescription: "Complete Depth 2",
             effectDescription: "Re-unlock the Sun",
-            done() {return challengeCompletions('mn', 11) >= 3}
+            done() {return challengeCompletions('mn', 11) >= 3},
+            onComplete() {
+                player.dk.upgrades = [11, 12, 13, 14, 15, 21, 22, 23, 24, 25, 31, 32, 33, 34, 35, 41, 42, 43, 44, 45]
+            }
         },
         200: {
             requirementDescription: "1000 lunarity",
@@ -805,6 +808,7 @@ addLayer("mn", {
                 return [new Decimal(10000000), new Decimal(1e15), new Decimal(1e36), new Decimal(1e100)]
             },
             canComplete() {return player.dk.darkness.gte(this.goals()[challengeCompletions('mn', 11)])},
+            unlocked() {return hasUpgrade('mn', 11) && (!hasMilestone('mn', 102) || false)},
             style() {return {
                 "width": "350px",
                 "height": "350px",
@@ -871,8 +875,15 @@ addLayer("mn", {
                         if (inChallenge('mn', 11)) return "You have " + format(player.mn.darkEssence) + " dark essence, which produce a base of " + format(tmp.mn.getDarkEssenceEffect) + " darkness per second"
                         return "You have " + format(player.mn.darkEssence) + " dark essence, which ???"
                     }],
+                    ["display-text", () => {
+                        if (!(!hasMilestone('mn', 102) || false)) return "<br>The Dark Side of The Moon has been temporarily sealed away, you need a Sun milestone to re-unlock it<br>You have been given the Lunar Generator and Lunar Alternator upgrades for free if not already obtained"
+                    }],
                     "blank",
                     "challenges",
+                    "blank",
+                    ["layer-proxy", ["dk", [
+                        ["upgrades", [1, 3]]
+                    ]]],
                     "blank",
                     ["milestones", [100, 101, 102]]
                 ]
