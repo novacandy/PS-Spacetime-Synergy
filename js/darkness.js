@@ -120,6 +120,7 @@ addLayer("dk", {
     getLunarGenPowerMult() {
         let mult = new Decimal(1)
         mult = mult.mul(buyableEffect('mn', 13))
+        if (hasUpgrade('dk', 35)) mult = mult.mul(upgradeEffect('dk', 35))
         return mult
     },
     getLunarGenPowerEffect() {
@@ -138,6 +139,7 @@ addLayer("dk", {
     },
     getFreeLunarAlts() {
         let freeAlts = new Decimal(0)
+        if (hasUpgrade('mn', 42)) freeAlts = freeAlts.add(upgradeEffect('mn', 42))
         return freeAlts
     },
     getLunarAltReq() {
@@ -167,7 +169,7 @@ addLayer("dk", {
         return freeDyns
     },
     getLunarDynReq() {
-        let req = new Decimal(1e49).mul(new Decimal(625).pow(player.dk.lunarDynamos.pow(2.5)))
+        let req = new Decimal(1e21).mul(new Decimal(625).pow(player.dk.lunarDynamos))
         return req
     },
     getLunarDCMult() {
@@ -285,8 +287,43 @@ addLayer("dk", {
         },
         32: {
             title: "Automatic Lunar Generation",
-            description() {return "Instantly earn levels of <b>Lunar Generator Base</b> and <b>Free Lunar Generators</b> whenever affordable."},
+            description() {return "Fully automate Lunar Generators."},
             cost: new Decimal(1e6),
+            currencyLayer: "dk",
+            currencyDisplayName: "lunar AC",
+            currencyInternalName: "lunarAC",
+            unlocked() {return challengeCompletions('mn', 11) >= 2}
+        },
+        33: {
+            title: "Sturdier Structure",
+            description() {return "The Primary and Secondary Ω-Space Buildings' effects decay slower (^0.75 -> ^0.9; ^0.5 -> ^0.75)."},
+            cost: new Decimal(1e10),
+            currencyLayer: "dk",
+            currencyDisplayName: "lunar AC",
+            currencyInternalName: "lunarAC",
+            unlocked() {return challengeCompletions('mn', 11) >= 2}
+        },
+        34: {
+            title: "Better Integrity",
+            description() {return "Cheapen Ω-space buildings based on leftover Ω-Space. Effect: /" + format(this.effect())},
+            cost: new Decimal(1e11),
+            effect() {
+                let effect = tmp.st.getOmegaSpace.add(1).pow(5)
+                return effect
+            },
+            currencyLayer: "dk",
+            currencyDisplayName: "lunar AC",
+            currencyInternalName: "lunarAC",
+            unlocked() {return challengeCompletions('mn', 11) >= 2}
+        },
+        35: {
+            title: "Clyde, Should I Softcap This Now?",
+            description() {return "Lunar AC directly multiplies lunar generator power gain. Effect: x" + format(this.effect())},
+            cost: new Decimal(1e12),
+            effect() {
+                let effect = player.dk.lunarAC.add(1)
+                return effect
+            },
             currencyLayer: "dk",
             currencyDisplayName: "lunar AC",
             currencyInternalName: "lunarAC",
@@ -302,7 +339,31 @@ addLayer("dk", {
         },
         42: {
             description: "Keep above upgrade when leaving DSoTM",
+            cost: new Decimal(1e10),
+            currencyLayer: "dk",
+            currencyDisplayName: "lunar AC",
+            currencyInternalName: "lunarAC",
+            unlocked() {return challengeCompletions('mn', 11) >= 2}
+        },
+        43: {
+            description: "Keep above upgrade when leaving DSoTM",
+            cost: new Decimal(1e11),
+            currencyLayer: "dk",
+            currencyDisplayName: "lunar AC",
+            currencyInternalName: "lunarAC",
+            unlocked() {return challengeCompletions('mn', 11) >= 2}
+        },
+        44: {
+            description: "Keep above upgrade when leaving DSoTM",
             cost: new Decimal(1e12),
+            currencyLayer: "dk",
+            currencyDisplayName: "lunar AC",
+            currencyInternalName: "lunarAC",
+            unlocked() {return challengeCompletions('mn', 11) >= 2}
+        },
+        45: {
+            description: "Keep above upgrade when leaving DSoTM",
+            cost: new Decimal(1e15),
             currencyLayer: "dk",
             currencyDisplayName: "lunar AC",
             currencyInternalName: "lunarAC",
@@ -437,9 +498,9 @@ addLayer("dk", {
         23: {
             title: "Reset for +1 Lunar Dynamos",
             display() {return `
-                ${format(player.dk.lunarGenPower)}/${format(tmp.dk.getLunarDynReq)} lunar generator power
+                ${format(player.dk.darkness)}/${format(tmp.dk.getLunarDynReq)} lunar generator power
             `},
-            canClick() {return player.dk.lunarGenPower.gte(tmp.dk.getLunarDynReq)},
+            canClick() {return player.dk.darkness.gte(tmp.dk.getLunarDynReq)},
             onClick() {
                 player.dk.darkness = new Decimal(0)
                 player.dk.lunarGenerators = new Decimal(0)
@@ -544,6 +605,7 @@ addLayer("dk", {
             player.dk.lunarAC = player.dk.lunarAC.add(tmp.dk.getLunarAltEffect.mul(tmp.dk.getLunarACMult).mul(diff))
             player.dk.lunarDC = player.dk.lunarDC.add(tmp.dk.getLunarDynEffect.mul(tmp.dk.getLunarDCMult).mul(diff))
             if (hasUpgrade('dk', 32)) {
+                if (player.dk.darkness.gte(tmp.dk.getLunarGenReq)) player.dk.lunarGenerators = player.dk.lunarGenerators.add(1)
                 if (tmp.dk.buyables[11].canAfford) setBuyableAmount('dk', 11, getBuyableAmount('dk', 11).add(1))
                 if (tmp.dk.buyables[12].canAfford) setBuyableAmount('dk', 12, getBuyableAmount('dk', 12).add(1))
             }

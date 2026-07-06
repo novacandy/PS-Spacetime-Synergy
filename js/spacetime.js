@@ -753,6 +753,7 @@ addLayer("st", {
             title() {return "Primary Ω-Space Building (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")" + (this.freeLevels().gte(1) ? ("(+" + formatWhole(this.freeLevels())) + ")": "")},
             cost(x) { 
                 let cost = new Decimal(1e18).mul(new Decimal(100).pow(x.pow(1.5)))
+                if (hasUpgrade('dk', 34)) cost = cost.div(upgradeEffect('dk', 34))
                 return cost
             },
             display() {
@@ -777,6 +778,7 @@ addLayer("st", {
             },
             effect() {
                 let effect = this.effectBase().mul(getBuyableAmount(this.layer, this.id).add(this.freeLevels()).pow(0.75)).add(1)
+                if (hasUpgrade('dk', 33)) effect = this.effectBase().mul(getBuyableAmount(this.layer, this.id).add(this.freeLevels()).pow(0.9)).add(1)
                 return effect
             },
             purchaseLimit() {
@@ -804,6 +806,7 @@ addLayer("st", {
             title() {return "Secondary Ω-Space Building (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")" + (this.freeLevels().gte(1) ? ("(+" + formatWhole(this.freeLevels())) + ")": "")},
             cost(x) { 
                 let cost = new Decimal(1e21).mul(new Decimal(100).pow(x.pow(1.25)))
+                if (hasUpgrade('dk', 34)) cost = cost.div(upgradeEffect('dk', 34))
                 return cost
             },
             display() {
@@ -828,6 +831,7 @@ addLayer("st", {
             },
             effect() {
                 let effect = this.effectBase().mul(getBuyableAmount(this.layer, this.id).add(this.freeLevels()).pow(0.5)).add(1)
+                if (hasUpgrade('dk', 33)) effect = this.effectBase().mul(getBuyableAmount(this.layer, this.id).add(this.freeLevels()).pow(0.75)).add(1)
                 return effect
             },
             purchaseLimit() {
@@ -855,6 +859,7 @@ addLayer("st", {
             title() {return "Tertiary Ω-Space Building (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")" + (this.freeLevels().gte(1) ? ("(+" + formatWhole(this.freeLevels())) + ")": "")},
             cost(x) { 
                 let cost = new Decimal(1e24).mul(new Decimal(1000).pow(x.pow(1.2)))
+                if (hasUpgrade('dk', 34)) cost = cost.div(upgradeEffect('dk', 34))
                 return cost
             },
             display() {
@@ -906,6 +911,7 @@ addLayer("st", {
             title() {return "Quaternary Ω-Space Building (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")" + (this.freeLevels().gte(1) ? ("(+" + formatWhole(this.freeLevels())) + ")": "")},
             cost(x) { 
                 let cost = new Decimal(1e27).mul(new Decimal(10000).pow(x.pow(1.15)))
+                if (hasUpgrade('dk', 34)) cost = cost.div(upgradeEffect('dk', 34))
                 return cost
             },
             display() {
@@ -957,6 +963,7 @@ addLayer("st", {
             title() {return "Quinary Ω-Space Building (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")" + (this.freeLevels().gte(1) ? ("(+" + formatWhole(this.freeLevels())) + ")": "")},
             cost(x) { 
                 let cost = new Decimal(1e32).mul(new Decimal(1e6).pow(x.pow(1.25)))
+                if (hasUpgrade('dk', 34)) cost = cost.div(upgradeEffect('dk', 34))
                 return cost
             },
             display() {

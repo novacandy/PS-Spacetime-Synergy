@@ -294,13 +294,24 @@ addLayer("mn", {
             unlocked() {return hasUpgrade('mn', 34)}
         },
         42: {
-            fullDisplay() {return `
+            fullDisplay() {
+                if (inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 2) {
+                    return `
+                    <h3><s>Energized Moon</s> Less Really Is More</h3><br>
+                    Non-free levels of the Tertiary Ω-Space building add free Lunar Alternators. Effect: +${format(this.effect())}<br><br>
+                    Cost: 1e26 moonstone, 100 lunarity`
+                }
+                return `
                 <h3>Energized Moon</h3><br>
                 Improve moon essence to moon energy exponent. (0.75 -> 0.775)<br><br>
                 Cost: 1e26 moonstone, 100 lunarity`
             },
             canAfford() {return player.mn.moonstone.gte(1e26) && getBuyableAmount('mn', 31).gte(100)},
             pay() {player.mn.moonstone = player.mn.moonstone.sub(1e26), setBuyableAmount('mn', 31, getBuyableAmount('mn', 31).sub(100))},
+            effect() {
+                let effect = getBuyableAmount('st', 43).mul(2)
+                return effect
+            },
             unlocked() {return hasUpgrade('mn', 41)}
         },
         43: {
@@ -710,7 +721,7 @@ addLayer("mn", {
             },
             display() {
                 return "\
-                Sacrifice all your Lunarity and Dark Essence for " + format(this.cost()) + " Total Penumbral Eclipses\n\
+                Sacrifice all your Lunarity and Dark Essence for " + format(this.cost()) + " Total Eclipses\n\
                 Raises base darkness gain to the power of ^" + format(this.effect()) + "\n\
                 Requires: 5,000,000 lunarity, 1e43 dark essence\n\
                 " 
@@ -724,7 +735,7 @@ addLayer("mn", {
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(this.cost()))
                 doReset('mn', true)
                 setBuyableAmount('mn', 31, new Decimal(0))
-                player.mn.moonstone = new Decimal(0)
+                player.mn.darkEssence = new Decimal(0)
             },
         }
     },
@@ -737,7 +748,7 @@ addLayer("mn", {
                `
             },
             currenciesAffectedDisplay() {
-                return ['Spacetime', 'Spacetime, Moon Essence, and Moon Energy', 'Spacetime, Moon Essence, Moon Energy, Moonstone, and Radiance']
+                return ['Spacetime', 'Spacetime, Moon Essence, and Moon Energy', 'Spacetime, Moon Essence, Moon Energy, Moonstone, and Radiance', 'Spacetime, Moon Essence, Moon Energy, Moonstone, Radiance, Sun Essence, and Sun Energy']
             },
             onEnter() {
                 doReset('mn', true)
@@ -746,6 +757,10 @@ addLayer("mn", {
                 if (challengeCompletions('mn', 11) >= 1) {
                     player.mn.points = new Decimal(0)
                     player.mn.moonEnergy = new Decimal(0)
+                    setBuyableAmount('st', 11, new Decimal(0))
+                    setBuyableAmount('st', 12, new Decimal(0))
+                    setBuyableAmount('st', 13, new Decimal(0))
+                    setBuyableAmount('st', 14, new Decimal(0))
                     setBuyableAmount('mn', 11, new Decimal(0))
                     setBuyableAmount('mn', 12, new Decimal(0))
                     setBuyableAmount('mn', 13, new Decimal(0))
@@ -778,6 +793,9 @@ addLayer("mn", {
 
                 if(hasUpgrade('dk', 41)) keptUpgrades.push(31, 41)
                 if(hasUpgrade('dk', 42)) keptUpgrades.push(32, 42)
+                if(hasUpgrade('dk', 43)) keptUpgrades.push(33, 43)
+                if(hasUpgrade('dk', 44)) keptUpgrades.push(34, 44)
+                if(hasUpgrade('dk', 45)) keptUpgrades.push(35, 45)
 
                 console.log(keptUpgrades)
                 player.dk.upgrades = []
@@ -856,7 +874,7 @@ addLayer("mn", {
                     "blank",
                     "challenges",
                     "blank",
-                    ["milestones", [100, 101]]
+                    ["milestones", [100, 101, 102]]
                 ]
             }
         }
