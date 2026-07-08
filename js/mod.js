@@ -2,7 +2,7 @@ let modInfo = {
 	name: "Prestigious Saplings: Synergetic Spacetime!",
 	author: "Team Sapling",
 	pointsName: "points",
-	modFiles: ["spacetime.js", "moon.js", "darkness.js", "sun.js", "tree.js"],
+	modFiles: ["sidebarStuff.js", "spacetime.js", "moon.js", "darkness.js", "sun.js", "tree.js"],
 
 	discordName: "The Supernova",
 	discordLink: "https://discord.gg/5K4DXpGeU2",
@@ -59,7 +59,7 @@ function getPointGen() {
 
 function getPointCapacity() {
 	let cap = player.spacePoints
-	
+
 	if (hasUpgrade('st', 12)) cap = cap.mul(2)
 	if (hasUpgrade('st', 22)) cap = cap.mul(upgradeEffect('st', 22))
 	cap = cap.mul(tmp.mn.effect)

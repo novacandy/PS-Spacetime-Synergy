@@ -32,7 +32,7 @@ addLayer("sn", {
         if (effect.gte(1000)) effect = effect.div(1000).pow(0.25).mul(1000)
         return effect
     },
-    color: "#FBC02D",
+    color: "#ffa200",
     nodeStyle() {
         if (inChallenge('mn', 11) && challengeCompletions('mn', 11) > 0) return {
             "color": "#ffffff",
