@@ -25,7 +25,6 @@ addLayer("mn", {
         player.mn.moonEnergy = new Decimal(0)
         if (hasMilestone('mn', 1)) {
             player.mn.absoluteSpace = player.mn.absoluteSpace.add(tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims))
-            
         }
     },
     effectDescription() {
@@ -345,12 +344,12 @@ addLayer("mn", {
         },
         1: {
             requirementDescription: "10 moon essence",
-            effectDescription: "Start resets with all Spacetime upgrades, 50 Point Enhancement levels, and 25 Spacetime, Space, and Time Enhancement levels. Unlock the Absolute Space Module (in Spacetime)",
+            effectDescription: "Start resets with all Spacetime upgrades, 30 Point Enhancement levels, and 10 Spacetime, Space, and Time Enhancement levels. Unlock the Absolute Space Module (in Spacetime)",
             done() {return player.mn.points.gte(10)}
         },
         2: {
             requirementDescription: "1000 moon essence",
-            effectDescription: "Start resets with 100 Convert Rate levels, unlock Dark Side Module and a new spacetime conversion input",
+            effectDescription: "Start resets with 10 Convert Rate levels, unlock Dark Side Module and a new spacetime conversion input",
             done() {return player.mn.points.gte(1000)}
         },
         100: {
@@ -943,7 +942,7 @@ addLayer("mn", {
         if (player.mn.radiance.gte(tmp.mn.getRadianceOverflowStart)) player.mn.radiance = player.mn.radiance.div(tmp.mn.getRadianceOverflowDiv.pow(diff))
         if (hasMilestone('mn', 200)) setBuyableAmount('mn', 31, getBuyableAmount('mn', 31).add(tmp.mn.buyables[31].cost.mul(0.05).mul(diff)))
     },
-    layerShown() {return hasUpgrade('st', 24) || player.mn.unlocked && !player.sn.unlocked}
+    layerShown() {return (hasUpgrade('st', 24) || player.mn.unlocked) && !player.sn.unlocked}
 })
 const moonOrbit = document.createElement('style'); // orbit code stolen from Gods of Incremental adkv
 moonOrbit.innerHTML = `

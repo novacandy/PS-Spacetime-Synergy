@@ -53,16 +53,18 @@ function getPointGen() {
 	if (hasUpgrade('mn', 24)) gain = gain.mul(upgradeEffect('mn', 24))
 
 	gain = gain.mul(tmp.sn.effect)
-	gain = gain.mul(buyableEffect('sn', 11))
 
 	return gain
 }
 
 function getPointCapacity() {
 	let cap = player.spacePoints
+	
 	if (hasUpgrade('st', 12)) cap = cap.mul(2)
 	if (hasUpgrade('st', 22)) cap = cap.mul(upgradeEffect('st', 22))
 	cap = cap.mul(tmp.mn.effect)
+
+	cap = cap.mul(buyableEffect('sn', 11))
 	return cap
 }
 

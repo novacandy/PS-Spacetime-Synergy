@@ -21,7 +21,7 @@ addLayer("sn", {
         player.timePoints = new Decimal(15)
         player.sn.sunEnergy = new Decimal(0)
         if (hasMilestone('sn', 1)) {
-            
+            player.sn.absoluteTime = player.sn.absoluteTime.add(tmp.st.getStoredAbsTime)
         }
     },
     effectDescription() {
@@ -65,6 +65,10 @@ addLayer("sn", {
         if (effect.gte(10)) effect = effect.div(10).pow(0.75).mul(10)
         return effect
     },
+    absoluteTimeEffect() {
+        let effect = player.sn.absoluteTime.add(1).log(10).pow(1.5).add(1)
+        return effect
+    },
     hotkeys: [
         {key: "d", description: "D: Reset for sun essence", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
@@ -79,12 +83,12 @@ addLayer("sn", {
         },
         1: {
             requirementDescription: "10 sun essence",
-            effectDescription: "Start resets with all Spacetime upgrades, 50 Point Enhancement levels, and 25 Spacetime, Space, and Time Enhancement levels. Unlock the Absolute Time Module (in Spacetime)",
+            effectDescription: "Start resets with all Spacetime upgrades, 30 Point Enhancement levels, and 10 Spacetime, Space, and Time Enhancement levels. Unlock the Absolute Time Module (in Spacetime)",
             done() { return player.sn.points.gte(10) }
         },
         2: {
             requirementDescription: "1000 sun essence",
-            effectDescription: "Start resets with 100 Convert Rate levels, unlock Module and a new spacetime conversion input",
+            effectDescription: "Start resets with 10 Convert Rate levels, unlock Solar Flare Module and a new spacetime conversion input",
             done() { return player.sn.points.gte(1000) }
         },
     },
@@ -100,13 +104,13 @@ addLayer("sn", {
             display() { 
                 if (getBuyableAmount('sn', 11).gte(15)) {
                     return "\
-                    Multiplying point gain by x"+ format(this.effectBase()) +" each\n\
+                    Multiplying point capacity by x"+ format(this.effectBase()) +" each\n\
                     Currently: x" + format(this.effect()) + "\n\
                     Cost: "+ format(this.cost()) +" time\n\
                     <b style='color: #ff0000'>[SOFTCAPPED]<b>" 
                 } else {
                     return "\
-                    Multiplying point gain by x"+ format(this.effectBase()) +" each\n\
+                    Multiplying point capacity by x"+ format(this.effectBase()) +" each\n\
                     Currently: x" + format(this.effect()) + "\n\
                     Cost: "+ format(this.cost()) +" time\n\
                     " 
@@ -152,6 +156,10 @@ addLayer("sn", {
             } else {
                 return "You have <h2 style='color: #FBC02D; text-shadow: 0px 0px 10px #FBC02D'>" + format(player.sn.sunEnergy) + "</h2> sun energy, (+" + format(new Decimal(0.01).mul(tmp.sn.sunEnergyMult)) + "/s) which multiplies time gain from all sources by x" + format(tmp.sn.sunEnergyEffect)
             }
+        }],
+        "blank",
+        ["display-text", () => {
+            if (hasMilestone('sn', 0)) return "You have <h2 style='color: #ffffff; text-shadow: 0px 0px 10px #ffffff'>" + formatTime(player.sn.absoluteTime) + "</h2> of absolute time, which multiplies spacetime gain by x" + format(tmp.sn.absoluteTimeEffect)
         }],
         "blank",
         "milestones",

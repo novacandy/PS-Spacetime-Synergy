@@ -17,12 +17,6 @@ addLayer("st", {
         converting: false,
         convertBuyableAmount: new Decimal(0),
 
-        spaceRefillAmount: new Decimal(0),
-        spaceExtractedAmount: new Decimal(0),
-
-        timeRefillAmount: new Decimal(0),
-        timeExtractedAmount: new Decimal(0),
-
     }},
     color() {
         if (inChallenge('mn', 11)) return "#290e58"
@@ -76,10 +70,12 @@ addLayer("st", {
         mult = mult.mul(buyableEffect('st', 12))
     	if (hasUpgrade('st', 23)) mult = mult.mul(upgradeEffect('st', 23))
         mult = mult.mul(tmp.mn.absoluteSpaceEffect)
+
         if (inChallenge('mn', 11)) {
             mult = new Decimal(1)
             mult = mult.mul(tmp.dk.getLunarACEffect)
         }
+        mult = mult.mul(tmp.sn.absoluteTimeEffect)
         return mult
     },
     gainExp() {
@@ -114,7 +110,8 @@ addLayer("st", {
         let mult = new Decimal(1)
         if (hasUpgrade('st', 21)) mult = mult.mul(1.75)
         if (hasUpgrade('st', 23)) mult = mult.mul(upgradeEffect('st', 23))
-        mult = mult.mul(tmp.st.getStoredAbsSpaceEffect)
+        if (hasMilestone('mn', 1)) mult = mult.mul(tmp.st.getStoredAbsSpaceEffect)
+        if (hasMilestone('sn', 1)) mult = mult.mul(tmp.st.getStoredAbsTimeEffect)
         return mult
     },
     getConvertPenaltySoftcap() {
@@ -185,6 +182,14 @@ addLayer("st", {
         let next = new Decimal(10).pow(new Decimal(tmp.st.getBaseOmegaSpace.add(1)).root(0.6)).mul(1e11)
         if (hasUpgrade('mn', 34)) next = new Decimal(10).pow(new Decimal(tmp.st.getBaseOmegaSpace.add(1).mul(0.50)).root(0.6)).mul(1e11)
         return next
+    },
+    getStoredAbsTime() {
+        let time = Decimal.mul(player.sn.resetTime, getTimeConsumptionMultis())
+        return time
+    },
+    getStoredAbsTimeEffect() {
+        let effect = tmp.st.getStoredAbsTime.pow(0.33)
+        return effect
     },
     hotkeys: [
         {key: "s", description: "S: Reset for spacetime", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
@@ -1138,7 +1143,7 @@ addLayer("st", {
                 ],
             },
             "Absolute Spacetime Module": {
-                unlocked() {return hasMilestone('mn', 1) || false},
+                unlocked() {return hasMilestone('mn', 1) || hasMilestone('sn', 1)},
                 content: [
                     "blank",
                     ["microtabs", "absoluteSpacetime"]
@@ -1151,7 +1156,7 @@ addLayer("st", {
                     "blank",
                     ["display-text", "Requires both Absolute Space and Absolute Time to be unlocked at the same time"],
                 ],
-                unlocked() {return false}
+                unlocked() {return true}
             },
             "Absolute Space Sub-Module": {
                 content: [
@@ -1172,13 +1177,17 @@ addLayer("st", {
                     "blank",
                     ["buyables", [4]]         
                 ],
-                unlocked() {return hasMilestone('mn', 2)}
+                unlocked() {return hasMilestone('mn', 1)}
             },
             "Absolute Time Sub-Module": {
                 content: [
                     "blank",
+                    ["display-text", () => {return "Time since last Sun reset is storing <h2 style='color: #ffffff; text-shadow: 0px 0px 10px #ffffff'>" + formatTime(tmp.st.getStoredAbsTime) +  "</h2> of absolute time (multiplied by Time Consumption multis)"}],
+                    ["display-text", () => {return "Stored absolute time is multiplying convert output by " + format(tmp.st.getStoredAbsTimeEffect)}],
+                    ["display-text", () => {return "Performing sun resets will grant absolute time in the sun layer"}],
+                    "blank",
                 ],
-                unlocked() {return false}
+                unlocked() {return hasMilestone('sn', 1)}
             }
         },
     },
@@ -1196,17 +1205,17 @@ addLayer("st", {
         if (layers[resettingLayer].row <= this.row) return;
         let keep = [];
         keep.push("milestones")
-        if (hasMilestone('mn', 1)) keep.push("upgrades")
+        if (hasMilestone('mn', 1) || hasMilestone('sn', 1)) keep.push("upgrades")
         layerDataReset(this.layer, keep);
-        if (hasMilestone('mn', 1)) {
-            setBuyableAmount('st', 11, new Decimal(50))
-            setBuyableAmount('st', 12, new Decimal(25))
-            setBuyableAmount('st', 13, new Decimal(25))
-            setBuyableAmount('st', 14, new Decimal(25))
+        if (hasMilestone('mn', 1) || hasMilestone('sn', 1)) {
+            setBuyableAmount('st', 11, new Decimal(30))
+            setBuyableAmount('st', 12, new Decimal(10))
+            setBuyableAmount('st', 13, new Decimal(10))
+            setBuyableAmount('st', 14, new Decimal(10))
         }
-        if (hasMilestone('mn', 2)) {
-            setBuyableAmount('st', 21, new Decimal(100))
-            player.st.convertBuyableAmount = new Decimal(100)
+        if (hasMilestone('mn', 2) || hasMilestone('sn', 2)) {
+            setBuyableAmount('st', 21, new Decimal(10))
+            player.st.convertBuyableAmount = new Decimal(10)
         }
     },
     update(diff) {
