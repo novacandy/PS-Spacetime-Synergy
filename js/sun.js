@@ -28,7 +28,7 @@ addLayer("sn", {
         return "which multiplies point gain by x" + format(tmp.sn.effect) + ", but also multiplies time consumption speed by the same amount"
     },
     effect() {
-        let effect = new Decimal(1).mul(player.sn.points.pow(0.5)).add(1)
+        let effect = new Decimal(1).mul(player.sn.points.pow(0.33)).add(1)
         if (effect.gte(1000)) effect = effect.div(1000).pow(0.25).mul(1000)
         return effect
     },
@@ -47,7 +47,7 @@ addLayer("sn", {
     baseResource: "time",
     baseAmount() {return player.timePoints},
     type: "normal",
-    exponent: 0.9,
+    exponent: 0.5,
     gainMult() {
         mult = new Decimal(1)
         return mult
