@@ -97,7 +97,7 @@ addLayer("ach", {
         */
     },
     microtabs: {
-        "achievements": {
+        achievements: {
             "Spacetime Achievements": {
                 content: [
                     "blank",
