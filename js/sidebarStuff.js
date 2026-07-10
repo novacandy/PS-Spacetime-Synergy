@@ -138,6 +138,44 @@ addLayer("sta", {
     position: 1,
     type: "none",
     layerShown() { return true },
+    microtabs: {
+        statistics: {
+            "Spacetime Related Stats": {
+                content: [
+                    "blank",
+                    ["display-text", () => {return "Point Gain Multiplier: x" + format(getPointGen())}],
+                    ["display-text", () => {return "Direct Space Gain Multiplier: x" + format(getSpaceMultis())}],
+                    ["display-text", () => {return "Direct Time Gain Multiplier: x" + format(getTimeMultis())}],
+                    ["display-text", () => {return "Point Capacity Multiplier: x" + format(getPointCapacity().div(player.spacePoints))}],
+                    ["display-text", () => {return "Time Capacity Multiplier: x" + format(getPointTime().div(player.timePoints))}],
+                    ["display-text", () => {return "Time Consumption Multiplier: x" + format(getTimeConsumptionMultis())}],
+                    "blank",
+                    ["display-text", () => {return "Spacetime Gain Multiplier: x" + format(tmp.st.gainMult)}],
+                    ["display-text", () => {return "Convert Output Multiplier: x" + format(tmp.st.getConvertOutputMult)}],
+                    ["display-text", () => {return "Convert Penalty Divider: /" + format(Decimal.div(0.25, tmp.st.getConvertReduction))}],
+                    "blank",
+                ],
+                unlocked() {return true}
+            },
+            "Moon Related Stats": {
+                content: [
+                    "blank",
+                ],
+                unlocked() {return player.mn.unlocked}
+            },
+            "Sun Related Stats": {
+                content: [
+                    "blank",
+                ],
+                unlocked() {return player.sn.unlocked}
+            },
+        }
+    },
+    tabFormat: [
+        "main-display",
+        "blank",
+        ["microtabs", "statistics"]
+    ]
 })
 addLayer("gal", {
     startData() { return {

@@ -9,6 +9,7 @@ addLayer("sn", {
 		points: new Decimal(0),
         resetTime: 0,
         total: new Decimal(0),
+        
         sunEnergy: new Decimal(0),
         absoluteTime: new Decimal(0),
 
@@ -99,6 +100,10 @@ addLayer("sn", {
     solarFlareEffect() {
         let effect = player.sn.solarFlares.add(1).log(10).div(5).add(1)
         return effect
+    },
+    lightEssenceEffect() {
+        let effect = player.sn.solarFlares.add(1).log(10).div(5).add(1)
+        return mult
     },
     hotkeys: [
         {key: "N", description: "N: Reset for sun essence", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
@@ -320,10 +325,11 @@ addLayer("sn", {
                     ["upgrades", [1, 2, 3, 4]],
                 ]
             },
-            "Sub-Module": {
+            "Solar Trial Sub-Module": {
                 content: [
                     "blank",
                     ["display-text", () => {
+                        if (hasUpgrade('sn', 11)) return "You have " + format(player.sn.lightEssence) + " light essence, which generate a base of " + format(tmp.sn.getLightEssenceEffect) + " light per second while in a Solar Trial"
                         return "You have " + format(player.sn.lightEssence) + " light essence, which ???"
                     }],
                     "blank",

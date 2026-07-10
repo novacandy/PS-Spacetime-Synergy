@@ -402,6 +402,26 @@ addLayer("st", {
             },
             unlocked() {return hasMilestone('st', 2)}
         },
+        31: {
+            title: () => {return "-"},
+            canClick() {
+                return player.st.timeDoublerBuyableAmount.gt(0)
+            },
+            onClick() {
+                player.st.timeDoublerBuyableAmount = player.st.timeDoublerBuyableAmount.sub(1)
+            },
+            unlocked() {return hasMilestone('sn', 2)}
+        },
+        32: {
+            title: () => {return "+"},
+            canClick() {
+                return player.st.timeDoublerBuyableAmount.lt(getBuyableAmount('st', 51))
+            },
+            onClick() {
+                player.st.timeDoublerBuyableAmount = player.st.timeDoublerBuyableAmount.add(1)
+            },
+            unlocked() {return hasMilestone('sn', 2)}
+        },
     },
     buyables: {
         11: {
@@ -1026,9 +1046,9 @@ addLayer("st", {
             unlocked() {return hasMilestone('mn', 101) && hasUpgrade('mn', 33)}
         },
         51: {
-            title() {return "Time Doubler (" + formatWhole(player.st.convertBuyableAmount) + "/" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
+            title() {return "Time Doubler (" + formatWhole(player.st.timeDoublerBuyableAmount) + "/" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
             cost(x) { 
-                let cost = new Decimal(1000).mul(x.mul(0.25).add(1)).mul(new Decimal(1.05).pow(x))
+                let cost = new Decimal(1).mul(new Decimal(10).pow(x))
                 if (x.gte(10)) cost = cost.pow(2.5)
                 return cost
             },
@@ -1055,10 +1075,9 @@ addLayer("st", {
                 let effect = this.effectBase().pow(player.st.timeDoublerBuyableAmount)
                 return effect
             },
-            canAfford() { return player.points.gte(this.cost()) },
+            canAfford() { return player.sn.sunEnergy.gte(this.cost()) },
             buy() {
-                
-                player.points = player.points.sub(this.cost())
+                player.sn.sunEnergy = player.sn.sunEnergy.sub(this.cost())
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
             unlocked() {return hasMilestone('sn', 2)}
@@ -1240,6 +1259,11 @@ addLayer("st", {
                     ["display-text", () => {return "Stored absolute time is multiplying convert output by " + format(tmp.st.getStoredAbsTimeEffect)}],
                     ["display-text", () => {return "Performing sun resets will grant absolute time in the sun layer"}],
                     "blank",
+                    ["row", [
+                        ["clickable", [31]],
+                        ["buyables", [5]],
+                        ["clickable", [32]]
+                    ]],
                 ],
                 unlocked() {return hasMilestone('sn', 1)}
             }

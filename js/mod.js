@@ -77,6 +77,7 @@ function getTimeConsumptionMultis() {
 	let mult = new Decimal(1)
 	if (hasUpgrade('st', 23)) mult = mult.mul(upgradeEffect('st', 23))
 	mult = mult.mul(tmp.sn.effect)
+	mult = mult.mul(buyableEffect('st', 51))
 	return mult
 }
 

@@ -873,7 +873,7 @@ addLayer("mn", {
                 content: [
                     "blank",
                     ["display-text", () => {
-                        if (inChallenge('mn', 11)) return "You have " + format(player.mn.darkEssence) + " dark essence, which produce a base of " + format(tmp.mn.getDarkEssenceEffect) + " darkness per second"
+                        if (hasUpgrade('mn', 11)) return "You have " + format(player.mn.darkEssence) + " dark essence, which generate a base of " + format(tmp.mn.getDarkEssenceEffect) + " darkness per second while in the Dark Side of The Moon"
                         return "You have " + format(player.mn.darkEssence) + " dark essence, which ???"
                     }],
                     ["display-text", () => {
