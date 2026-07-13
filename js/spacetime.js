@@ -362,6 +362,7 @@ addLayer("st", {
                     }
                 },
             canClick() {
+                if (inChallenge('sn', 11)) return false
                 if (player.st.convertInput == "SPACETIME" && player.st.points.gte(1)) {
                     return true
                 }

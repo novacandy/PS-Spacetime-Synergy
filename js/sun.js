@@ -9,7 +9,7 @@ addLayer("sn", {
 		points: new Decimal(0),
         resetTime: 0,
         total: new Decimal(0),
-        
+
         sunEnergy: new Decimal(0),
         absoluteTime: new Decimal(0),
 
@@ -36,7 +36,7 @@ addLayer("sn", {
     },
     color: "#ffa200",
     nodeStyle() {
-        if (inChallenge('mn', 11) && challengeCompletions('mn', 11) > 0) return {
+        if (inChallenge('mn', 11) && challengeCompletions('mn', 11) > 4) return {
             "color": "#ffffff",
             "animation": 'sunOrbit 25s infinite linear',
         }
@@ -102,8 +102,8 @@ addLayer("sn", {
         return effect
     },
     lightEssenceEffect() {
-        let effect = player.sn.solarFlares.add(1).log(10).div(5).add(1)
-        return mult
+        let effect = player.sn.lightEssence.add(1).log(2)
+        return effect
     },
     hotkeys: [
         {key: "N", description: "N: Reset for sun essence", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
@@ -290,6 +290,34 @@ addLayer("sn", {
             unlocked() {return hasMilestone('sn', 0)}
         },
     },
+    challenges: {
+        11: {
+            name: "Solar Trial I",
+            fullDisplay() {return `
+                You cannot use Spacetime Conversion. Earn a multiplier to light gain based on spacetime.<br>
+                Currently: x${format(player.st.points.div(1e3).pow(0.5).add(1))}<br>
+                Goal: 10,000,000 light<br>
+                Reward: +1 Solar Power slot, more Resonance upgrades
+               `
+            },
+            onEnter() {
+                player.spacePoints = new Decimal(5)
+                player.timePoints = new Decimal(15)
+            },
+            canComplete() {return player.lh.light.gte(10000000)},
+            unlocked() {return hasUpgrade('sn', 11)},
+            style() {return {
+                "width": "350px",
+                "height": "350px",
+                "border-color": "#ffa200",
+                "background-color": "#523400",
+                "color": "#ffa200",
+                "text-shadow": "0px 0px 10px #ffa200",
+                "box-shadow": "0px 0px 10px #ffa200",
+                "align-content": "center"
+            }},
+        }
+    },
     microtabs: {
         sun: {
             "Time Buyable Module": {
@@ -325,14 +353,15 @@ addLayer("sn", {
                     ["upgrades", [1, 2, 3, 4]],
                 ]
             },
-            "Solar Trial Sub-Module": {
+            "Solar Power Sub-Module": {
                 content: [
                     "blank",
                     ["display-text", () => {
-                        if (hasUpgrade('sn', 11)) return "You have " + format(player.sn.lightEssence) + " light essence, which generate a base of " + format(tmp.sn.getLightEssenceEffect) + " light per second while in a Solar Trial"
+                        if (hasUpgrade('sn', 11)) return "You have " + format(player.sn.lightEssence) + " light essence, which generate a base of " + format(tmp.sn.lightEssenceEffect) + " light per second while in a Solar Trial"
                         return "You have " + format(player.sn.lightEssence) + " light essence, which ???"
                     }],
                     "blank",
+                    "challenges"
                 ]
             }
         }

@@ -2,7 +2,7 @@ let modInfo = {
 	name: "Prestigious Saplings: Synergetic Spacetime!",
 	author: "Team Sapling",
 	pointsName: "points",
-	modFiles: ["sidebarStuff.js", "spacetime.js", "moon.js", "darkness.js", "sun.js", "tree.js"],
+	modFiles: ["sidebarStuff.js", "spacetime.js", "moon.js", "darkness.js", "sun.js", "light.js", "tree.js"],
 
 	discordName: "The Supernova",
 	discordLink: "https://discord.gg/5K4DXpGeU2",

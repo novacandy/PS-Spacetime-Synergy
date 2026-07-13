@@ -1,6 +1,6 @@
 const DARK_TREE = [['lg'], ['la', 'ld']]
 addNode('lg', {
-    color: "rgb(4, 38, 22)",
+    color: "#537455",
     nodeStyle() {return {
         "border-radius": "100px"
     }},
@@ -13,7 +13,7 @@ addNode('lg', {
     layerShown() {return true},
 })
 addNode('la', {
-    color: "rgb(105, 13, 13)",
+    color: "#a15353",
     nodeStyle() {return {
         "border-radius": "100px"
     }},
@@ -27,7 +27,7 @@ addNode('la', {
     layerShown() {return challengeCompletions('mn', 11) >= 1},
 })
 addNode('ld', {
-    color: "rgb(105, 64, 13)",
+    color: "#a77445",
     nodeStyle() {return {
         "border-radius": "100px"
     }},
