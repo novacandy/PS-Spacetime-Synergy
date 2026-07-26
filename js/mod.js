@@ -33,7 +33,7 @@ function getStartPoints(){
 
 // Determines if it should show points/sec
 function canGenPoints(){
-	return new Decimal(getTimeConsumptionMultis().mul(player.st.resetTime)).lt(getPointTime())
+	return player.timePassed.lt(getPointTime())
 }
 
 // Calculate points/sec!
@@ -99,13 +99,14 @@ function getTimeMultis() {
 function addedPlayerData() { return {
 	spacePoints: new Decimal(0),
 	timePoints: new Decimal(0),
+	timePassed: new Decimal(0),
 }}
 
 // Display extra things at the top of the page
 var displayThings = [
 	() => "You have " + format(player.spacePoints) + " space and " + format(player.timePoints) + " time",
 	() => "Space is granting a point capacity of " + format(getPointCapacity()) + "",
-	() => "Time is allowing points to be generated for " + format(new Decimal(getTimeConsumptionMultis().mul(player.st.resetTime)).min(getPointTime())) + "/" + format(getPointTime()) + " seconds",
+	() => "Time is allowing points to be generated for " + formatTime(getPointTime().sub(player.timePassed).max(0)) + " (" + formatTime(getPointTime().max(0)) + " total)",
 ]
 
 // Determines when the game "ends"

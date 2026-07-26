@@ -66,6 +66,7 @@ addLayer("ach", {
             },
             unlocked() {return true}
         },
+
         101: {
             name: "Lunar Ascent!",
             tooltip: "Unlock the Moon layer.",
@@ -75,10 +76,20 @@ addLayer("ach", {
             },
             unlocked() {return true}
         },
+
         201: {
             name: "Solar Ascent!",
             tooltip: "Unlock the Sun layer.",
             done() {return player.sn.unlocked},
+            onComplete() {
+                player.ach.points = player.ach.points.add(1)
+            },
+            unlocked() {return true}
+        },
+        202: {
+            name: "ooooooooooo",
+            tooltip: "Earn a Solar Flare and begin generation of Resonance.",
+            done() {return player.sn.solarFlares.gte(1)},
             onComplete() {
                 player.ach.points = player.ach.points.add(1)
             },

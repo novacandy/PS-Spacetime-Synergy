@@ -62,6 +62,10 @@ addLayer("st", {
     type: "normal",
     exponent: 0.5,
     
+    onPrestige() {
+        player.timePassed = new Decimal(0)
+    },
+
     passiveGeneration() {
         return buyableEffect('mn', 31)
     },
@@ -188,7 +192,7 @@ addLayer("st", {
         return next
     },
     getStoredAbsTime() {
-        let time = Decimal.mul(player.sn.resetTime, getTimeConsumptionMultis())
+        let time = player.sn.sunTimePassed
         return time
     },
     getStoredAbsTimeEffect() {
@@ -380,6 +384,7 @@ addLayer("st", {
                 } else {
                     player.st.converting = false
                 }
+                player.timePassed = new Decimal(0)
                 doReset('st', true)
             }
         },

@@ -20,6 +20,7 @@ addLayer("mn", {
         darkEssence: new Decimal(0),
     }},
     onPrestige() {
+        player.timePassed = new Decimal(0)
         player.spacePoints = new Decimal(15)
         player.timePoints = new Decimal(5)
         player.mn.moonEnergy = new Decimal(0)

@@ -9,6 +9,7 @@ addLayer("sn", {
 		points: new Decimal(0),
         resetTime: 0,
         total: new Decimal(0),
+        sunTimePassed: new Decimal(0),
 
         sunEnergy: new Decimal(0),
         absoluteTime: new Decimal(0),
@@ -19,6 +20,7 @@ addLayer("sn", {
 
     }},
     onPrestige() {
+        player.timePassed = new Decimal(0)
         player.spacePoints = new Decimal(5)
         player.timePoints = new Decimal(15)
         player.sn.sunEnergy = new Decimal(0)
@@ -108,6 +110,16 @@ addLayer("sn", {
     hotkeys: [
         {key: "N", description: "N: Reset for sun essence", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
+    clickables: {
+        11: {
+            title() {return "Solar Power I: Capsules (" + (getClickableState(this.layer, this.id) ? "ACTIVE" : "INACTIVE")+ ")"},
+            display() {return "Unlocks Absolute Time Capsules, but "},
+        },
+        12: {
+            title() {return "Solar Power II: Capsule (" + (getClickableState(this.layer, this.id) ? "ACTIVE" : "INACTIVE")+ ")"},
+            display() {return "Unlocks Absolute Time Capsules, but "},
+        }
+    },
     upgrades: {
         11: {
             title: "Resonant Awakening",
@@ -295,9 +307,9 @@ addLayer("sn", {
             name: "Solar Trial I",
             fullDisplay() {return `
                 You cannot use Spacetime Conversion. Earn a multiplier to light gain based on spacetime.<br>
-                Currently: x${format(player.st.points.div(1e3).pow(0.5).add(1))}<br>
+                Currently: x${format(inChallenge('sn', 11) ? player.st.points.div(1e3).pow(0.5).add(1) : new Decimal(1))}<br>
                 Goal: 10,000,000 light<br>
-                Reward: +1 Solar Power slot, more Resonance upgrades
+                Reward: Unlock the first two Solar Powers and more Resonance upgrades
                `
             },
             onEnter() {
@@ -387,6 +399,7 @@ addLayer("sn", {
     ],
     update(diff) {
         player.sn.sunEnergy = player.sn.sunEnergy.add(new Decimal(0.01).mul(tmp.sn.sunEnergyMult).mul(diff))
+        player.sn.sunTimePassed = player.sn.sunTimePassed.add(getTimeConsumptionMultis().mul(diff))
         player.sn.resonance = player.sn.resonance.mul(tmp.sn.getResonanceMult.pow(diff))
     },
     layerShown() {return hasUpgrade('st', 24) || player.sn.unlocked && !player.mn.unlocked}

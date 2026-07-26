@@ -80,11 +80,18 @@ function formatWhole(decimal) {
 }
 
 function formatTime(s) {
-    if (s < 60) return format(s) + "s"
-    else if (s < 3600) return formatWhole(Math.floor(s / 60)) + "m " + format(s % 60) + "s"
-    else if (s < 86400) return formatWhole(Math.floor(s / 3600)) + "h " + formatWhole(Math.floor(s / 60) % 60) + "m " + format(s % 60) + "s"
-    else if (s < 31536000) return formatWhole(Math.floor(s / 86400) % 365) + "d " + formatWhole(Math.floor(s / 3600) % 24) + "h " + formatWhole(Math.floor(s / 60) % 60) + "m " + format(s % 60) + "s"
-    else return formatWhole(Math.floor(s / 31536000)) + "y " + formatWhole(Math.floor(s / 86400) % 365) + "d " + formatWhole(Math.floor(s / 3600) % 24) + "h " + formatWhole(Math.floor(s / 60) % 60) + "m " + format(s % 60) + "s"
+    if (options.compactTimeFormat) {
+        if (s < 3600) return formatWhole(Math.floor(s / 60)) + ":" + (s % 60 > 10 ? formatWhole(s % 60) : "0" + formatWhole(s % 60))
+        else if (s < 86400) return formatWhole(Math.floor(s / 3600)) + ":" + (Math.floor(s / 60) % 60 > 9 ? formatWhole(Math.floor(s / 60) % 60) : "0" + formatWhole(Math.floor(s / 60) % 60)) + ":" + (s % 60 > 10 ? formatWhole(s % 60) : "0" + formatWhole(s % 60))
+        else if (s < 31536000) return formatWhole(Math.floor(s / 86400)) + "d " + formatWhole(Math.floor(s / 3600) % 24) + ":" + (Math.floor(s / 60) % 60 > 9 ? formatWhole(Math.floor(s / 60) % 60) : "0" + formatWhole(Math.floor(s / 60) % 60)) + ":" + (s % 60 > 10 ? formatWhole(s % 60) : "0" + formatWhole(s % 60))
+        else return formatWhole(Math.floor(s / 31536000)) + "y " + formatWhole(Math.floor(s / 86400) % 365) + "d " + formatWhole(Math.floor(s / 3600) % 24) + ":" + (Math.floor(s / 60) % 60 > 9 ? formatWhole(Math.floor(s / 60) % 60) : "0" + formatWhole(Math.floor(s / 60) % 60)) + ":" + (s % 60 > 10 ? formatWhole(s % 60) : "0" + formatWhole(s % 60))
+    } else {
+        if (s < 60) return format(s) + "s"
+        else if (s < 3600) return formatWhole(Math.floor(s / 60)) + "m " + format(s % 60) + "s"
+        else if (s < 86400) return formatWhole(Math.floor(s / 3600)) + "h " + formatWhole(Math.floor(s / 60) % 60) + "m " + format(s % 60) + "s"
+        else if (s < 31536000) return formatWhole(Math.floor(s / 86400) % 365) + "d " + formatWhole(Math.floor(s / 3600) % 24) + "h " + formatWhole(Math.floor(s / 60) % 60) + "m " + format(s % 60) + "s"
+        else return formatWhole(Math.floor(s / 31536000)) + "y " + formatWhole(Math.floor(s / 86400) % 365) + "d " + formatWhole(Math.floor(s / 3600) % 24) + "h " + formatWhole(Math.floor(s / 60) % 60) + "m " + format(s % 60) + "s"
+    }
 }
 
 function toPlaces(x, precision, maxAccepted) {
