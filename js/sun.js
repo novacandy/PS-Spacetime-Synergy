@@ -68,6 +68,8 @@ addLayer("sn", {
     },
     sunEnergyMult() {
         let mult = player.sn.points.pow(0.75)
+        if (inChallenge('sn', 12)) mult = player.sn.points.pow(0.5)
+        if (hasUpgrade('sn', 21)) mult = mult.mul(upgradeEffect('sn', 21))
         return mult
     },
     sunEnergyEffect() {
@@ -124,7 +126,7 @@ addLayer("sn", {
     clickables: {
         11: {
             title() {return "Solar Power I: Capsule (" + (player.sn.activeSolarPowers[0] ? "ACTIVE" : "INACTIVE")+ ")"},
-            display() {return "Unlock Absolute Time Capsules, but raise resonance overflow penalty to the power of 1.5"},
+            display() {return "Unlock Absolute Time Capsules, but raise resonance overflow penalty to the power of ^1.5"},
             canClick() {return true},
             onClick() {
                 player.sn.activeSolarPowers[0] = player.sn.activeSolarPowers[0] ? false : true
@@ -134,6 +136,23 @@ addLayer("sn", {
                 player.sn.timePoints = new Decimal(15)
             },
             unlocked() {return challengeCompletions('sn', 11) >= 1},
+            style() {return {
+                "width": "200px",
+                "height": "200px",
+            }}
+        },
+        12: {
+            title() {return "Solar Power II: Time Flux (" + (player.sn.activeSolarPowers[1] ? "ACTIVE" : "INACTIVE")+ ")"},
+            display() {return "Absolute Time effect is raised to the power of ^1.5, but time capacity from time is raised to the power of ^0.33."},
+            canClick() {return true},
+            onClick() {
+                player.sn.activeSolarPowers[1] = player.sn.activeSolarPowers[1] ? false : true
+                doReset('sn', true)
+                player.sn.sunTimePassed = new Decimal(0)
+                player.sn.spacePoints = new Decimal(5)
+                player.sn.timePoints = new Decimal(15)
+            },
+            unlocked() {return challengeCompletions('sn', 12) >= 1},
             style() {return {
                 "width": "200px",
                 "height": "200px",
@@ -159,6 +178,58 @@ addLayer("sn", {
             currencyDisplayName: "resonance",
             currencyInternalName: "resonance",
             unlocked() {return challengeCompletions('sn', 11) >= 1}
+        },
+        13: {
+            title: "Burning Time",
+            description() {return "Earn a multiplier to absolute time speed based on solar flares. Effect: x" + format(this.effect())},
+            cost: new Decimal(1e9),
+            pay() {player.sn.resonance = player.sn.resonance.div(this.cost)},
+            effect() {
+                let effect = player.sn.solarFlares.add(1).log(10).pow(1.5).add(1)
+                return effect
+            },
+            currencyLayer: "sn",
+            currencyDisplayName: "resonance",
+            currencyInternalName: "resonance",
+            unlocked() {return challengeCompletions('sn', 11) >= 1}
+        },
+        14: {
+            title: "Resonant Conversion",
+            description() {return "Divide the convert rate penalty based on resonance. Effect: /" + format(this.effect())},
+            cost: new Decimal(1e18),
+            pay() {player.sn.resonance = player.sn.resonance.div(this.cost)},
+            effect() {
+                let effect = player.sn.resonance.add(1).log(2).pow(0.5).add(1)
+                return effect
+            },
+            currencyLayer: "sn",
+            currencyDisplayName: "resonance",
+            currencyInternalName: "resonance",
+            unlocked() {return challengeCompletions('sn', 11) >= 1}
+        },
+        21: {
+            title: "Stellar Evolution",
+            description() {return "Earn a multiplier to sun energy generation based on sun essence. Effect: x" + format(this.effect())},
+            cost: new Decimal(1e7),
+            effect() {
+                let effect = player.sn.points.pow(0.2).add(1)
+                return effect
+            },
+            currencyLayer: "sn",
+            currencyDisplayName: "solar flares",
+            currencyInternalName: "solarFlares",
+        },
+        22: {
+            title: "Repeated Resonance",
+            description() {return "<b>Resonant Enhancement Type-B</b> is stronger based on resonance. Effect: x" + format(this.effect())},
+            cost: new Decimal(1e10),
+            effect() {
+                let effect = player.sn.resonance.add(1).log(10).add(1).log(10).div(5).add(1)
+                return effect
+            },
+            currencyLayer: "sn",
+            currencyDisplayName: "solar flares",
+            currencyInternalName: "solarFlares",
         },
     },
     milestones: {
@@ -300,6 +371,7 @@ addLayer("sn", {
             },
             effectBase() {
                 let base = new Decimal(2)
+                if (hasUpgrade('sn', 22)) base = base.mul(upgradeEffect('sn', 22))
                 return base
             },
             effect() {
@@ -323,14 +395,14 @@ addLayer("sn", {
             display() { 
                 if (getBuyableAmount('sn', 23).gte(10)) {
                     return "\
-                    Weakening resonance overflow by "+ format(Decimal.sub(1, this.effectBase()).mul(100)) + "% each\n\
-                    Currently: " + format(this.effect().mul(100)) + "%\n\
+                    Weakening resonance overflow by x"+ format(this.effectBase()) + " each\n\
+                    Currently: /" + format(Decimal.div(1, this.effect())) + "\n\
                     Cost: "+ format(this.cost()) +" resonance\n\
                     <b style='color: #ff0000'>[SOFTCAPPED]<b>" 
                 } else {
                     return "\
-                    Weakening resonance overflow by "+ format(Decimal.sub(1, this.effectBase()).mul(100)) +"% each\n\
-                    Currently: " + format(this.effect().mul(100)) + "%\n\
+                    Weakening resonance overflow by x"+ format(this.effectBase()) +" each\n\
+                    Currently: /" + format(Decimal.div(1, this.effect())) + "\n\
                     Cost: "+ format(this.cost()) +" resonance\n\
                     " 
                 }
@@ -365,8 +437,47 @@ addLayer("sn", {
                 player.spacePoints = new Decimal(5)
                 player.timePoints = new Decimal(15)
             },
+            onExit() {
+                player.lh.light = new Decimal(0)
+                player.lh.solarPrestige = new Decimal(0)
+                setBuyableAmount('lh', 11, new Decimal(0))
+                setBuyableAmount('lh', 12, new Decimal(0))
+            },
             canComplete() {return player.lh.light.gte(10000000)},
             unlocked() {return hasUpgrade('sn', 11)},
+            style() {return {
+                "width": "350px",
+                "height": "350px",
+                "border-color": "#ffa200",
+                "background-color": "#523400",
+                "color": "#ffa200",
+                "text-shadow": "0px 0px 10px #ffa200",
+                "box-shadow": "0px 0px 10px #ffa200",
+                "align-content": "center"
+            }},
+        },
+        12: {
+            name: "Solar Trial II",
+            fullDisplay() {return `
+                The sun essence to sun energy exponent is reduced. (0.75 -> 0.5) Earn a multiplier to light gain based on sun energy.<br>
+                Currently: x${format(inChallenge('sn', 12) ? player.sn.sunEnergy.pow(0.5).add(1) : new Decimal(1))}<br>
+                Goal: 1.00e9 light<br>
+                Reward: Unlock the Time Flux solar power
+               `
+            },
+            onEnter() {
+                player.spacePoints = new Decimal(5)
+                player.timePoints = new Decimal(15)
+                player.sn.sunEnergy = new Decimal(0)
+            },
+            onExit() {
+                player.lh.light = new Decimal(0)
+                player.lh.solarPrestige = new Decimal(0)
+                setBuyableAmount('lh', 11, new Decimal(0))
+                setBuyableAmount('lh', 12, new Decimal(0))
+            },
+            canComplete() {return player.lh.light.gte(1e9)},
+            unlocked() {return challengeCompletions('sn', 11) >= 1},
             style() {return {
                 "width": "350px",
                 "height": "350px",

@@ -305,7 +305,7 @@ addLayer("mn", {
                 }
                 return `
                 <h3>Energized Moon</h3><br>
-                Improve moon essence to moon energy exponent. (0.75 -> 0.775)<br><br>
+                Improve the moon essence to moon energy exponent. (0.75 -> 0.775)<br><br>
                 Cost: 1e26 moonstone, 100 lunarity`
             },
             canAfford() {return player.mn.moonstone.gte(1e26) && getBuyableAmount('mn', 31).gte(100)},
@@ -878,7 +878,7 @@ addLayer("mn", {
                         return "You have " + format(player.mn.darkEssence) + " dark essence, which ???"
                     }],
                     ["display-text", () => {
-                        if (!(!hasMilestone('mn', 102) || false)) return "<br>The Dark Side of The Moon has been temporarily sealed away, you need a Sun milestone to re-unlock it<br>You have been given the Lunar Generator and Lunar Alternator upgrades for free if not already obtained"
+                        if (!(!hasMilestone('mn', 102) || false)) return "<br>The Dark Side of The Moon has been temporarily sealed away, you need to progress more in The Sun to re-unlock it.<br>You have been given all the Lunar Generator and Lunar Alternator upgrades for free if not already obtained."
                     }],
                     "blank",
                     "challenges",

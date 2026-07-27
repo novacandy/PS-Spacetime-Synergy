@@ -71,6 +71,7 @@ function getPointCapacity() {
 
 function getPointTime() {
 	let time = player.timePoints
+	if (player.sn.activeSolarPowers[1]) time = time.pow(0.33)
 	time = time.mul(buyableEffect('st', 61))
 	return time
 }

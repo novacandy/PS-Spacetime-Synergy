@@ -95,9 +95,13 @@ addLayer("st", {
     },
     getConvertReduction() {
         let reduction = new Decimal(0.25)
+    
         if (hasUpgrade('st', 24)) reduction = reduction.div(2)
+
         if (hasUpgrade('mn', 22)) reduction = reduction.div(upgradeEffect('mn', 22))
         reduction = reduction.div(buyableEffect('st', 43))
+
+        if (hasUpgrade('sn', 14)) reduction = reduction.div(upgradeEffect('sn', 14))
         reduction = reduction.mul(tmp.st.getConvertPenaltySoftcapMult)
         return reduction.min(0.99)
     },
@@ -192,12 +196,18 @@ addLayer("st", {
         return next
     },
     getStoredAbsTime() {
-        let time = player.sn.sunTimePassed
+        let time = player.sn.sunTimePassed.mul(tmp.st.getAbsTimeSpeed)
         return time
     },
     getStoredAbsTimeEffect() {
         let effect = tmp.st.getStoredAbsTime.pow(0.33)
+        if (player.sn.activeSolarPowers[1]) effect = effect.pow(1.5)
         return effect
+    },
+    getAbsTimeSpeed() {
+        let speed = new Decimal(1)
+        if (hasUpgrade('sn', 13)) speed = speed.mul(upgradeEffect('sn', 13))
+        return speed
     },
     hotkeys: [
         {key: "s", description: "S: Reset for spacetime", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
@@ -1091,7 +1101,7 @@ addLayer("st", {
         61: {
             title() {return "Absolute Time Capsules (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
             cost(x) {
-                let cost = new Decimal(15768000).mul(Decimal.pow(2, x))
+                let cost = new Decimal(10512000).mul(Decimal.pow(3, x))
                 if (x.gte(this.softcapStart())) cost = cost
                 return cost.floor()
             },
@@ -1106,7 +1116,7 @@ addLayer("st", {
                 `
             },
             effectBase() {
-                let base = new Decimal(5)
+                let base = new Decimal(2)
                 return base
             },
             effect() {

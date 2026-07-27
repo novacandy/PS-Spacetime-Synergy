@@ -24,7 +24,7 @@ addNode('ss', {
     onClick() {
         player.subtabs['lh']['light'] = 'Solar Sacrifice'
     },
-    layerShown() {return false},
+    layerShown() {return challengeCompletions('sn', 11) >= 1},
 })
 addNode('sm', {
     color: "#d96c13",
@@ -48,11 +48,13 @@ addLayer("lh", {
     displayRow: 5,
     position: 0,
     startData() { return {
+
         unlocked: true,
         light: new Decimal(0),
         bestLight: new Decimal(0),
 
-        solarPrestige: new Decimal(0)
+        solarPrestige: new Decimal(0),
+        solarSacrifice: new Decimal(0)
 
     }},
     tooltip() {return formatWhole(player.dk.darkness) + " light"},
@@ -89,10 +91,13 @@ addLayer("lh", {
     getLightGen() {
         let gen = tmp.sn.lightEssenceEffect
         if (inChallenge('sn', 11)) gen = gen.mul(player.st.points.div(1e3).pow(0.5).add(1))
+        if (inChallenge('sn', 12)) gen = gen.mul(player.sn.sunEnergy.pow(0.5).add(1))
         gen = gen.mul(tmp.lh.solarPrestigeEffect)
         gen = gen.mul(buyableEffect('lh', 11))
+        gen = gen.mul(buyableEffect('lh', 21))
         return gen
     },
+
     getSolarPrestigeGain() {
         let gain = player.lh.light.div(1000).pow(0.5)
         gain = gain.mul(tmp.lh.solarPrestigeGainMult)
@@ -105,10 +110,29 @@ addLayer("lh", {
     solarPrestigeGainMult() {
         let mult = new Decimal(1)
         mult = mult.mul(buyableEffect('lh', 12))
+        mult = mult.mul(buyableEffect('lh', 22))
         return mult
     },
     solarPrestigeEffect() {
         let effect = player.lh.solarPrestige.add(1).log(10).add(1)
+        return effect
+    },
+
+    getSolarSacrificeGain() {
+        let gain = player.lh.light.div(10000000).pow(1/3)
+        gain = gain.mul(tmp.lh.solarSacrificeGainMult)
+        return gain.floor()
+    },
+    getNextSolarSacrifice() {
+        let next = tmp.lh.getSolarSacrificeGain.div(tmp.lh.solarSacrificeGainMult).add(1).pow(3).mul(10000000)
+        return next.floor()
+    },
+    solarSacrificeGainMult() {
+        let mult = new Decimal(1)
+        return mult
+    },
+    solarSacrificeEffect() {
+        let effect = player.lh.solarSacrifice.add(1).log(10).add(1)
         return effect
     },
 
@@ -128,7 +152,7 @@ addLayer("lh", {
                 return start
             },
             display() { 
-                return `Multiplying light generation by +x${format(this.effectBase())} each
+                return `Increasing light generation multiplier by +x${format(this.effectBase())} each
                     Currently: x${format(this.effect())}
                     Cost: ${format(this.cost())} solar prestige points ${getBuyableAmount(this.layer, this.id).gte(this.softcapStart())? "<br><b style='color: #ff0000'>[SOFTCAPPED]</b>" : ""}
                 `
@@ -159,7 +183,7 @@ addLayer("lh", {
                 return start
             },
             display() { 
-                return `Multiplying solar prestige point gain by +x${format(this.effectBase())} each
+                return `Increasing solar prestige point gain multiplier by +x${format(this.effectBase())} each
                     Currently: x${format(this.effect())}
                     Cost: ${format(this.cost())} solar prestige points ${getBuyableAmount(this.layer, this.id).gte(this.softcapStart())? "<br><b style='color: #ff0000'>[SOFTCAPPED]</b>" : ""}
                 `
@@ -175,6 +199,68 @@ addLayer("lh", {
             canAfford() { return player.lh.solarPrestige.gte(this.cost())},
             buy() {
                 player.lh.solarPrestige = player.lh.solarPrestige.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+        },
+        21: {
+            title() {return "Light Boost II (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost(x) {
+                let cost = new Decimal(1).mul(x.mul(0.5).add(1)).mul(Decimal.pow(1.05, x))
+                if (x.gte(this.softcapStart())) cost = cost
+                return cost.floor()
+            },
+            softcapStart() {
+                let start = new Decimal(999)
+                return start
+            },
+            display() { 
+                return `Increasing light generation multiplier by +x${format(this.effectBase())} each
+                    Currently: x${format(this.effect())}
+                    Cost: ${format(this.cost())} solar sacrifice points ${getBuyableAmount(this.layer, this.id).gte(this.softcapStart())? "<br><b style='color: #ff0000'>[SOFTCAPPED]</b>" : ""}
+                `
+            },
+            effectBase() {
+                let base = new Decimal(0.5)
+                return base
+            },
+            effect() {
+                let effect = this.effectBase().mul(getBuyableAmount(this.layer, this.id)).add(1)
+                return effect
+            },
+            canAfford() { return player.lh.solarSacrifice.gte(this.cost())},
+            buy() {
+                player.lh.solarSacrifice = player.lh.solarSacrifice.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+        },
+        22: {
+            title() {return "Solar Prestige Boost II (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost(x) {
+                let cost = new Decimal(1).mul(x.mul(1.25).add(1)).mul(Decimal.pow(1.15, x))
+                if (x.gte(this.softcapStart())) cost = cost
+                return cost.floor()
+            },
+            softcapStart() {
+                let start = new Decimal(999)
+                return start
+            },
+            display() { 
+                return `Increasing solar prestige point gain multiplier by +x${format(this.effectBase())} each
+                    Currently: x${format(this.effect())}
+                    Cost: ${format(this.cost())} solar sacrifice points ${getBuyableAmount(this.layer, this.id).gte(this.softcapStart())? "<br><b style='color: #ff0000'>[SOFTCAPPED]</b>" : ""}
+                `
+            },
+            effectBase() {
+                let base = new Decimal(0.5)
+                return base
+            },
+            effect() {
+                let effect = this.effectBase().mul(getBuyableAmount(this.layer, this.id)).add(1)
+                return effect
+            },
+            canAfford() { return player.lh.solarSacrifice.gte(this.cost())},
+            buy() {
+                player.lh.solarSacrifice = player.lh.solarSacrifice.sub(this.cost())
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
         },
@@ -208,6 +294,25 @@ addLayer("lh", {
                 "border-color": "#ffffff"
             }}
         },
+        22: {
+            title() {return `Reset for +${formatWhole(tmp.lh.getSolarSacrificeGain)} solar sacrifice points`},
+            display() {if (player.lh.solarSacrifice.lt(1000) && tmp.lh.getSolarSacrificeGain.lt(100)) return `
+                Next at ${format(tmp.lh.getNextSolarSacrifice)} light
+            `},
+            canClick() {return player.lh.light.gte(10000000)},
+            onClick() {
+                player.lh.solarSacrifice = player.lh.solarSacrifice.add(tmp.lh.getSolarSacrificeGain)
+                player.lh.light = new Decimal(0)
+                player.lh.solarPrestige = new Decimal(0)
+                setBuyableAmount('lh', 11, new Decimal(0))
+                setBuyableAmount('lh', 12, new Decimal(0))
+            },
+            style() {return {
+                "width": "200px",
+                "height": "100px",
+                "border-color": "#ffffff"
+            }}
+        },
     },
     microtabs: {
         light: {
@@ -229,7 +334,13 @@ addLayer("lh", {
             },
             "Solar Sacrifice": {
                 content: [
-
+                    ['clickable', [11]],
+                    "blank",
+                    ["display-text", () => {return "You have <h2 style='color: #bc6c6e; text-shadow: 0px 0px 10px #bc6c6e'>" + formatWhole(player.lh.solarSacrifice) + "</h2> solar sacrifice points, which multiply solar prestige point gain by x" + format(tmp.lh.solarSacrificeEffect)}],
+                    "blank",
+                    ['clickable', [22]],
+                    "blank",
+                    ['buyables', [2]]
                 ]
             },
             "Solar Magnets": {
