@@ -65,11 +65,13 @@ function getPointCapacity() {
 	cap = cap.mul(tmp.mn.effect)
 
 	cap = cap.mul(buyableEffect('sn', 11))
+	cap = cap.mul(buyableEffect('st', 61))
 	return cap
 }
 
 function getPointTime() {
 	let time = player.timePoints
+	time = time.mul(buyableEffect('st', 61))
 	return time
 }
 

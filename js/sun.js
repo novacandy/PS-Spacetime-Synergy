@@ -18,6 +18,8 @@ addLayer("sn", {
         resonance: new Decimal(1),
         lightEssence: new Decimal(0),
 
+        activeSolarPowers: [false, false, false, false, false, false, false, false]
+
     }},
     onPrestige() {
         player.timePassed = new Decimal(0)
@@ -51,7 +53,11 @@ addLayer("sn", {
     baseResource: "time",
     baseAmount() {return player.timePoints},
     type: "normal",
-    exponent: 0.5,
+    exponent() {
+        let exp = new Decimal(0.5)
+        if (challengeCompletions('sn', 11) >= 1) exp = exp.add(0.05)
+        return exp
+    },
     gainMult() {
         mult = new Decimal(1)
         return mult
@@ -75,7 +81,11 @@ addLayer("sn", {
     },
     getResonanceMult() {
         let mult = new Decimal(0)
-        mult = mult.add(buyableEffect('sn', 21))
+        if (hasUpgrade('sn', 12)) {
+            mult = new Decimal(1.01).mul(buyableEffect('sn', 21))
+        } else {
+            mult = mult.add(buyableEffect('sn', 21))
+        }
         mult = mult.mul(tmp.sn.solarFlareEffect)
         mult = mult.add(1)
         mult = mult.root(tmp.sn.getResonanceOverflowRoot)
@@ -88,6 +98,7 @@ addLayer("sn", {
     },
     getResonanceOverflowRoot() {
         let root = player.sn.resonance.div(tmp.sn.getResonanceOverflowStart).pow(2)
+        if (player.sn.activeSolarPowers[0]) root = root.pow(1.5)
         root = root.mul(buyableEffect('sn', 23))
         return root.max(1)
     },
@@ -112,13 +123,22 @@ addLayer("sn", {
     ],
     clickables: {
         11: {
-            title() {return "Solar Power I: Capsules (" + (getClickableState(this.layer, this.id) ? "ACTIVE" : "INACTIVE")+ ")"},
-            display() {return "Unlocks Absolute Time Capsules, but "},
+            title() {return "Solar Power I: Capsule (" + (player.sn.activeSolarPowers[0] ? "ACTIVE" : "INACTIVE")+ ")"},
+            display() {return "Unlock Absolute Time Capsules, but raise resonance overflow penalty to the power of 1.5"},
+            canClick() {return true},
+            onClick() {
+                player.sn.activeSolarPowers[0] = player.sn.activeSolarPowers[0] ? false : true
+                doReset('sn', true)
+                player.sn.sunTimePassed = new Decimal(0)
+                player.sn.spacePoints = new Decimal(5)
+                player.sn.timePoints = new Decimal(15)
+            },
+            unlocked() {return challengeCompletions('sn', 11) >= 1},
+            style() {return {
+                "width": "200px",
+                "height": "200px",
+            }}
         },
-        12: {
-            title() {return "Solar Power II: Capsule (" + (getClickableState(this.layer, this.id) ? "ACTIVE" : "INACTIVE")+ ")"},
-            display() {return "Unlocks Absolute Time Capsules, but "},
-        }
     },
     upgrades: {
         11: {
@@ -129,6 +149,16 @@ addLayer("sn", {
             currencyLayer: "sn",
             currencyDisplayName: "resonance",
             currencyInternalName: "resonance",
+        },
+        12: {
+            title: "A For Effort",
+            description: "Reset <b>Resonant Enhancement Type-A</b> and make it more expensive, but its effect is significantly stronger.",
+            cost: new Decimal(2.5e7),
+            pay() {player.sn.resonance = player.sn.resonance.div(this.cost); setBuyableAmount('sn', 21, new Decimal(0))},
+            currencyLayer: "sn",
+            currencyDisplayName: "resonance",
+            currencyInternalName: "resonance",
+            unlocked() {return challengeCompletions('sn', 11) >= 1}
         },
     },
     milestones: {
@@ -194,30 +224,49 @@ addLayer("sn", {
             title() {return "Resonant Enhancement Type-A (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
             cost(x) {
                 let cost = new Decimal(1).mul(x.mul(0.25).add(1)).mul(new Decimal(1.05).pow(x))
+                if (hasUpgrade('sn', 12)) cost = new Decimal(1).mul(x.mul(2).add(1)).mul(new Decimal(2.5).pow(x))
                 if (x.gte(10)) cost = cost.pow(2)
                 return cost
             },
             display() { 
-                if (getBuyableAmount('sn', 21).gte(10)) {
-                    return "\
-                    Increasing resonance multiplier by +"+ format(this.effectBase()) +" each\n\
-                    Currently: +" + format(this.effect()) + "\n\
-                    Cost: "+ format(this.cost()) +" resonance\n\
-                    <b style='color: #ff0000'>[SOFTCAPPED]<b>" 
+                if (hasUpgrade('sn', 12)) {
+                    if (getBuyableAmount('sn', 21).gte(10)) {
+                        return "\
+                        Multiplying resonance multiplier by x"+ format(this.effectBase()) +" each\n\
+                        Currently: x" + format(this.effect()) + "\n\
+                        Cost: "+ format(this.cost()) +" resonance\n\
+                        <b style='color: #ff0000'>[SOFTCAPPED]<b>" 
+                    } else {
+                        return "\
+                        Multiplying resonance multiplier by x"+ format(this.effectBase()) +" each\n\
+                        Currently: x" + format(this.effect()) + "\n\
+                        Cost: "+ format(this.cost()) +" resonance\n\
+                        " 
+                    }
                 } else {
-                    return "\
-                    Increasing resonance multiplier by +"+ format(this.effectBase()) +" each\n\
-                    Currently: +" + format(this.effect()) + "\n\
-                    Cost: "+ format(this.cost()) +" resonance\n\
-                    " 
+                    if (getBuyableAmount('sn', 21).gte(10)) {
+                        return "\
+                        Increasing resonance multiplier by +"+ format(this.effectBase()) +" each\n\
+                        Currently: +" + format(this.effect()) + "\n\
+                        Cost: "+ format(this.cost()) +" resonance\n\
+                        <b style='color: #ff0000'>[SOFTCAPPED]<b>" 
+                    } else {
+                        return "\
+                        Increasing resonance multiplier by +"+ format(this.effectBase()) +" each\n\
+                        Currently: +" + format(this.effect()) + "\n\
+                        Cost: "+ format(this.cost()) +" resonance\n\
+                        " 
+                    }
                 }
             },
             effectBase() {
                 let base = new Decimal(0.01)
+                if (hasUpgrade('sn', 12)) base = new Decimal(1.5)
                 return base
             },
             effect() {
                 let effect = this.effectBase().mul(getBuyableAmount(this.layer, this.id))
+                if (hasUpgrade('sn', 12)) effect = this.effectBase().pow(getBuyableAmount(this.layer, this.id))
                 return effect
             },
             canAfford() { return player.sn.resonance.gte(this.cost()) },
@@ -309,7 +358,7 @@ addLayer("sn", {
                 You cannot use Spacetime Conversion. Earn a multiplier to light gain based on spacetime.<br>
                 Currently: x${format(inChallenge('sn', 11) ? player.st.points.div(1e3).pow(0.5).add(1) : new Decimal(1))}<br>
                 Goal: 10,000,000 light<br>
-                Reward: Unlock the first two Solar Powers and more Resonance upgrades
+                Reward: Unlock the Capsule solar power and more resonance upgrades
                `
             },
             onEnter() {
@@ -369,11 +418,19 @@ addLayer("sn", {
                 content: [
                     "blank",
                     ["display-text", () => {
-                        if (hasUpgrade('sn', 11)) return "You have " + format(player.sn.lightEssence) + " light essence, which generate a base of " + format(tmp.sn.lightEssenceEffect) + " light per second while in a Solar Trial"
+                        if (hasUpgrade('sn', 11)) return "You have " + format(player.sn.lightEssence) + " light essence, which generate a base of " + format(tmp.sn.lightEssenceEffect) + " light per second while in a Solar Trial\
+                        <br>Completing a solar trial will add +0.05 to the sun essence gain exponent (base is 0.5)"
                         return "You have " + format(player.sn.lightEssence) + " light essence, which ???"
                     }],
                     "blank",
-                    "challenges"
+                    "challenges",
+                    "blank",
+                    ["display-text", () => {
+                        if (hasUpgrade('sn', 11)) return "Activating a Solar Power will force a Sun reset"
+                    }],
+                    "blank",
+                    "clickables",
+                    "blank",
                 ]
             }
         }

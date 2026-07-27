@@ -21,8 +21,8 @@ addLayer("st", {
 
     }},
     color() {
-        if (inChallenge('mn', 11)) return "#290e58"
-        return "#360d87"
+        if (inChallenge('mn', 11)) return "#220736"
+        return "#6400aa"
     },
     nodeStyle() {
         
@@ -1059,7 +1059,7 @@ addLayer("st", {
                 return cost
             },
             display() { 
-                if (getBuyableAmount('st', 21).gte(10)) {
+                if (getBuyableAmount('st', 51).gte(999)) {
                     return "\
                     Multiplying time consumption by x" + format(this.effectBase()) +" each\n\
                     Currently: +" + format(this.effect()) + "\n\
@@ -1087,6 +1087,37 @@ addLayer("st", {
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
             unlocked() {return hasMilestone('sn', 2)}
+        },
+        61: {
+            title() {return "Absolute Time Capsules (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost(x) {
+                let cost = new Decimal(15768000).mul(Decimal.pow(2, x))
+                if (x.gte(this.softcapStart())) cost = cost
+                return cost.floor()
+            },
+            softcapStart() {
+                let start = new Decimal(999)
+                return start
+            },
+            display() { 
+                return `Multiplying point and time capacity by x${format(this.effectBase())} each
+                    Currently: x${format(this.effect())}
+                    Cost: ${formatTime(this.cost())} absolute time ${getBuyableAmount(this.layer, this.id).gte(this.softcapStart())? "<br><b style='color: #ff0000'>[SOFTCAPPED]</b>" : ""}
+                `
+            },
+            effectBase() {
+                let base = new Decimal(5)
+                return base
+            },
+            effect() {
+                let effect = this.effectBase().pow(getBuyableAmount(this.layer, this.id))
+                return effect
+            },
+            canAfford() { return tmp.st.getStoredAbsTime.gte(this.cost())},
+            buy() {
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            unlocked() {return player.sn.activeSolarPowers[0]}
         },
     },
     infoboxes: {
@@ -1270,6 +1301,9 @@ addLayer("st", {
                         ["buyables", [5]],
                         ["clickable", [32]]
                     ]],
+                    "blank",
+                    ["buyables", [6]],
+                    "blank",
                 ],
                 unlocked() {return hasMilestone('sn', 1)}
             }

@@ -128,8 +128,7 @@ addLayer("lh", {
                 return start
             },
             display() { 
-                return `
-                    Multiplying light generation by +x${format(this.effectBase())} each
+                return `Multiplying light generation by +x${format(this.effectBase())} each
                     Currently: x${format(this.effect())}
                     Cost: ${format(this.cost())} solar prestige points ${getBuyableAmount(this.layer, this.id).gte(this.softcapStart())? "<br><b style='color: #ff0000'>[SOFTCAPPED]</b>" : ""}
                 `
@@ -160,8 +159,7 @@ addLayer("lh", {
                 return start
             },
             display() { 
-                return `
-                    Multiplying solar prestige point gain by +x${format(this.effectBase())} each
+                return `Multiplying solar prestige point gain by +x${format(this.effectBase())} each
                     Currently: x${format(this.effect())}
                     Cost: ${format(this.cost())} solar prestige points ${getBuyableAmount(this.layer, this.id).gte(this.softcapStart())? "<br><b style='color: #ff0000'>[SOFTCAPPED]</b>" : ""}
                 `
