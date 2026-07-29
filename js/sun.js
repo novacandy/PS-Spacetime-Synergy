@@ -26,6 +26,7 @@ addLayer("sn", {
         player.spacePoints = new Decimal(5)
         player.timePoints = new Decimal(15)
         player.sn.sunEnergy = new Decimal(0)
+        player.sn.sunTimePassed = new Decimal(0)
         if (hasMilestone('sn', 1)) {
             player.sn.absoluteTime = player.sn.absoluteTime.add(tmp.st.getStoredAbsTime)
         }
@@ -131,9 +132,10 @@ addLayer("sn", {
             onClick() {
                 player.sn.activeSolarPowers[0] = player.sn.activeSolarPowers[0] ? false : true
                 doReset('sn', true)
+                player.timePassed = new Decimal(0)
                 player.sn.sunTimePassed = new Decimal(0)
-                player.sn.spacePoints = new Decimal(5)
-                player.sn.timePoints = new Decimal(15)
+                player.spacePoints = new Decimal(5)
+                player.timePoints = new Decimal(15)
             },
             unlocked() {return challengeCompletions('sn', 11) >= 1},
             style() {return {
@@ -148,11 +150,30 @@ addLayer("sn", {
             onClick() {
                 player.sn.activeSolarPowers[1] = player.sn.activeSolarPowers[1] ? false : true
                 doReset('sn', true)
+                player.timePassed = new Decimal(0)
                 player.sn.sunTimePassed = new Decimal(0)
-                player.sn.spacePoints = new Decimal(5)
-                player.sn.timePoints = new Decimal(15)
+                player.spacePoints = new Decimal(5)
+                player.timePoints = new Decimal(15)
             },
             unlocked() {return challengeCompletions('sn', 12) >= 1},
+            style() {return {
+                "width": "200px",
+                "height": "200px",
+            }}
+        },
+        13: {
+            title() {return "Solar Power III: Overflow (" + (player.sn.activeSolarPowers[2] ? "ACTIVE" : "INACTIVE")+ ")"},
+            display() {return "Effect of the <b>Tickspeed</b> spacetime upgrade is raised to the power of ^1.75, but point capacity is raised to the power of ^0.75."},
+            canClick() {return true},
+            onClick() {
+                player.sn.activeSolarPowers[2] = player.sn.activeSolarPowers[2] ? false : true
+                doReset('sn', true)
+                player.timePassed = new Decimal(0)
+                player.sn.sunTimePassed = new Decimal(0)
+                player.spacePoints = new Decimal(5)
+                player.timePoints = new Decimal(15)
+            },
+            unlocked() {return challengeCompletions('sn', 13) >= 1},
             style() {return {
                 "width": "200px",
                 "height": "200px",
@@ -231,6 +252,18 @@ addLayer("sn", {
             currencyDisplayName: "solar flares",
             currencyInternalName: "solarFlares",
         },
+        23: {
+            title: "Trial Booster",
+            description() {return "Earn a multiplier to points based on highest light earned in any Solar Trial. Effect: x" + format(this.effect())},
+            cost: new Decimal(1e18),
+            effect() {
+                let effect = player.lh.bestLight.add(1).pow(0.9)
+                return effect
+            },
+            currencyLayer: "sn",
+            currencyDisplayName: "solar flares",
+            currencyInternalName: "solarFlares",
+        },
     },
     milestones: {
         0: {
@@ -290,6 +323,47 @@ addLayer("sn", {
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
             unlocked() {return hasMilestone('sn', 0)}
+        },
+        12: {
+            title() {return "Time Conversion (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")"},
+            cost(x) {
+                let cost = new Decimal(1e15).mul(x.mul(1.5).add(1)).mul(new Decimal(1.5).pow(x))
+                if (x.gte(25)) cost = cost.pow(1.25)
+                return cost
+            },
+            display() { 
+                if (getBuyableAmount('sn', 12).gte(25)) {
+                    return "\
+                    Multiplying convert output by x"+ format(this.effectBase()) +" each\n\
+                    Currently: x" + format(this.effect()) + "\n\
+                    Cost: "+ format(this.cost()) +" time\n\
+                    <b style='color: #ff0000'>[SOFTCAPPED]<b>" 
+                } else {
+                    return "\
+                    Multiplying convert output by x"+ format(this.effectBase()) +" each\n\
+                    Currently: x" + format(this.effect()) + "\n\
+                    Cost: "+ format(this.cost()) +" time\n\
+                    " 
+                }
+            },
+            effectBase() {
+                let base = new Decimal(1.25)
+                return base
+            },
+            effect() {
+                let effect = this.effectBase().pow(getBuyableAmount(this.layer, this.id))
+                return effect
+            },
+            purchaseLimit() {
+                let limit = new Decimal(100)
+                return limit
+            },
+            canAfford() { return player.timePoints.gte(this.cost()) },
+            buy() {
+                player.timePoints = player.timePoints.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            unlocked() {return challengeCompletions('sn', 12) >= 1}
         },
         21: {
             title() {return "Resonant Enhancement Type-A (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
@@ -436,12 +510,21 @@ addLayer("sn", {
             onEnter() {
                 player.spacePoints = new Decimal(5)
                 player.timePoints = new Decimal(15)
+                player.timePassed = new Decimal(0)
+                player.sn.sunTimePassed = new Decimal(0)
             },
             onExit() {
                 player.lh.light = new Decimal(0)
                 player.lh.solarPrestige = new Decimal(0)
                 setBuyableAmount('lh', 11, new Decimal(0))
                 setBuyableAmount('lh', 12, new Decimal(0))
+                player.lh.solarSacrifice = new Decimal(0)
+                setBuyableAmount('lh', 21, new Decimal(0))
+                setBuyableAmount('lh', 22, new Decimal(0))
+                setBuyableAmount('lh', 23, new Decimal(0))
+                player.lh.solarMagnets = new Decimal(0)
+                setBuyableAmount('lh', 31, new Decimal(0))
+                setBuyableAmount('lh', 32, new Decimal(0))
             },
             canComplete() {return player.lh.light.gte(10000000)},
             unlocked() {return hasUpgrade('sn', 11)},
@@ -462,21 +545,71 @@ addLayer("sn", {
                 The sun essence to sun energy exponent is reduced. (0.75 -> 0.5) Earn a multiplier to light gain based on sun energy.<br>
                 Currently: x${format(inChallenge('sn', 12) ? player.sn.sunEnergy.pow(0.5).add(1) : new Decimal(1))}<br>
                 Goal: 1.00e9 light<br>
-                Reward: Unlock the Time Flux solar power
+                Reward: Unlock the Time Flux solar power and more time buyables
                `
             },
             onEnter() {
                 player.spacePoints = new Decimal(5)
                 player.timePoints = new Decimal(15)
+                player.timePassed = new Decimal(0)
                 player.sn.sunEnergy = new Decimal(0)
+                player.sn.sunTimePassed = new Decimal(0)
             },
             onExit() {
                 player.lh.light = new Decimal(0)
                 player.lh.solarPrestige = new Decimal(0)
                 setBuyableAmount('lh', 11, new Decimal(0))
                 setBuyableAmount('lh', 12, new Decimal(0))
+                player.lh.solarSacrifice = new Decimal(0)
+                setBuyableAmount('lh', 21, new Decimal(0))
+                setBuyableAmount('lh', 22, new Decimal(0))
+                setBuyableAmount('lh', 23, new Decimal(0))
+                player.lh.solarMagnets = new Decimal(0)
+                setBuyableAmount('lh', 31, new Decimal(0))
+                setBuyableAmount('lh', 32, new Decimal(0))
             },
             canComplete() {return player.lh.light.gte(1e9)},
+            unlocked() {return challengeCompletions('sn', 11) >= 1},
+            style() {return {
+                "width": "350px",
+                "height": "350px",
+                "border-color": "#ffa200",
+                "background-color": "#523400",
+                "color": "#ffa200",
+                "text-shadow": "0px 0px 10px #ffa200",
+                "box-shadow": "0px 0px 10px #ffa200",
+                "align-content": "center"
+            }},
+        },
+        13: {
+            name: "Solar Trial III",
+            fullDisplay() {return `
+                Spacetime enhancement buyable effects are set to 1. Earn a multiplier to light gain based on points.<br>
+                Currently: x${format(inChallenge('sn', 13) ? Decimal.pow(1.5, player.points.add(1).log(5).add(1)) : new Decimal(1))}<br>
+                Goal: 1.00e18 light<br>
+                Reward: Unlock the Overflow solar power and Solarity
+               `
+            },
+            onEnter() {
+                player.spacePoints = new Decimal(5)
+                player.timePoints = new Decimal(15)
+                player.timePassed = new Decimal(0)
+                player.sn.sunTimePassed = new Decimal(0)
+            },
+            onExit() {
+                player.lh.light = new Decimal(0)
+                player.lh.solarPrestige = new Decimal(0)
+                setBuyableAmount('lh', 11, new Decimal(0))
+                setBuyableAmount('lh', 12, new Decimal(0))
+                player.lh.solarSacrifice = new Decimal(0)
+                setBuyableAmount('lh', 21, new Decimal(0))
+                setBuyableAmount('lh', 22, new Decimal(0))
+                setBuyableAmount('lh', 23, new Decimal(0))
+                player.lh.solarMagnets = new Decimal(0)
+                setBuyableAmount('lh', 31, new Decimal(0))
+                setBuyableAmount('lh', 32, new Decimal(0))
+            },
+            canComplete() {return player.lh.light.gte(1e18)},
             unlocked() {return challengeCompletions('sn', 11) >= 1},
             style() {return {
                 "width": "350px",
@@ -532,6 +665,10 @@ addLayer("sn", {
                         if (hasUpgrade('sn', 11)) return "You have " + format(player.sn.lightEssence) + " light essence, which generate a base of " + format(tmp.sn.lightEssenceEffect) + " light per second while in a Solar Trial\
                         <br>Completing a solar trial will add +0.05 to the sun essence gain exponent (base is 0.5)"
                         return "You have " + format(player.sn.lightEssence) + " light essence, which ???"
+                    }],
+                    "blank",
+                    ["display-text", () => {
+                        if (hasUpgrade('sn', 11)) return "Your best light earned in a Solar Trial is " + format(player.lh.bestLight)
                     }],
                     "blank",
                     "challenges",

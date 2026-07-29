@@ -53,6 +53,7 @@ function getPointGen() {
 	if (hasUpgrade('mn', 24)) gain = gain.mul(upgradeEffect('mn', 24))
 
 	gain = gain.mul(tmp.sn.effect)
+	if (hasUpgrade('sn', 23)) gain = gain.mul(upgradeEffect('sn', 23))
 
 	return gain
 }
@@ -66,6 +67,9 @@ function getPointCapacity() {
 
 	cap = cap.mul(buyableEffect('sn', 11))
 	cap = cap.mul(buyableEffect('st', 61))
+
+	if (player.sn.activeSolarPowers[2]) cap = cap.pow(0.75)
+
 	return cap
 }
 

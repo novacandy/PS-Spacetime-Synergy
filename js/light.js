@@ -38,7 +38,7 @@ addNode('sm', {
     onClick() {
         player.subtabs['lh']['light'] = 'Solar Magnets'
     },
-    layerShown() {return false},
+    layerShown() {return challengeCompletions('sn', 12) >= 1},
 })
 
 addLayer("lh", {
@@ -54,7 +54,8 @@ addLayer("lh", {
         bestLight: new Decimal(0),
 
         solarPrestige: new Decimal(0),
-        solarSacrifice: new Decimal(0)
+        solarSacrifice: new Decimal(0),
+        solarMagnets: new Decimal(0),
 
     }},
     tooltip() {return formatWhole(player.dk.darkness) + " light"},
@@ -92,9 +93,11 @@ addLayer("lh", {
         let gen = tmp.sn.lightEssenceEffect
         if (inChallenge('sn', 11)) gen = gen.mul(player.st.points.div(1e3).pow(0.5).add(1))
         if (inChallenge('sn', 12)) gen = gen.mul(player.sn.sunEnergy.pow(0.5).add(1))
+        if (inChallenge('sn', 13)) gen = gen.mul(Decimal.pow(1.5, player.points.add(1).log(5).add(1)))
         gen = gen.mul(tmp.lh.solarPrestigeEffect)
         gen = gen.mul(buyableEffect('lh', 11))
         gen = gen.mul(buyableEffect('lh', 21))
+        if (challengeCompletions('sn', 12) >= 1) gen = gen.mul(tmp.lh.attractionMulti)
         return gen
     },
 
@@ -119,12 +122,12 @@ addLayer("lh", {
     },
 
     getSolarSacrificeGain() {
-        let gain = player.lh.light.div(10000000).pow(1/3)
+        let gain = player.lh.light.div(1000000).pow(1/3)
         gain = gain.mul(tmp.lh.solarSacrificeGainMult)
         return gain.floor()
     },
     getNextSolarSacrifice() {
-        let next = tmp.lh.getSolarSacrificeGain.div(tmp.lh.solarSacrificeGainMult).add(1).pow(3).mul(10000000)
+        let next = tmp.lh.getSolarSacrificeGain.div(tmp.lh.solarSacrificeGainMult).add(1).pow(3).mul(1000000)
         return next.floor()
     },
     solarSacrificeGainMult() {
@@ -134,6 +137,18 @@ addLayer("lh", {
     solarSacrificeEffect() {
         let effect = player.lh.solarSacrifice.add(1).log(10).add(1)
         return effect
+    },
+
+    getSolarMagnetGen() {
+        let gen = new Decimal(1)
+        gen = gen.mul(buyableEffect('lh', 23))
+        gen = gen.mul(buyableEffect('lh', 32))
+        return gen
+    },
+    attractionMulti() {
+        let mult = new Decimal(1)
+        mult = mult.mul(buyableEffect('lh', 31))
+        return mult
     },
 
     upgrades: {
@@ -232,7 +247,7 @@ addLayer("lh", {
                 player.lh.solarSacrifice = player.lh.solarSacrifice.sub(this.cost())
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
-        },
+        },   
         22: {
             title() {return "Solar Prestige Boost II (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
             cost(x) {
@@ -261,6 +276,99 @@ addLayer("lh", {
             canAfford() { return player.lh.solarSacrifice.gte(this.cost())},
             buy() {
                 player.lh.solarSacrifice = player.lh.solarSacrifice.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+        },
+        23: {
+            title() {return "Solar Magnet Boost II (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost(x) {
+                let cost = new Decimal(5).mul(x.mul(0.75).add(1)).mul(Decimal.pow(1.25, x))
+                if (x.gte(this.softcapStart())) cost = cost
+                return cost.floor()
+            },
+            softcapStart() {
+                let start = new Decimal(999)
+                return start
+            },
+            display() { 
+                return `Increasing solar magnet generation multiplier by +x${format(this.effectBase())} each
+                    Currently: x${format(this.effect())}
+                    Cost: ${format(this.cost())} solar sacrifice points ${getBuyableAmount(this.layer, this.id).gte(this.softcapStart())? "<br><b style='color: #ff0000'>[SOFTCAPPED]</b>" : ""}
+                `
+            },
+            effectBase() {
+                let base = new Decimal(1)
+                return base
+            },
+            effect() {
+                let effect = this.effectBase().mul(getBuyableAmount(this.layer, this.id))
+                return effect
+            },
+            canAfford() { return player.lh.solarSacrifice.gte(this.cost())},
+            buy() {
+                player.lh.solarSacrifice = player.lh.solarSacrifice.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+        },
+        31: {
+            title() {return "Solar Attraction (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost(x) {
+                let cost = new Decimal(1).mul(x.mul(0.5).add(1)).mul(Decimal.pow(1.05, x))
+                if (x.gte(this.softcapStart())) cost = cost
+                return cost.floor()
+            },
+            softcapStart() {
+                let start = new Decimal(999)
+                return start
+            },
+            display() { 
+                return `Increasing attraction multiplier by +x${format(this.effectBase())} each
+                    Currently: x${format(this.effect())}
+                    Cost: ${format(this.cost())} solar magnets ${getBuyableAmount(this.layer, this.id).gte(this.softcapStart())? "<br><b style='color: #ff0000'>[SOFTCAPPED]</b>" : ""}
+                `
+            },
+            effectBase() {
+                let base = new Decimal(1)
+                return base
+            },
+            effect() {
+                let effect = this.effectBase().mul(getBuyableAmount(this.layer, this.id)).add(1)
+                return effect
+            },
+            canAfford() { return player.lh.solarMagnets.gte(this.cost())},
+            buy() {
+                player.lh.solarMagnets = player.lh.solarMagnets.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+        },
+        32: {
+            title() {return "Solar Magnet Boost (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost(x) {
+                let cost = new Decimal(1).mul(x.mul(0.5).add(1)).mul(Decimal.pow(1.05, x))
+                if (x.gte(this.softcapStart())) cost = cost
+                return cost.floor()
+            },
+            softcapStart() {
+                let start = new Decimal(999)
+                return start
+            },
+            display() { 
+                return `Increasing magnet generation by +x${format(this.effectBase())} each
+                    Currently: x${format(this.effect())}
+                    Cost: ${format(this.cost())} solar magnets ${getBuyableAmount(this.layer, this.id).gte(this.softcapStart())? "<br><b style='color: #ff0000'>[SOFTCAPPED]</b>" : ""}
+                `
+            },
+            effectBase() {
+                let base = new Decimal(1)
+                return base
+            },
+            effect() {
+                let effect = this.effectBase().mul(getBuyableAmount(this.layer, this.id)).add(1)
+                return effect
+            },
+            canAfford() { return player.lh.solarMagnets.gte(this.cost())},
+            buy() {
+                player.lh.solarMagnets = player.lh.solarMagnets.sub(this.cost())
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
         },
@@ -299,13 +407,16 @@ addLayer("lh", {
             display() {if (player.lh.solarSacrifice.lt(1000) && tmp.lh.getSolarSacrificeGain.lt(100)) return `
                 Next at ${format(tmp.lh.getNextSolarSacrifice)} light
             `},
-            canClick() {return player.lh.light.gte(10000000)},
+            canClick() {return player.lh.light.gte(1000000)},
             onClick() {
                 player.lh.solarSacrifice = player.lh.solarSacrifice.add(tmp.lh.getSolarSacrificeGain)
                 player.lh.light = new Decimal(0)
                 player.lh.solarPrestige = new Decimal(0)
                 setBuyableAmount('lh', 11, new Decimal(0))
                 setBuyableAmount('lh', 12, new Decimal(0))
+                player.lh.solarMagnets = new Decimal(0)
+                setBuyableAmount('lh', 31, new Decimal(0))
+                setBuyableAmount('lh', 32, new Decimal(0))
             },
             style() {return {
                 "width": "200px",
@@ -345,6 +456,19 @@ addLayer("lh", {
             },
             "Solar Magnets": {
                 content: [
+                    ['clickable', [11]],
+                    "blank",
+                    ["display-text", () => {return "You have <h2 style='color: #d96c13; text-shadow: 0px 0px 10px #d96c13'>" + formatWhole(player.lh.solarMagnets) + "</h2> solar magnets (+" + format(tmp.lh.getSolarMagnetGen) +"/s)"}],
+                    "blank",
+                    ["buyables", [3]],
+                    "blank",
+                    ["display-text", () => {
+                        return "Your attraction multiplier is currently x" + format(tmp.lh.attractionMulti)
+                    }],
+                    ["display-text", () => {
+                        return "Solar trial completions are making your Attraction multiplier affect Light"
+                    }]
+
                 ]
             },
         },
@@ -360,6 +484,7 @@ addLayer("lh", {
     update(diff) {
         if (player.sn.activeChallenge !== null) {
             player.lh.light = player.lh.light.add(tmp.lh.getLightGen.mul(diff))
+            player.lh.solarMagnets = player.lh.solarMagnets.add(tmp.lh.getSolarMagnetGen.mul(diff))
             if (player.lh.light.gte(player.lg.bestLight)) player.lh.bestLight = player.lh.light
         }
     },

@@ -124,6 +124,7 @@ addLayer("st", {
         if (hasUpgrade('st', 23)) mult = mult.mul(upgradeEffect('st', 23))
         if (hasMilestone('mn', 1)) mult = mult.mul(tmp.st.getStoredAbsSpaceEffect)
         if (hasMilestone('sn', 1)) mult = mult.mul(tmp.st.getStoredAbsTimeEffect)
+        mult = mult.mul(buyableEffect('sn', 12))
         return mult
     },
     getConvertPenaltySoftcap() {
@@ -312,11 +313,12 @@ addLayer("st", {
             title: "Tickspeed",
             description() {
                 if (inChallenge('mn', 11)) return "Earn a multiplier to points, convert output, and <s>spacetime</s> darkness based on time, but also multiplies time consumption. Effect: x" + format(this.effect())
-                return "Earn a multiplier to points, convert output, and spacetime based on time, but also multiplies time consumption. Effect: x" + format(this.effect())
+                return "Earn a multiplier to points, convert output, and spacetime, but also time consumption, based on time. Effect: x" + format(this.effect())
             },
             cost: new Decimal(250000),
             effect() {
                 let effect = player.timePoints.pow(0.25).div(5).add(1)
+                if (player.sn.activeSolarPowers[2]) effect = effect.pow(1.75)
                 return effect
             },
             unlocked() {return hasMilestone('st', 2)},
@@ -465,6 +467,7 @@ addLayer("st", {
             effectBase() {
                 let base = new Decimal(1.25)
                 if (hasUpgrade('dk', 14)) base = base.add(0.1)
+                if (inChallenge('sn', 13)) base = new Decimal(1)
                 return base
             },
             effect() {
@@ -536,6 +539,7 @@ addLayer("st", {
                 let base = new Decimal(1.25)
                 if (inChallenge('mn', 11)) base = new Decimal(2)
                 if (hasUpgrade('dk', 14)) base = base.add(0.1)
+                if (inChallenge('sn', 13)) base = new Decimal(1)
                 return base
             },
             effect() {
@@ -589,6 +593,7 @@ addLayer("st", {
             effectBase() {
                 let base = new Decimal(1.25)
                 if (hasUpgrade('dk', 14)) base = base.add(0.1)
+                if (inChallenge('sn', 13)) base = new Decimal(1)
                 return base
             },
             effect() {
@@ -641,6 +646,7 @@ addLayer("st", {
             effectBase() {
                 let base = new Decimal(1.25)
                 if (hasUpgrade('dk', 14)) base = base.add(0.1)
+                if (inChallenge('sn', 13)) base = new Decimal(1)
                 return base
             },
             effect() {
@@ -1065,20 +1071,20 @@ addLayer("st", {
             title() {return "Time Doubler (" + formatWhole(player.st.timeDoublerBuyableAmount) + "/" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
             cost(x) { 
                 let cost = new Decimal(1).mul(new Decimal(10).pow(x))
-                if (x.gte(10)) cost = cost.pow(2.5)
+                if (x.gte(10)) cost = cost.pow(1.25)
                 return cost
             },
             display() { 
                 if (getBuyableAmount('st', 51).gte(999)) {
                     return "\
                     Multiplying time consumption by x" + format(this.effectBase()) +" each\n\
-                    Currently: +" + format(this.effect()) + "\n\
+                    Currently: x" + format(this.effect()) + "\n\
                     Cost: "+ format(this.cost()) +" sun energy\n\
                     <b style='color: #ff0000'>[SOFTCAPPED]<b>" 
                 } else {
                     return "\
                     Multiplying time consumpion by x" + format(this.effectBase()) +" each\n\
-                    Currently: +" + format(this.effect()) + "\n\
+                    Currently: x" + format(this.effect()) + "\n\
                     Cost: "+ format(this.cost()) +" sun energy\n\
                     " 
                 }
@@ -1102,11 +1108,11 @@ addLayer("st", {
             title() {return "Absolute Time Capsules (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
             cost(x) {
                 let cost = new Decimal(10512000).mul(Decimal.pow(3, x))
-                if (x.gte(this.softcapStart())) cost = cost
+                if (x.gte(this.softcapStart())) cost = cost.pow(1.2)
                 return cost.floor()
             },
             softcapStart() {
-                let start = new Decimal(999)
+                let start = new Decimal(10)
                 return start
             },
             display() { 
