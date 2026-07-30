@@ -54,6 +54,7 @@ function getPointGen() {
 
 	gain = gain.mul(tmp.sn.effect)
 	if (hasUpgrade('sn', 23)) gain = gain.mul(upgradeEffect('sn', 23))
+	if (hasUpgrade('sn', 32)) gain = gain.mul(upgradeEffect('sn', 32))
 
 	return gain
 }
@@ -70,6 +71,7 @@ function getPointCapacity() {
 
 	if (player.sn.activeSolarPowers[2]) cap = cap.pow(0.75)
 
+	if (hasUpgrade('sn', 31)) cap = cap.mul(upgradeEffect('sn', 31))
 	return cap
 }
 
@@ -93,6 +95,9 @@ function getSpaceMultis() {
 	mult = mult.mul(buyableEffect('st', 13))
 	mult = mult.mul(tmp.mn.moonEnergyEffect)
 	if (hasUpgrade('dk', 11)) mult = mult.mul(10)
+
+	if (hasUpgrade('sn', 32)) mult = mult.mul(upgradeEffect('sn', 32))
+
 	return mult
 }
 
@@ -100,6 +105,9 @@ function getTimeMultis() {
 	let mult = new Decimal(1)
 	mult = mult.mul(buyableEffect('st', 14))
 	mult = mult.mul(tmp.sn.sunEnergyEffect)
+
+	if (hasUpgrade('sn', 32)) mult = mult.mul(upgradeEffect('sn', 32))
+
 	return mult
 }
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values

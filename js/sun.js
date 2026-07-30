@@ -59,6 +59,14 @@ addLayer("sn", {
         if (challengeCompletions('sn', 11) >= 1) exp = exp.add(0.05)
         return exp
     },
+    softcap() {
+        let softcap = new Decimal(1e36)
+        return softcap
+    },
+    softcapPower() {
+        let power = new Decimal(0.1)
+        return power
+    },
     gainMult() {
         mult = new Decimal(1)
         return mult
@@ -163,7 +171,7 @@ addLayer("sn", {
         },
         13: {
             title() {return "Solar Power III: Overflow (" + (player.sn.activeSolarPowers[2] ? "ACTIVE" : "INACTIVE")+ ")"},
-            display() {return "Effect of the <b>Tickspeed</b> spacetime upgrade is raised to the power of ^1.75, but point capacity is raised to the power of ^0.75."},
+            display() {return "Effect of the <b>Tickspeed</b> spacetime upgrade is raised to the power of ^1.2, but point capacity is raised to the power of ^0.75."},
             canClick() {return true},
             onClick() {
                 player.sn.activeSolarPowers[2] = player.sn.activeSolarPowers[2] ? false : true
@@ -258,6 +266,44 @@ addLayer("sn", {
             cost: new Decimal(1e18),
             effect() {
                 let effect = player.lh.bestLight.add(1).pow(0.9)
+                return effect
+            },
+            currencyLayer: "sn",
+            currencyDisplayName: "solar flares",
+            currencyInternalName: "solarFlares",
+        },
+        31: {
+            title: "Permeance",
+            description() {return "Resonant Enhancements no longer divide resonance, and earn a multiplier to point capacity after <b>Overflow</b>'s nerf based on resonance. Effect: x" + format(this.effect())},
+            cost: new Decimal(1e33),
+            pay() {player.sn.resonance = player.sn.resonance.div(this.cost)},
+            effect() {
+                let effect = player.sn.resonance.add(1).log(10).pow(1.25).add(1)
+                return effect
+            },
+            currencyLayer: "sn",
+            currencyDisplayName: "resonance",
+            currencyInternalName: "resonance",
+        },
+        32: {
+            title: "Reverberate",
+            description() {return "Earn a multiplier to point, space, and time gains based on resonance. Effect: x" + format(this.effect())},
+            cost: new Decimal(1e48),
+            pay() {player.sn.resonance = player.sn.resonance.div(this.cost)},
+            effect() {
+                let effect = player.sn.resonance.add(1).log(10).pow(2).add(1)
+                return effect
+            },
+            currencyLayer: "sn",
+            currencyDisplayName: "resonance",
+            currencyInternalName: "resonance",
+        },
+        41: {
+            title: "Resonant Galaxy",
+            description() {return "All three Resonant Enhancements are stronger based on solar flares. Effect: x" + format(this.effect())},
+            cost: new Decimal(1e45),
+            effect() {
+                let effect = player.sn.solarFlares.div(1e44).add(1).log(10).add(1).log(10).add(1).pow(0.25)
                 return effect
             },
             currencyLayer: "sn",
@@ -407,6 +453,7 @@ addLayer("sn", {
             effectBase() {
                 let base = new Decimal(0.01)
                 if (hasUpgrade('sn', 12)) base = new Decimal(1.5)
+                if (hasUpgrade('sn', 41)) base = base.mul(upgradeEffect('sn', 41))
                 return base
             },
             effect() {
@@ -416,7 +463,7 @@ addLayer("sn", {
             },
             canAfford() { return player.sn.resonance.gte(this.cost()) },
             buy() {
-                player.sn.resonance = player.sn.resonance.div(this.cost())
+                if (!hasUpgrade('sn', 31)) player.sn.resonance = player.sn.resonance.div(this.cost())
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
             unlocked() {return hasMilestone('sn', 0)}
@@ -446,15 +493,17 @@ addLayer("sn", {
             effectBase() {
                 let base = new Decimal(2)
                 if (hasUpgrade('sn', 22)) base = base.mul(upgradeEffect('sn', 22))
+                if (hasUpgrade('sn', 41)) base = base.mul(upgradeEffect('sn', 41))
                 return base
             },
             effect() {
                 let effect = this.effectBase().pow(getBuyableAmount(this.layer, this.id))
+                if (hasUpgrade('sn', 41)) effect = this.effectBase().pow(getBuyableAmount(this.layer, this.id).mul(upgradeEffect('sn', 41)))
                 return effect
             },
             canAfford() { return player.sn.resonance.gte(this.cost()) },
             buy() {
-                player.sn.resonance = player.sn.resonance.div(this.cost())
+                if (!hasUpgrade('sn', 31)) player.sn.resonance = player.sn.resonance.div(this.cost())
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
             unlocked() {return hasMilestone('sn', 0)}
@@ -483,6 +532,7 @@ addLayer("sn", {
             },
             effectBase() {
                 let base = new Decimal(0.75)
+                if (hasUpgrade('sn', 41)) base = base.div(upgradeEffect('sn', 41))
                 return base
             },
             effect() {
@@ -491,7 +541,7 @@ addLayer("sn", {
             },
             canAfford() { return player.sn.resonance.gte(this.cost()) },
             buy() {
-                player.sn.resonance = player.sn.resonance.div(this.cost())
+                if (!hasUpgrade('sn', 31)) player.sn.resonance = player.sn.resonance.div(this.cost())
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
             unlocked() {return hasMilestone('sn', 0)}
@@ -687,6 +737,7 @@ addLayer("sn", {
         "main-display",
         "prestige-button",
         "blank",
+        ["display-text", () => {if (getResetGain('sn').gte(1e36) || player.sn.points.gte(1e36)) return "<b style='color: #ff0000; text-shadow: 0px 0px 10px #ff0000'>[SOFTCAPPED: GAIN PAST " + format(tmp.mn.softcap) + " IS RAISED TO THE POWER OF " + format(tmp.mn.softcapPower) + "]</b><br><br>"}],
         ["display-text", () => {
             if (tmp.sn.sunEnergyEffect.gte(10)) {
                 return "You have <h2 style='color: #FBC02D; text-shadow: 0px 0px 10px #FBC02D'>" + format(player.sn.sunEnergy) + "</h2> sun energy, (+" + format(new Decimal(0.01).mul(tmp.sn.sunEnergyMult)) + "/s) which multiplies time gain from all sources by x" + format(tmp.sn.sunEnergyEffect) + " <b style='color: #ff0000'>[SOFTCAPPED]<b>"

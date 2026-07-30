@@ -318,7 +318,7 @@ addLayer("st", {
             cost: new Decimal(250000),
             effect() {
                 let effect = player.timePoints.pow(0.25).div(5).add(1)
-                if (player.sn.activeSolarPowers[2]) effect = effect.pow(1.75)
+                if (player.sn.activeSolarPowers[2]) effect = effect.pow(1.2)
                 return effect
             },
             unlocked() {return hasMilestone('st', 2)},
