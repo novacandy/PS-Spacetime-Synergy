@@ -691,6 +691,7 @@ addLayer("mn", {
                 doReset('mn', true)
                 setBuyableAmount('mn', 31, new Decimal(0))
                 player.mn.moonEnergy = new Decimal(0)
+                player.timePoints = new Decimal(0)
             },
         },
         43: {
@@ -716,6 +717,7 @@ addLayer("mn", {
                 doReset('mn', true)
                 setBuyableAmount('mn', 31, new Decimal(0))
                 player.mn.moonstone = new Decimal(0)
+                player.timePoints = new Decimal(0)
             },
         },
         51: {
@@ -741,6 +743,7 @@ addLayer("mn", {
                 doReset('mn', true)
                 setBuyableAmount('mn', 31, new Decimal(0))
                 player.mn.darkEssence = new Decimal(0)
+                player.timePoints = new Decimal(0)
             },
         }
     },
@@ -844,7 +847,7 @@ addLayer("mn", {
             "Lunarity Module": {
                 content: [
                     "blank",
-                    ["display-text", "All lunarity buyables will force a Moon reset"],
+                    ["display-text", "All lunarity buyables will force a Moon reset, but you keep space on reset"],
                     "blank",
                     ["milestones", [200]],
                     "blank",

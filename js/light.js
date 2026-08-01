@@ -114,6 +114,7 @@ addLayer("lh", {
         let mult = new Decimal(1)
         mult = mult.mul(buyableEffect('lh', 12))
         mult = mult.mul(buyableEffect('lh', 22))
+        if (challengeCompletions('sn', 13) >= 1) mult = mult.mul(tmp.lh.attractionMulti)
         return mult
     },
     solarPrestigeEffect() {
@@ -163,7 +164,7 @@ addLayer("lh", {
                 return cost.floor()
             },
             softcapStart() {
-                let start = new Decimal(999)
+                let start = new Decimal(9999)
                 return start
             },
             display() { 
@@ -194,7 +195,7 @@ addLayer("lh", {
                 return cost.floor()
             },
             softcapStart() {
-                let start = new Decimal(999)
+                let start = new Decimal(9999)
                 return start
             },
             display() { 
@@ -466,6 +467,7 @@ addLayer("lh", {
                         return "Your attraction multiplier is currently x" + format(tmp.lh.attractionMulti)
                     }],
                     ["display-text", () => {
+                        if (challengeCompletions('sn', 13) >= 1) return "Solar trial completions are making your Attraction multiplier affect Light and Solar Prestige Points"
                         return "Solar trial completions are making your Attraction multiplier affect Light"
                     }]
 
@@ -485,7 +487,7 @@ addLayer("lh", {
         if (player.sn.activeChallenge !== null) {
             player.lh.light = player.lh.light.add(tmp.lh.getLightGen.mul(diff))
             player.lh.solarMagnets = player.lh.solarMagnets.add(tmp.lh.getSolarMagnetGen.mul(diff))
-            if (player.lh.light.gte(player.lg.bestLight)) player.lh.bestLight = player.lh.light
+            if (player.lh.light.gte(player.lh.bestLight)) player.lh.bestLight = player.lh.light
         }
     },
     layerShown() {return (player.sn.activeChallenge !== null)}

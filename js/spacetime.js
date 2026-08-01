@@ -67,7 +67,8 @@ addLayer("st", {
     },
 
     passiveGeneration() {
-        return buyableEffect('mn', 31)
+        return buyableEffect('mn', 31).add(buyableEffect('sn', 31))
+
     },
 
     gainMult() {
@@ -125,6 +126,7 @@ addLayer("st", {
         if (hasMilestone('mn', 1)) mult = mult.mul(tmp.st.getStoredAbsSpaceEffect)
         if (hasMilestone('sn', 1)) mult = mult.mul(tmp.st.getStoredAbsTimeEffect)
         mult = mult.mul(buyableEffect('sn', 12))
+        if(hasUpgrade('sn', 42)) mult = mult.mul(upgradeEffect('sn', 42))
         return mult
     },
     getConvertPenaltySoftcap() {
@@ -208,6 +210,7 @@ addLayer("st", {
     getAbsTimeSpeed() {
         let speed = new Decimal(1)
         if (hasUpgrade('sn', 13)) speed = speed.mul(upgradeEffect('sn', 13))
+        speed = speed.mul(buyableEffect('sn', 42))
         return speed
     },
     hotkeys: [
@@ -378,7 +381,7 @@ addLayer("st", {
                     }
                 },
             canClick() {
-                if (inChallenge('sn', 11)) return false
+                if (inChallenge('sn', 11) && !hasUpgrade('sn', 24)) return false
                 if (player.st.convertInput == "SPACETIME" && player.st.points.gte(1)) {
                     return true
                 }
@@ -477,6 +480,7 @@ addLayer("st", {
             purchaseLimit() {
                 let limit = new Decimal(50)
                 limit = limit.add(buyableEffect('st', 44).mul(2))
+                limit = limit.add(buyableEffect('sn', 43))
                 return limit
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
@@ -549,6 +553,7 @@ addLayer("st", {
             purchaseLimit() {
                 let limit = new Decimal(25)
                 limit = limit.add(buyableEffect('st', 44))
+                limit = limit.add(buyableEffect('sn', 43))
                 return limit
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
@@ -603,6 +608,7 @@ addLayer("st", {
             purchaseLimit() {
                 let limit = new Decimal(25)
                 limit = limit.add(buyableEffect('st', 44))
+                limit = limit.add(buyableEffect('sn', 43))
                 return limit
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
@@ -656,6 +662,7 @@ addLayer("st", {
             purchaseLimit() {
                 let limit = new Decimal(25)
                 limit = limit.add(buyableEffect('st', 44))
+                limit = limit.add(buyableEffect('sn', 43))
                 return limit
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
@@ -1075,7 +1082,7 @@ addLayer("st", {
                 return cost
             },
             display() { 
-                if (getBuyableAmount('st', 51).gte(999)) {
+                if (getBuyableAmount('st', 51).gte(10)) {
                     return "\
                     Multiplying time consumption by x" + format(this.effectBase()) +" each\n\
                     Currently: x" + format(this.effect()) + "\n\

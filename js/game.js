@@ -186,11 +186,11 @@ function doReset(layer, force=false) {
 			gain =(tmp[layer].canBuyMax ? gain : 1)
 		}
 
-		if (layers[layer].onPrestige){
+		if (layers[layer].onPrestige) {
 			updateMilestones(layer)
 			run(layers[layer].onPrestige, layers[layer], gain)
 		}
-		
+
 		addPoints(layer, gain)
 		updateMilestones(layer)
 		updateAchievements(layer)
@@ -211,12 +211,14 @@ function doReset(layer, force=false) {
 	if (run(layers[layer].resetsNothing, layers[layer])) return
 	tmp[layer].baseAmount = decimalZero // quick fix
 
-
 	for (layerResetting in layers) {
 		if (row > layers[layerResetting].row && (!force || layerResetting != layer)) completeChallenge(layerResetting)
 	}
 
 	player.points = (row == 0 ? decimalZero : getStartPoints())
+
+	player.timePassed = new Decimal(0)
+	player.sn.sunTimePassed = new Decimal(0)
 
 	for (let x = row; x >= 0; x--) rowReset(x, layer)
 	for (r in OTHER_LAYERS){

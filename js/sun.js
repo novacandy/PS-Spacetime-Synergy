@@ -32,6 +32,7 @@ addLayer("sn", {
         }
     },
     effectDescription() {
+        if (tmp.sn.effect.gte(1000)) return "which multiplies point gain by x" + format(tmp.sn.effect) + ", but also multiplies time consumption speed by the same amount <b style='color: #ff0000'>[SOFTCAPPED]<b>"
         return "which multiplies point gain by x" + format(tmp.sn.effect) + ", but also multiplies time consumption speed by the same amount"
     },
     effect() {
@@ -61,14 +62,19 @@ addLayer("sn", {
     },
     softcap() {
         let softcap = new Decimal(1e36)
+        if (hasUpgrade('sn', 33)) softcap = softcap.mul(upgradeEffect('sn', 33))
         return softcap
     },
     softcapPower() {
         let power = new Decimal(0.1)
         return power
     },
+    passiveGeneration() {
+        return buyableEffect('sn', 31)
+    },
     gainMult() {
         mult = new Decimal(1)
+        mult = mult.mul(buyableEffect('sn', 13))
         return mult
     },
     gainExp() {
@@ -78,6 +84,7 @@ addLayer("sn", {
     sunEnergyMult() {
         let mult = player.sn.points.pow(0.75)
         if (inChallenge('sn', 12)) mult = player.sn.points.pow(0.5)
+        if (hasUpgrade('sn', 34)) mult = player.sn.points.pow(0.775)
         if (hasUpgrade('sn', 21)) mult = mult.mul(upgradeEffect('sn', 21))
         return mult
     },
@@ -111,7 +118,16 @@ addLayer("sn", {
         let root = player.sn.resonance.div(tmp.sn.getResonanceOverflowStart).pow(2)
         if (player.sn.activeSolarPowers[0]) root = root.pow(1.5)
         root = root.mul(buyableEffect('sn', 23))
+        if (player.sn.resonance.gte(tmp.sn.getResonanceSlowdownStart)) root = root.pow(tmp.sn.getResonanceSlowdownPow)
         return root.max(1)
+    },
+    getResonanceSlowdownStart() {
+        let start = new Decimal(1e63)
+        return start
+    },
+    getResonanceSlowdownPow() {
+        let pow = player.sn.resonance.add(1).log(tmp.sn.getResonanceSlowdownStart).pow(5)
+        return pow.max(1)
     },
     getSolarFlareMultis() {
         let mult = new Decimal(1)
@@ -127,6 +143,7 @@ addLayer("sn", {
     },
     lightEssenceEffect() {
         let effect = player.sn.lightEssence.add(1).log(2)
+        effect = effect.pow(buyableEffect('sn', 51))
         return effect
     },
     hotkeys: [
@@ -272,6 +289,15 @@ addLayer("sn", {
             currencyDisplayName: "solar flares",
             currencyInternalName: "solarFlares",
         },
+        24: {
+            fullDisplay() {return `<h3>Premium Subscription</h3><br>
+                Solar Trial I no longer has a penalty.<br><br>
+                Cost: 1.00e56 solar flares, 1000 solarity`
+            },
+            canAfford() {return player.sn.solarFlares.gte(1e56) && getBuyableAmount('sn', 31).gte(1000)},
+            pay() {player.sn.solarFlares = player.sn.solarFlares.sub(1e56); setBuyableAmount('sn', 31, getBuyableAmount('sn', 31).sub(1000))},
+            unlocked() {return hasUpgrade('sn', 31)}
+        },
         31: {
             title: "Permeance",
             description() {return "Resonant Enhancements no longer divide resonance, and earn a multiplier to point capacity after <b>Overflow</b>'s nerf based on resonance. Effect: x" + format(this.effect())},
@@ -298,6 +324,28 @@ addLayer("sn", {
             currencyDisplayName: "resonance",
             currencyInternalName: "resonance",
         },
+        33: {
+            fullDisplay() {return `<h3>Sunnier Days</h3><br>
+                Delay the sun essence softcap based on solarity. Effect: x${format(this.effect())}<br><br>
+                Cost: 1e56 resonance, 10 solar cores`
+            },
+            canAfford() {return player.sn.resonance.gte(1e56) && getBuyableAmount('sn', 41).gte(10)},
+            pay() {player.sn.resonance = player.sn.resonance.div(1e56); setBuyableAmount('sn', 41, getBuyableAmount('sn', 41).sub(10))},
+            effect() {
+                let effect = getBuyableAmount('sn', 31).add(1).pow(0.4)
+                return effect
+            },
+            unlocked() {return hasUpgrade('sn', 31)}
+        },
+        34: {
+            fullDisplay() {return `<h3>Energized Sun</h3><br>
+                Improve the sun essence to sun energy exponent. (0.75 -> 0.775, works in Solar Trial II)<br><br>
+                Cost: 1e84 resonance, 10,000,000 coronal waves`
+            },
+            canAfford() {return player.sn.resonance.gte(1e84) && getBuyableAmount('sn', 42).gte(10000000)},
+            pay() {player.sn.resonance = player.sn.resonance.div(1e84); setBuyableAmount('sn', 42, getBuyableAmount('sn', 42).sub(10000000))},
+            unlocked() {return hasUpgrade('sn', 31)}
+        },
         41: {
             title: "Resonant Galaxy",
             description() {return "All three Resonant Enhancements are stronger based on solar flares. Effect: x" + format(this.effect())},
@@ -309,6 +357,41 @@ addLayer("sn", {
             currencyLayer: "sn",
             currencyDisplayName: "solar flares",
             currencyInternalName: "solarFlares",
+        },
+        42: {
+            fullDisplay() {return `<h3>Trial Booster II</h3><br>
+                Earn a multiplier to convert output based on best light earned in any Solar Trial. Effect: x${format(this.effect())}.<br><br>
+                Cost: 1.00e60 solar flares, 1000 coronal waves`
+            },
+            canAfford() {return player.sn.solarFlares.gte(1e60) && getBuyableAmount('sn', 42).gte(1000)},
+            pay() {player.sn.solarFlares = player.sn.solarFlares.sub(1e60); setBuyableAmount('sn', 42, getBuyableAmount('sn', 42).sub(1000))},
+            effect() {
+                let effect = player.lh.bestLight.add(1).pow(0.1)
+                return effect
+            },
+            unlocked() {return hasUpgrade('sn', 31)}
+        },
+        43: {
+            fullDisplay() {return `<h3>Low Pass Filter</h3><br>
+                Resonant enhancement costs are cheaper based on solarity. Effect: /${format(this.effect())}.<br><br>
+                Cost: 1.00e80 solar flares, 100,000 blueshifted flares`
+            },
+            canAfford() {return player.sn.solarFlares.gte(1e80) && getBuyableAmount('sn', 43).gte(100000)},
+            pay() {player.sn.solarFlares = player.sn.solarFlares.sub(1e80); setBuyableAmount('sn', 43, getBuyableAmount('sn', 43).sub(100000))},
+            effect() {
+                let effect = getBuyableAmount('sn', 31).add(1).pow(0.5)
+                return effect
+            },
+            unlocked() {return hasUpgrade('sn', 31)}
+        },
+        44: {
+            fullDisplay() {return `<h3>A Little More Sun</h3><br>
+                Unlock Tachoclinal Plasma. Good luck with Solar Trial IV...<br><br>
+                Cost: 1.00e84 solar flares, 1.00e12 solarity`
+            },
+            canAfford() {return player.sn.solarFlares.gte(1e84) && getBuyableAmount('sn', 31).gte(1e12)},
+            pay() {player.sn.solarFlares = player.sn.solarFlares.sub(1e84); setBuyableAmount('sn', 31, getBuyableAmount('sn', 31).sub(100000))},
+            unlocked() {return hasUpgrade('sn', 31)}
         },
     },
     milestones: {
@@ -327,6 +410,11 @@ addLayer("sn", {
             effectDescription: "Start resets with 10 Convert Rate levels, unlock Solar Flare Module and a new spacetime conversion input",
             done() { return player.sn.points.gte(1000) }
         },
+        100: {
+            requirementDescription: "1000 solarity",
+            effectDescription: "Generate 5% of solarity gain per second",
+            done() { return getBuyableAmount('sn', 31).gte(1000) }
+        }
     },
     buyables: {
         11: {
@@ -411,12 +499,53 @@ addLayer("sn", {
             },
             unlocked() {return challengeCompletions('sn', 12) >= 1}
         },
+        13: {
+            title() {return "Time Essence (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")"},
+            cost(x) {
+                let cost = new Decimal(1e75).mul(x.mul(1.5).add(1)).mul(new Decimal(1.75).pow(x))
+                return cost
+            },
+            display() { 
+                if (getBuyableAmount('sn', 13).gte(999)) {
+                    return "\
+                    Multiplying sun essence gain by x"+ format(this.effectBase()) +" each\n\
+                    Currently: x" + format(this.effect()) + "\n\
+                    Cost: "+ format(this.cost()) +" time\n\
+                    <b style='color: #ff0000'>[SOFTCAPPED]<b>" 
+                } else {
+                    return "\
+                    Multiplying sun essence gain by x"+ format(this.effectBase()) +" each\n\
+                    Currently: x" + format(this.effect()) + "\n\
+                    Cost: "+ format(this.cost()) +" time\n\
+                    " 
+                }
+            },
+            effectBase() {
+                let base = new Decimal(1.75)
+                return base
+            },
+            effect() {
+                let effect = this.effectBase().pow(getBuyableAmount(this.layer, this.id))
+                return effect
+            },
+            purchaseLimit() {
+                let limit = new Decimal(100)
+                return limit
+            },
+            canAfford() { return player.timePoints.gte(this.cost()) },
+            buy() {
+                player.timePoints = player.timePoints.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            unlocked() {return challengeCompletions('sn', 12) >= 1}
+        },
         21: {
             title() {return "Resonant Enhancement Type-A (" + formatWhole(getBuyableAmount(this.layer, this.id)) + ")"},
             cost(x) {
                 let cost = new Decimal(1).mul(x.mul(0.25).add(1)).mul(new Decimal(1.05).pow(x))
                 if (hasUpgrade('sn', 12)) cost = new Decimal(1).mul(x.mul(2).add(1)).mul(new Decimal(2.5).pow(x))
                 if (x.gte(10)) cost = cost.pow(2)
+                if (hasUpgrade('sn', 43)) cost = cost.div(upgradeEffect('sn', 43))
                 return cost
             },
             display() { 
@@ -473,6 +602,7 @@ addLayer("sn", {
             cost(x) {
                 let cost = new Decimal(50).mul(x.mul(0.25).add(1)).mul(new Decimal(1.5).pow(x))
                 if (x.gte(10)) cost = cost.pow(x.div(33).add(1))
+                if (hasUpgrade('sn', 43)) cost = cost.div(upgradeEffect('sn', 43))
                 return cost
             },
             display() { 
@@ -513,6 +643,7 @@ addLayer("sn", {
             cost(x) {
                 let cost = new Decimal(150).mul(x.mul(0.25).add(1)).mul(new Decimal(1.5).pow(x))
                 if (x.gte(10)) cost = cost.pow(x.div(20).add(1))
+                if (hasUpgrade('sn', 43)) cost = cost.div(upgradeEffect('sn', 43))
                 return cost
             },
             display() { 
@@ -546,6 +677,136 @@ addLayer("sn", {
             },
             unlocked() {return hasMilestone('sn', 0)}
         },
+        31: {
+            title() {return "Solarity (" + format(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost() { // Return gain
+                let gain = player.sn.points.div(1e36).pow(0.9)
+                gain = gain.mul(buyableEffect('sn', 41))
+                return gain
+            },
+            display() {
+                return "\
+                Sacrifice all your sun essence for " + format(this.cost()) + " Solarity\n\
+                Generates " + format(this.effect().mul(100)) + "% of Spacetime and Sun Essence gain on reset per second\n\
+                Requires: 1e36 sun essence\n\
+                " 
+            },
+            effect() {
+                let effect = Decimal.sub(1, Decimal.div(1, getBuyableAmount('sn', 31).add(1).pow(0.25))).pow(3)
+                return effect
+            },
+            canAfford() { return player.sn.points.gte(1e36) },
+            buy() {
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(this.cost()))
+                doReset('sn', true)     
+                player.sn.points = new Decimal(0)
+                player.spacePoints = new Decimal(5)
+            },
+        },
+        41: {
+            title() {return "Solar Cores (" + format(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost() { // Return gain
+                let gain = getBuyableAmount('sn', 31).div(10).pow(0.25)
+                return gain
+            },
+            display() {
+                return "\
+                Sacrifice all your Solarity for " + format(this.cost()) + " Solar Cores\n\
+                Multiplies solarity gain by x" + format(this.effect()) + "\n\
+                Requires: 10 Solarity\n\
+                " 
+            },
+            effect() {
+                let effect = getBuyableAmount('sn', 41).add(1).log(2).add(1).log(2).add(1)
+                return effect
+            },
+            canAfford() { return getBuyableAmount('sn', 31).gte(10) },
+            buy() {
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(this.cost()))
+                doReset('sn', true)
+                setBuyableAmount('sn', 31, new Decimal(0))
+                player.spacePoints = new Decimal(5)
+            },
+        },
+        42: {
+            title() {return "Coronal Waves (" + format(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost() { // Return gain
+                let gain = getBuyableAmount('sn', 31).div(100).pow(0.5).mul(player.sn.sunEnergy.div(1e33).pow(0.2))
+                return gain
+            },
+            display() {
+                return "\
+                Sacrifice all your Solarity and Sun Energy for " + format(this.cost()) + " Coronal Waves\n\
+                Speeds up absolute time by x" + format(this.effect()) + "\n\
+                Requires: 100 Solarity, 1e33 Sun Energy\n\
+                " 
+            },
+            effect() {
+                let effect = getBuyableAmount('sn', 42).add(1).pow(1.5)
+                return effect
+            },
+            canAfford() { return getBuyableAmount('sn', 31).gte(100) && player.sn.sunEnergy.gte(1e33)},
+            buy() {
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(this.cost()))
+                doReset('sn', true)
+                setBuyableAmount('sn', 31, new Decimal(0))
+                player.sn.sunEnergy = new Decimal(0)
+                player.spacePoints = new Decimal(5)
+            },
+        },
+        43: {
+            title() {return "Blueshifted Flares (" + format(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost() { // Return gain
+                let gain = getBuyableAmount('sn', 31).div(1000000).pow(0.5).mul(player.sn.resonance.div(1e63).pow(0.2))
+                return gain
+            },
+            display() {
+                return "\
+                Sacrifice all your Solarity and Resonance for " + format(this.cost()) + " Blueshifted Flares\n\
+                Increases spacetime enhancement buyable caps by +" + formatWhole(this.effect()) + "\n\
+                Requires: 1,000,000 Solarity, 1e63 Resonance\n\
+                " 
+            },
+            effect() {
+                let effect = getBuyableAmount('sn', 43).add(1).log(10).mul(5)
+                return effect.floor()
+            },
+            canAfford() { return getBuyableAmount('sn', 31).gte(1000000) && player.sn.resonance.gte(1e63)},
+            buy() {
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(this.cost()))
+                doReset('sn', true)
+                setBuyableAmount('sn', 31, new Decimal(0))
+                player.sn.sunEnergy = new Decimal(0)
+                player.spacePoints = new Decimal(5)
+            },
+        },
+        51: {
+            title() {return "Tachoclinal Plasma (" + format(getBuyableAmount(this.layer, this.id)) + ")"},
+            cost() { // Return gain
+                let gain = getBuyableAmount('sn', 31).div(1e12).pow(0.33).mul(player.sn.lightEssence.div(1e84).pow(0.33))
+                return gain
+            },
+            display() {
+                return "\
+                Sacrifice all your Solarity and for " + format(this.cost()) + " Tachoclinal Plasma\n\
+                Raises base light gain to the power of ^" + format(this.effect()) + "\n\
+                Requires: 1e12 Solarity, 1e84 Light Essence\n\
+                " 
+            },
+            effect() {
+                let effect = getBuyableAmount('sn', 51).add(1).log(2).add(1).log(2).add(1)
+                return effect
+            },
+            canAfford() { return getBuyableAmount('sn', 31).gte(1e12) && player.sn.lightEssence.gte(1e84) },
+            buy() {
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(this.cost()))
+                doReset('sn', true)
+                setBuyableAmount('sn', 31, new Decimal(0))
+                player.sn.lightEssence = new Decimal(0)
+                player.spacePoints = new Decimal(5)
+            },
+            unlocked() {return hasUpgrade('sn', 44)}
+        },
     },
     challenges: {
         11: {
@@ -554,7 +815,7 @@ addLayer("sn", {
                 You cannot use Spacetime Conversion. Earn a multiplier to light gain based on spacetime.<br>
                 Currently: x${format(inChallenge('sn', 11) ? player.st.points.div(1e3).pow(0.5).add(1) : new Decimal(1))}<br>
                 Goal: 10,000,000 light<br>
-                Reward: Unlock the Capsule solar power and more resonance upgrades
+                Reward: Unlock the Capsule solar power, more resonance upgrades, and Solar Sacrifice
                `
             },
             onEnter() {
@@ -595,7 +856,7 @@ addLayer("sn", {
                 The sun essence to sun energy exponent is reduced. (0.75 -> 0.5) Earn a multiplier to light gain based on sun energy.<br>
                 Currently: x${format(inChallenge('sn', 12) ? player.sn.sunEnergy.pow(0.5).add(1) : new Decimal(1))}<br>
                 Goal: 1.00e9 light<br>
-                Reward: Unlock the Time Flux solar power and more time buyables
+                Reward: Unlock the Time Flux solar power, more time buyables, and Solar Magnets
                `
             },
             onEnter() {
@@ -637,7 +898,7 @@ addLayer("sn", {
                 Spacetime enhancement buyable effects are set to 1. Earn a multiplier to light gain based on points.<br>
                 Currently: x${format(inChallenge('sn', 13) ? Decimal.pow(1.5, player.points.add(1).log(5).add(1)) : new Decimal(1))}<br>
                 Goal: 1.00e18 light<br>
-                Reward: Unlock the Overflow solar power and Solarity
+                Reward: Unlock the Overflow solar power and the Solarity Module
                `
             },
             onEnter() {
@@ -688,6 +949,17 @@ addLayer("sn", {
                 ],
                 unlocked() {return hasMilestone('sn', 2)}
             },
+            "Solarity Module": {
+                content: [
+                    "blank",
+                    ["display-text", "All solarity buyables will force a Sun reset, but you keep time on reset"],
+                    "blank",
+                    ["milestones", [100]],
+                    "blank",
+                    ["buyables", [3, 4, 5]]
+                ],
+                unlocked() {return challengeCompletions('sn', 13) >= 1}
+            }
         },
         solarFlares: {
             "Solar Flare Sub-Module": {
@@ -698,6 +970,11 @@ addLayer("sn", {
                     ["display-text", () => {
                         if (player.sn.resonance.gte(tmp.sn.getResonanceOverflowStart)) {
                             return "Due to having more than " + format(tmp.sn.getResonanceOverflowStart) + " resonance, your resonance multiplier is being brought to the " + format(tmp.sn.getResonanceOverflowRoot) + "th root"
+                        }
+                    }],
+                    ["display-text", () => {
+                        if (player.sn.resonance.gte(tmp.sn.getResonanceSlowdownStart)) {
+                            return "Due to having more than " + format(tmp.sn.getResonanceSlowdownStart) + " resonance, the first resonance penalty is raised to the power of ^" + format(tmp.sn.getResonanceSlowdownPow)
                         }
                     }],
                     "blank",
@@ -730,14 +1007,14 @@ addLayer("sn", {
                     "clickables",
                     "blank",
                 ]
-            }
+            },
         }
     },
     tabFormat: [
         "main-display",
         "prestige-button",
         "blank",
-        ["display-text", () => {if (getResetGain('sn').gte(1e36) || player.sn.points.gte(1e36)) return "<b style='color: #ff0000; text-shadow: 0px 0px 10px #ff0000'>[SOFTCAPPED: GAIN PAST " + format(tmp.mn.softcap) + " IS RAISED TO THE POWER OF " + format(tmp.mn.softcapPower) + "]</b><br><br>"}],
+        ["display-text", () => {if (getResetGain('sn').gte(1e36) || player.sn.points.gte(1e36)) return "<b style='color: #ff0000; text-shadow: 0px 0px 10px #ff0000'>[SOFTCAPPED: GAIN PAST " + format(tmp.sn.softcap) + " IS RAISED TO THE POWER OF " + format(tmp.sn.softcapPower) + "]</b><br><br>"}],
         ["display-text", () => {
             if (tmp.sn.sunEnergyEffect.gte(10)) {
                 return "You have <h2 style='color: #FBC02D; text-shadow: 0px 0px 10px #FBC02D'>" + format(player.sn.sunEnergy) + "</h2> sun energy, (+" + format(new Decimal(0.01).mul(tmp.sn.sunEnergyMult)) + "/s) which multiplies time gain from all sources by x" + format(tmp.sn.sunEnergyEffect) + " <b style='color: #ff0000'>[SOFTCAPPED]<b>"
@@ -750,13 +1027,14 @@ addLayer("sn", {
             if (hasMilestone('sn', 0)) return "You have <h2 style='color: #ffffff; text-shadow: 0px 0px 10px #ffffff'>" + formatTime(player.sn.absoluteTime) + "</h2> of absolute time, which multiplies spacetime gain by x" + format(tmp.sn.absoluteTimeEffect)
         }],
         "blank",
-        "milestones",
+        ["milestones", [0, 1, 2]],
         ["microtabs", "sun"]
     ],
     update(diff) {
         player.sn.sunEnergy = player.sn.sunEnergy.add(new Decimal(0.01).mul(tmp.sn.sunEnergyMult).mul(diff))
         player.sn.sunTimePassed = player.sn.sunTimePassed.add(getTimeConsumptionMultis().mul(diff))
         player.sn.resonance = player.sn.resonance.mul(tmp.sn.getResonanceMult.pow(diff))
+        if (hasMilestone('sn', 100)) setBuyableAmount('sn', 31, getBuyableAmount('sn', 31).add(tmp.sn.buyables[31].cost.mul(0.05).mul(diff)))
     },
     layerShown() {return hasUpgrade('st', 24) || player.sn.unlocked && !player.mn.unlocked}
 })
