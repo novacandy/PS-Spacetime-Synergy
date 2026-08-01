@@ -932,6 +932,46 @@ addLayer("sn", {
                 "box-shadow": "0px 0px 10px #ffa200",
                 "align-content": "center"
             }},
+        },
+        14: {
+            name: "Solar Trial IV",
+            fullDisplay() {return `
+                No debuffs, but no bonus light multipliers.<br>
+                Goal: 1.00e18 light<br>
+                Reward: Re-unlock the Moon
+               `
+            },
+            onEnter() {
+                player.spacePoints = new Decimal(5)
+                player.timePoints = new Decimal(15)
+                player.timePassed = new Decimal(0)
+                player.sn.sunTimePassed = new Decimal(0)
+            },
+            onExit() {
+                player.lh.light = new Decimal(0)
+                player.lh.solarPrestige = new Decimal(0)
+                setBuyableAmount('lh', 11, new Decimal(0))
+                setBuyableAmount('lh', 12, new Decimal(0))
+                player.lh.solarSacrifice = new Decimal(0)
+                setBuyableAmount('lh', 21, new Decimal(0))
+                setBuyableAmount('lh', 22, new Decimal(0))
+                setBuyableAmount('lh', 23, new Decimal(0))
+                player.lh.solarMagnets = new Decimal(0)
+                setBuyableAmount('lh', 31, new Decimal(0))
+                setBuyableAmount('lh', 32, new Decimal(0))
+            },
+            canComplete() {return player.lh.light.gte(1e18)},
+            unlocked() {return challengeCompletions('sn', 11) >= 1},
+            style() {return {
+                "width": "350px",
+                "height": "350px",
+                "border-color": "#ffa200",
+                "background-color": "#523400",
+                "color": "#ffa200",
+                "text-shadow": "0px 0px 10px #ffa200",
+                "box-shadow": "0px 0px 10px #ffa200",
+                "align-content": "center"
+            }},
         }
     },
     microtabs: {
