@@ -91,7 +91,7 @@ addLayer("dk", {
     type: "none",
     getDarknessGen() {
         let gen = tmp.mn.getDarkEssenceEffect
-        gen = gen.pow(buyableEffect('mn', 51))
+        
         if (hasUpgrade('st', 14)) gen = gen.mul(upgradeEffect('st', 14))
         gen = gen.mul(buyableEffect('st', 12))
         gen = gen.mul(tmp.dk.getLunarGenPowerEffect)
@@ -153,7 +153,7 @@ addLayer("dk", {
     getLunarACMult() {
         let mult = new Decimal(1)
         mult = mult.mul(tmp.mn.absoluteSpaceEffect)
-        if (player.mn.unlockOrder == 1) mult = mult.pow(0.5)
+        if (player.mn.unlockOrder == 1 && !challengeCompletions('sn', 21)) mult = mult.pow(0.5)
         return mult
     },
     getLunarACEffect() {
@@ -163,7 +163,7 @@ addLayer("dk", {
 
     getLunarDynEffect() {
         let effect = tmp.dk.getLunarDynBase.pow(player.dk.lunarDynamos.add(tmp.dk.getFreeLunarDyns)).sub(1)
-        if (player.mn.unlockOrder == 1) effect = effect.pow(0.5)
+        if (player.mn.unlockOrder == 1 && !challengeCompletions('sn', 21)) effect = effect.pow(0.5)
         return effect
     },
     getLunarDynBase() {
@@ -181,7 +181,7 @@ addLayer("dk", {
     getLunarDCMult() {
         let mult = new Decimal(1)
         mult = mult.mul(tmp.mn.absoluteSpaceEffect)
-        if (player.mn.unlockOrder == 1) mult = mult.pow(0.5)
+        if (player.mn.unlockOrder == 1 && !challengeCompletions('sn', 21)) mult = mult.pow(0.5)
         return mult
     },
     getLunarDCEffect() {

@@ -95,10 +95,12 @@ addLayer("lh", {
         if (inChallenge('sn', 12)) gen = gen.mul(player.sn.sunEnergy.pow(0.5).add(1))
         if (inChallenge('sn', 13)) gen = gen.mul(Decimal.pow(1.5, player.points.add(1).log(5).add(1)))
         if (inChallenge('sn', 21)) gen = gen.mul(tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims))
+        if (inChallenge('sn', 22)) gen = gen.pow(0.5)
         gen = gen.mul(tmp.lh.solarPrestigeEffect)
         gen = gen.mul(buyableEffect('lh', 11))
         gen = gen.mul(buyableEffect('lh', 21))
         if (challengeCompletions('sn', 12) >= 1) gen = gen.mul(tmp.lh.attractionMulti)
+        if (player.sn.activeSolarPowers[5]) gen = gen.pow(1.1)
         return gen
     },
 
@@ -134,6 +136,7 @@ addLayer("lh", {
     },
     solarSacrificeGainMult() {
         let mult = new Decimal(1)
+        if (challengeCompletions('sn', 21) >= 1) mult = mult.mul(tmp.lh.attractionMulti)
         return mult
     },
     solarSacrificeEffect() {
@@ -145,6 +148,7 @@ addLayer("lh", {
         let gen = new Decimal(1)
         gen = gen.mul(buyableEffect('lh', 23))
         gen = gen.mul(buyableEffect('lh', 32))
+        if (challengeCompletions('sn', 21) >= 1) gen = gen.mul(tmp.lh.attractionMulti)
         return gen
     },
     attractionMulti() {
@@ -468,6 +472,7 @@ addLayer("lh", {
                         return "Your attraction multiplier is currently x" + format(tmp.lh.attractionMulti)
                     }],
                     ["display-text", () => {
+                        if (challengeCompletions('sn', 21) >= 1) return "Solar trial completions are making your Attraction multiplier affect Points, Time, Space, Light, Solar Prestige Points, Solar Sacrifice Points, and Solar Magnets"
                         if (challengeCompletions('sn', 14) >= 1) return "Solar trial completions are making your Attraction multiplier affect Points, Time, Space, Light, and Solar Prestige Points"
                         if (challengeCompletions('sn', 13) >= 1) return "Solar trial completions are making your Attraction multiplier affect Light and Solar Prestige Points"
                         return "Solar trial completions are making your Attraction multiplier affect Light"

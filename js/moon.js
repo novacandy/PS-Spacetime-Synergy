@@ -70,7 +70,7 @@ addLayer("mn", {
             "background-color": "#0a371d"
         }},
     },
-    requires() {return player.mn.unlockOrder == 0 ? new Decimal(10000) : new Decimal(1e100)},
+    requires() {return player.mn.unlockOrder == 0 || (challengeCompletions('sn', 21) >= 1 && inChallenge('mn', 11))? new Decimal(10000) : new Decimal(1e100)},
     resource() {
         if (inChallenge('mn', 11)) return "dark moon essence"
         return "moon essence"
@@ -135,6 +135,7 @@ addLayer("mn", {
         exp = exp.add(buyableEffect('mn', 21))
         if (hasUpgrade('mn', 12)) exp = exp.add(upgradeEffect('mn', 12))
         if (hasUpgrade('mn', 23)) exp = exp.add(upgradeEffect('mn', 23))
+        if (player.sn.activeSolarPowers[4] || player.sn.activeSolarPowers[5]) exp = exp.sub(1)
         return exp
     },
     getRadianceOverflowStart() {
@@ -151,6 +152,7 @@ addLayer("mn", {
     },
     getDarkEssenceEffect() {
         let effect = player.mn.darkEssence.add(1).log(2)
+        effect = effect.pow(buyableEffect('mn', 51))
         return effect
     },
     hotkeys: [
@@ -171,7 +173,7 @@ addLayer("mn", {
             cost: new Decimal(1e9),
             effect() {
                 let effect = player.spacePoints.add(1).log(50).pow(0.5).div(5)
-                if (player.mn.unlockOrder == 1) effect = effect.div(3)
+                if (player.mn.unlockOrder == 1) effect = effect.div(1.33)
                 return effect
             },
             currencyLayer: "mn",
@@ -283,7 +285,7 @@ addLayer("mn", {
         34: {
             title: "All At Once",
             description() {return "Unlock the Quinary Ω-Space Building. Ω-space requirement scales 50% slower."},
-            cost: new Decimal(1e24),
+            cost: new Decimal(1e22),
             currencyLayer: "mn",
             currencyDisplayName: "moonstone",
             currencyInternalName: "moonstone",
@@ -370,7 +372,9 @@ addLayer("mn", {
         },
         102: {
             requirementDescription: "Complete Depth 2",
-            effectDescription: "Re-unlock the Sun",
+            effectDescription() {
+                return player.mn.unlockOrder == 1 ? "Unlock the Illuminate solar power" : "Re-unlock the Sun"
+            },
             done() {return challengeCompletions('mn', 11) >= 3},
             unlocked() {return hasMilestone('mn', 101)},
             onComplete() {
@@ -633,6 +637,7 @@ addLayer("mn", {
             cost() { // Return gain
                 let gain = player.mn.points.div(1e36).pow(0.9)
                 gain = gain.mul(buyableEffect('mn', 41))
+                if (player.sn.activeSolarPowers[4]) gain = gain.mul(100)
                 return gain
             },
             display() {
@@ -648,15 +653,19 @@ addLayer("mn", {
             },
             canAfford() { return player.mn.points.gte(1e36) },
             buy() {
+                let keepSpace = player.spacePoints
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(this.cost()))
                 doReset('mn', true)
                 player.mn.points = new Decimal(0)
+                player.spacePoints = keepSpace
+                player.timePoints = new Decimal(5)
             },
         },
         41: {
             title() {return "Lunar Cores (" + format(getBuyableAmount(this.layer, this.id)) + ")"},
             cost() { // Return gain
                 let gain = getBuyableAmount('mn', 31).div(10).pow(0.25)
+                if (player.sn.activeSolarPowers[4]) gain = gain.mul(100)
                 return gain
             },
             display() {
@@ -672,15 +681,19 @@ addLayer("mn", {
             },
             canAfford() { return getBuyableAmount('mn', 31).gte(10) },
             buy() {
+                let keepSpace = player.spacePoints
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(this.cost()))
                 doReset('mn', true)
                 setBuyableAmount('mn', 31, new Decimal(0))
+                player.spacePoints = keepSpace
+                player.timePoints = new Decimal(5)
             },
         },
         42: {
             title() {return "Impact Craters (" + format(getBuyableAmount(this.layer, this.id)) + ")"},
             cost() { // Return gain
                 let gain = getBuyableAmount('mn', 31).div(100).pow(0.5).mul(player.mn.moonEnergy.div(1e30).pow(0.75))
+                if (player.sn.activeSolarPowers[4]) gain = gain.mul(100)
                 return gain
             },
             display() {
@@ -696,17 +709,20 @@ addLayer("mn", {
             },
             canAfford() { return getBuyableAmount('mn', 31).gte(100) && player.mn.moonEnergy.gte(1e30) },
             buy() {
+                let keepSpace = player.spacePoints
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(this.cost()))
                 doReset('mn', true)
                 setBuyableAmount('mn', 31, new Decimal(0))
                 player.mn.moonEnergy = new Decimal(0)
-                player.timePoints = new Decimal(0)
+                player.timePoints = new Decimal(5)
+                player.spacePoints = keepSpace
             },
         },
         43: {
             title() {return "Regolith Dust (" + format(getBuyableAmount(this.layer, this.id)) + ")"},
             cost() { // Return gain
                 let gain = getBuyableAmount('mn', 31).div(500).pow(0.5).mul(player.mn.moonstone.div(1e27).pow(0.4))
+                if (player.sn.activeSolarPowers[4]) gain = gain.mul(100)
                 return gain
             },
             display() {
@@ -722,17 +738,20 @@ addLayer("mn", {
             },
             canAfford() { return getBuyableAmount('mn', 31).gte(500) && player.mn.moonstone.gte(1e30) },
             buy() {
+                let keepSpace = player.spacePoints
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(this.cost()))
                 doReset('mn', true)
                 setBuyableAmount('mn', 31, new Decimal(0))
                 player.mn.moonstone = new Decimal(0)
-                player.timePoints = new Decimal(0)
+                player.timePoints = new Decimal(5)
+                player.spacePoints = keepSpace
             },
         },
         51: {
             title() {return "Total Eclipses (" + format(getBuyableAmount(this.layer, this.id)) + ")"},
             cost() { // Return gain
                 let gain = getBuyableAmount('mn', 31).div(5000000).pow(0.33).mul(player.mn.darkEssence.div(1e43).pow(0.33))
+                if (player.sn.activeSolarPowers[4]) gain = gain.mul(100)
                 return gain
             },
             display() {
@@ -748,12 +767,15 @@ addLayer("mn", {
             },
             canAfford() { return getBuyableAmount('mn', 31).gte(5000000) && player.mn.darkEssence.gte(1e43) },
             buy() {
+                let keepSpace = player.spacePoints
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(this.cost()))
                 doReset('mn', true)
                 setBuyableAmount('mn', 31, new Decimal(0))
                 player.mn.darkEssence = new Decimal(0)
-                player.timePoints = new Decimal(0)
+                player.timePoints = new Decimal(5)
+                player.spacePoints = keepSpace
             },
+            unlocked() {return hasUpgrade('mn', 44)}
         }
     },
     challenges: {

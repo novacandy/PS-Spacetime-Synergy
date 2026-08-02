@@ -71,7 +71,7 @@ function getPointCapacity() {
 	cap = cap.mul(buyableEffect('sn', 11))
 	cap = cap.mul(buyableEffect('st', 61))
 
-	if (player.sn.activeSolarPowers[2]) cap = cap.pow(0.75)
+	if (player.sn.activeSolarPowers[2] || player.sn.activeSolarPowers[5]) cap = cap.pow(0.75)
 
 	if (hasUpgrade('sn', 31)) cap = cap.mul(upgradeEffect('sn', 31))
 	return cap
@@ -79,7 +79,7 @@ function getPointCapacity() {
 
 function getPointTime() {
 	let time = player.timePoints
-	if (player.sn.activeSolarPowers[1]) time = time.pow(0.33)
+	if (player.sn.activeSolarPowers[1] || player.sn.activeSolarPowers[5]) time = time.pow(0.33)
 	time = time.mul(buyableEffect('st', 61))
 	return time
 }

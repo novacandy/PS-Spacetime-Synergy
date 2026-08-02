@@ -207,6 +207,60 @@ addLayer("sn", {
                 "height": "200px",
             }}
         },
+        14: {
+            title() {return "Solar Power IV: Drill (" + (player.sn.activeSolarPowers[3] ? "ACTIVE" : "INACTIVE")+ ")"},
+            display() {return "Absolute Time is re-enabled in DSoTM or when the convert input is MOON ESSENCE, but its effect is raised to the power of ^0.25."},
+            canClick() {return true},
+            onClick() {
+                player.sn.activeSolarPowers[3] = player.sn.activeSolarPowers[3] ? false : true
+                doReset('sn', true)
+                player.timePassed = new Decimal(0)
+                player.sn.sunTimePassed = new Decimal(0)
+                player.spacePoints = new Decimal(5)
+                player.timePoints = new Decimal(15)
+            },
+            unlocked() {return challengeCompletions('sn', 21) >= 1},
+            style() {return {
+                "width": "200px",
+                "height": "200px",
+            }}
+        },
+        21: {
+            title() {return "Solar Power V: Shine (" + (player.sn.activeSolarPowers[4] ? "ACTIVE" : "INACTIVE")+ ")"},
+            display() {return "The first five lunarity buyable gains are multiplied by x100, but -1.00 radiance exponent."},
+            canClick() {return true},
+            onClick() {
+                player.sn.activeSolarPowers[4] = player.sn.activeSolarPowers[4] ? false : true
+                doReset('sn', true)
+                player.timePassed = new Decimal(0)
+                player.sn.sunTimePassed = new Decimal(0)
+                player.spacePoints = new Decimal(5)
+                player.timePoints = new Decimal(15)
+            },
+            unlocked() {return challengeCompletions('sn', 21) >= 1},
+            style() {return {
+                "width": "200px",
+                "height": "200px",
+            }}
+        },
+        22: {
+            title() {return "Solar Power VI: Illuminate (" + (player.sn.activeSolarPowers[5] ? "ACTIVE" : "INACTIVE")+ ")"},
+            display() {return "^1.1 light generation, but all previous solar power debuffs are applied even if their respective solar power is inactive."},
+            canClick() {return true},
+            onClick() {
+                player.sn.activeSolarPowers[5] = player.sn.activeSolarPowers[5] ? false : true
+                doReset('sn', true)
+                player.timePassed = new Decimal(0)
+                player.sn.sunTimePassed = new Decimal(0)
+                player.spacePoints = new Decimal(5)
+                player.timePoints = new Decimal(15)
+            },
+            unlocked() {return hasMilestone('mn', 102)},
+            style() {return {
+                "width": "200px",
+                "height": "200px",
+            }}
+        },
     },
     upgrades: {
         11: {
@@ -286,6 +340,7 @@ addLayer("sn", {
             cost: new Decimal(1e18),
             effect() {
                 let effect = player.lh.bestLight.add(1).pow(0.9)
+                if (effect.gte(1e60)) effect = effect.div(1e60).pow(0.1).mul(1e60)
                 return effect
             },
             currencyLayer: "sn",
@@ -771,7 +826,7 @@ addLayer("sn", {
                 " 
             },
             effect() {
-                let effect = getBuyableAmount('sn', 43).add(1).log(10).mul(5)
+                let effect = getBuyableAmount('sn', 43).add(1).log(10).mul(6)
                 return effect.floor()
             },
             canAfford() { return getBuyableAmount('sn', 31).gte(1000000) && player.sn.resonance.gte(1e63)},
@@ -843,8 +898,8 @@ addLayer("sn", {
             canComplete() {return player.lh.light.gte(10000000)},
             unlocked() {return hasUpgrade('sn', 11)},
             style() {return {
-                "width": "350px",
-                "height": "350px",
+                "width": "325px",
+                "height": "325px",
                 "border-color": "#ffa200",
                 "background-color": "#523400",
                 "color": "#ffa200",
@@ -883,10 +938,10 @@ addLayer("sn", {
                 setBuyableAmount('lh', 32, new Decimal(0))
             },
             canComplete() {return player.lh.light.gte(1e9)},
-            unlocked() {return challengeCompletions('sn', 11) >= 1},
+            unlocked() {return challengeCompletions('sn', 12) >= 1},
             style() {return {
-                "width": "350px",
-                "height": "350px",
+                "width": "325px",
+                "height": "325px",
                 "border-color": "#ffa200",
                 "background-color": "#523400",
                 "color": "#ffa200",
@@ -924,10 +979,10 @@ addLayer("sn", {
                 setBuyableAmount('lh', 32, new Decimal(0))
             },
             canComplete() {return player.lh.light.gte(1e18)},
-            unlocked() {return challengeCompletions('sn', 11) >= 1},
+            unlocked() {return challengeCompletions('sn', 12) >= 1},
             style() {return {
-                "width": "350px",
-                "height": "350px",
+                "width": "325px",
+                "height": "325px",
                 "border-color": "#ffa200",
                 "background-color": "#523400",
                 "color": "#ffa200",
@@ -964,10 +1019,10 @@ addLayer("sn", {
                 setBuyableAmount('lh', 32, new Decimal(0))
             },
             canComplete() {return player.lh.light.gte(1e18)},
-            unlocked() {return challengeCompletions('sn', 11) >= 1},
+            unlocked() {return challengeCompletions('sn', 13) >= 1},
             style() {return {
-                "width": "350px",
-                "height": "350px",
+                "width": "325px",
+                "height": "325px",
                 "border-color": "#ffa200",
                 "background-color": "#523400",
                 "color": "#ffa200",
@@ -982,7 +1037,7 @@ addLayer("sn", {
                 You can only increase The ${tmp.st.getAbsSpaceName}'s side lengths using the Lengthener. Earn a multiplier to light gain based on stored absolute space.<br>
                 Currently: x${format(inChallenge('sn', 21) ? tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims) : new Decimal(1))}<br>
                 Goal: 1.00e42 light<br>
-                Reward: Unlock the Drill solar power and the Moon requirement is set to its normal state while in DSoTM
+                Reward: Unlock the Drill and Shine solar powers, the Moon requirement is set to 10,000 while in DSoTM, and lunar AC/DC generation is no longer softcapped.
                `
             },
             onEnter() {
@@ -1005,10 +1060,52 @@ addLayer("sn", {
                 setBuyableAmount('lh', 32, new Decimal(0))
             },
             canComplete() {return player.lh.light.gte(1e42)},
-            unlocked() {return challengeCompletions('sn', 11) >= 1},
+            unlocked() {return challengeCompletions('sn', 14) >= 1},
             style() {return {
-                "width": "350px",
-                "height": "350px",
+                "width": "325px",
+                "height": "325px",
+                "border-color": "#ffa200",
+                "background-color": "#523400",
+                "color": "#ffa200",
+                "text-shadow": "0px 0px 10px #ffa200",
+                "box-shadow": "0px 0px 10px #ffa200",
+                "align-content": "center"
+            }},
+        },
+        22: {
+            name: "Solar Trial VI",
+            fullDisplay() {return `
+                You are trapped in all previous solar trials at once, and bonus light multipliers are raised to the power of ^0.5.<br>
+                Goal: 1.11e111 light<br>
+                Reward: The Moon behaves as if it was unlocked first.
+               `
+            },
+            countsAs: [11, 12, 13, 14, 21],
+            onEnter() {
+                player.spacePoints = new Decimal(5)
+                player.timePoints = new Decimal(15)
+                player.timePassed = new Decimal(0)
+                player.sn.sunTimePassed = new Decimal(0)
+            },
+            onExit() {
+                player.lh.light = new Decimal(0)
+                player.lh.solarPrestige = new Decimal(0)
+                setBuyableAmount('lh', 11, new Decimal(0))
+                setBuyableAmount('lh', 12, new Decimal(0))
+                player.lh.solarSacrifice = new Decimal(0)
+                setBuyableAmount('lh', 21, new Decimal(0))
+                setBuyableAmount('lh', 22, new Decimal(0))
+                setBuyableAmount('lh', 23, new Decimal(0))
+                player.lh.solarMagnets = new Decimal(0)
+                setBuyableAmount('lh', 31, new Decimal(0))
+                setBuyableAmount('lh', 32, new Decimal(0))
+            },
+            canComplete() {return player.lh.light.gte(1.11e111)},
+            onComplete() {player.mn.unlockOrder = 0},
+            unlocked() {return challengeCompletions('sn', 14) >= 1},
+            style() {return {
+                "width": "325px",
+                "height": "325px",
                 "border-color": "#ffa200",
                 "background-color": "#523400",
                 "color": "#ffa200",
