@@ -94,6 +94,7 @@ addLayer("lh", {
         if (inChallenge('sn', 11)) gen = gen.mul(player.st.points.div(1e3).pow(0.5).add(1))
         if (inChallenge('sn', 12)) gen = gen.mul(player.sn.sunEnergy.pow(0.5).add(1))
         if (inChallenge('sn', 13)) gen = gen.mul(Decimal.pow(1.5, player.points.add(1).log(5).add(1)))
+        if (inChallenge('sn', 21)) gen = gen.mul(tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims))
         gen = gen.mul(tmp.lh.solarPrestigeEffect)
         gen = gen.mul(buyableEffect('lh', 11))
         gen = gen.mul(buyableEffect('lh', 21))
@@ -467,6 +468,7 @@ addLayer("lh", {
                         return "Your attraction multiplier is currently x" + format(tmp.lh.attractionMulti)
                     }],
                     ["display-text", () => {
+                        if (challengeCompletions('sn', 14) >= 1) return "Solar trial completions are making your Attraction multiplier affect Points, Time, Space, Light, and Solar Prestige Points"
                         if (challengeCompletions('sn', 13) >= 1) return "Solar trial completions are making your Attraction multiplier affect Light and Solar Prestige Points"
                         return "Solar trial completions are making your Attraction multiplier affect Light"
                     }]

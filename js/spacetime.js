@@ -68,7 +68,6 @@ addLayer("st", {
 
     passiveGeneration() {
         return buyableEffect('mn', 31).add(buyableEffect('sn', 31))
-
     },
 
     gainMult() {
@@ -77,12 +76,12 @@ addLayer("st", {
         mult = mult.mul(buyableEffect('st', 12))
     	if (hasUpgrade('st', 23)) mult = mult.mul(upgradeEffect('st', 23))
         mult = mult.mul(tmp.mn.absoluteSpaceEffect)
+        mult = mult.mul(tmp.sn.absoluteTimeEffect)
 
         if (inChallenge('mn', 11)) {
             mult = new Decimal(1)
             mult = mult.mul(tmp.dk.getLunarACEffect)
         }
-        mult = mult.mul(tmp.sn.absoluteTimeEffect)
         return mult
     },
     gainExp() {
@@ -121,12 +120,13 @@ addLayer("st", {
     },
     getConvertOutputMult() {
         let mult = new Decimal(1)
+        let enableMoonPenalty = player.mn.unlockOrder == 1 && (player.st.convertInput == 'MOON ESSENCE' || inChallenge('mn', 11))
         if (hasUpgrade('st', 21)) mult = mult.mul(1.75)
-        if (hasUpgrade('st', 23)) mult = mult.mul(upgradeEffect('st', 23))
+        if (hasUpgrade('st', 23) && !enableMoonPenalty) mult = mult.mul(upgradeEffect('st', 23))
         if (hasMilestone('mn', 1)) mult = mult.mul(tmp.st.getStoredAbsSpaceEffect)
-        if (hasMilestone('sn', 1)) mult = mult.mul(tmp.st.getStoredAbsTimeEffect)
-        mult = mult.mul(buyableEffect('sn', 12))
-        if(hasUpgrade('sn', 42)) mult = mult.mul(upgradeEffect('sn', 42))
+        if (hasMilestone('sn', 1) && !(enableMoonPenalty)) mult = mult.mul(tmp.st.getStoredAbsTimeEffect)
+        if (!enableMoonPenalty) mult = mult.mul(buyableEffect('sn', 12))
+        if (hasUpgrade('sn', 42) && !enableMoonPenalty) mult = mult.mul(upgradeEffect('sn', 42))
         return mult
     },
     getConvertPenaltySoftcap() {
@@ -159,6 +159,7 @@ addLayer("st", {
         len = len.add(buyableEffect('st', 31))
         if (hasUpgrade('mn', 13)) len = len.mul(upgradeEffect('mn', 13))
         len = len.mul(buyableEffect('mn', 42))
+        if (inChallenge('sn', 21)) len = buyableEffect('st', 31).add(1)
         return len
     },
     getAbsoluteSpaceDims() {
@@ -316,13 +317,18 @@ addLayer("st", {
             title: "Tickspeed",
             description() {
                 if (inChallenge('mn', 11)) return "Earn a multiplier to points, convert output, and <s>spacetime</s> darkness based on time, but also multiplies time consumption. Effect: x" + format(this.effect())
-                return "Earn a multiplier to points, convert output, and spacetime, but also time consumption, based on time. Effect: x" + format(this.effect())
+                return "Earn a multiplier to points, convert output, and spacetime, but also time consumption, based on time. Effect: x" + format(this.effect()) + (this.effect().gte(this.softcapStart()) ? " <b style='color: #ff0000'>[SOFTCAPPED]<b>" : "")
             },
             cost: new Decimal(250000),
             effect() {
                 let effect = player.timePoints.pow(0.25).div(5).add(1)
                 if (player.sn.activeSolarPowers[2]) effect = effect.pow(1.2)
+                if (effect.gte(1e30)) effect = effect.div(1e30).pow(0.5).mul(1e30)
                 return effect
+            },
+            softcapStart() {
+                let start = new Decimal(1e30)
+                return start
             },
             unlocked() {return hasMilestone('st', 2)},
             style() {
@@ -1208,6 +1214,9 @@ addLayer("st", {
                     ["display-text", () => {
                         if (tmp.st.getConvertRate.gte(250)) return "<br><b style='color: #ff0000; text-shadow: 0px 0px 10px #ff0000'>[SOFTCAPPED: CONVERT RATE PAST " + format(tmp.st.getConvertPenaltySoftcap) + " MULTIPLIES CONVERT PENALTY BY " + format(tmp.st.getConvertPenaltySoftcapMult) + "]</b>"
                     }],
+                    ["display-text", () => {
+                        if (player.mn.unlockOrder == 1 && (player.st.convertInput == 'MOON ESSENCE' || inChallenge('mn', 11))) return "<br><b style='color: #ff0000; text-shadow: 0px 0px 10px #ff0000'>[SOFTCAPPED: The Moon is not your dominant layer, Absolute Time, Tickspeed's convert multi, and convert multis from The Sun are disabled"
+                    }],
                     "blank",
                     ["display-text", () => {
                         let displayCurrency = new Decimal(0)
@@ -1304,9 +1313,9 @@ addLayer("st", {
                         ["buyable", 32]
                     ]],
                     "blank",
-                    ["display-text", () => {return "Ω-Space Building Power: " + format(tmp.st.getSpaceBuildingPower.mul(100)) + "%"}],
-                    ["display-text", () => {return "Stored absolute space is granting an Ω-space building cap of " + formatWhole(tmp.st.getSpaceBuildingCap) + " (Next at " + format(tmp.st.getNextSpaceBuildingCap) + ")"}],
-                    ["display-text", () => {return "Stored absolute space is also granting " + formatWhole(tmp.st.getOmegaSpace) + " Ω-space for absolute space buildings (Next at " + format(tmp.st.getNextOmegaSpace) + ")"}],
+                    ["display-text", () => {if (hasMilestone('mn', 101)) return "Ω-Space Building Power: " + format(tmp.st.getSpaceBuildingPower.mul(100)) + "%"}],
+                    ["display-text", () => {if (hasMilestone('mn', 101)) return "Stored absolute space is granting an Ω-space building cap of " + formatWhole(tmp.st.getSpaceBuildingCap) + " (Next at " + format(tmp.st.getNextSpaceBuildingCap) + ")"}],
+                    ["display-text", () => {if (hasMilestone('mn', 101)) return "Stored absolute space is also granting " + formatWhole(tmp.st.getOmegaSpace) + " Ω-space for absolute space buildings (Next at " + format(tmp.st.getNextOmegaSpace) + ")"}],
                     "blank",
                     ["buyables", [4]]         
                 ],

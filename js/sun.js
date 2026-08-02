@@ -4,10 +4,12 @@ addLayer("sn", {
     row: 1,
     displayRow: 3,
     position: 0,
+    increaseUnlockOrder: ['mm'],
     startData() { return {
         unlocked: false,
 		points: new Decimal(0),
         resetTime: 0,
+        unlockOrder: 0,
         total: new Decimal(0),
         sunTimePassed: new Decimal(0),
 
@@ -42,6 +44,7 @@ addLayer("sn", {
     },
     color: "#ffa200",
     nodeStyle() {
+
         if (inChallenge('mn', 11) && challengeCompletions('mn', 11) > 4) return {
             "color": "#ffffff",
             "animation": 'sunOrbit 25s infinite linear',
@@ -815,7 +818,7 @@ addLayer("sn", {
                 You cannot use Spacetime Conversion. Earn a multiplier to light gain based on spacetime.<br>
                 Currently: x${format(inChallenge('sn', 11) ? player.st.points.div(1e3).pow(0.5).add(1) : new Decimal(1))}<br>
                 Goal: 10,000,000 light<br>
-                Reward: Unlock the Capsule solar power, more resonance upgrades, and Solar Sacrifice
+                Reward: Unlock the Capsule solar power, more solar flare upgrades, and Solar Sacrifice
                `
             },
             onEnter() {
@@ -961,6 +964,47 @@ addLayer("sn", {
                 setBuyableAmount('lh', 32, new Decimal(0))
             },
             canComplete() {return player.lh.light.gte(1e18)},
+            unlocked() {return challengeCompletions('sn', 11) >= 1},
+            style() {return {
+                "width": "350px",
+                "height": "350px",
+                "border-color": "#ffa200",
+                "background-color": "#523400",
+                "color": "#ffa200",
+                "text-shadow": "0px 0px 10px #ffa200",
+                "box-shadow": "0px 0px 10px #ffa200",
+                "align-content": "center"
+            }},
+        },
+        21: {
+            name: "Solar Trial V",
+            fullDisplay() {return `
+                You can only increase The ${tmp.st.getAbsSpaceName}'s side lengths using the Lengthener. Earn a multiplier to light gain based on stored absolute space.<br>
+                Currently: x${format(inChallenge('sn', 21) ? tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims) : new Decimal(1))}<br>
+                Goal: 1.00e42 light<br>
+                Reward: Unlock the Drill solar power and the Moon requirement is set to its normal state while in DSoTM
+               `
+            },
+            onEnter() {
+                player.spacePoints = new Decimal(5)
+                player.timePoints = new Decimal(15)
+                player.timePassed = new Decimal(0)
+                player.sn.sunTimePassed = new Decimal(0)
+            },
+            onExit() {
+                player.lh.light = new Decimal(0)
+                player.lh.solarPrestige = new Decimal(0)
+                setBuyableAmount('lh', 11, new Decimal(0))
+                setBuyableAmount('lh', 12, new Decimal(0))
+                player.lh.solarSacrifice = new Decimal(0)
+                setBuyableAmount('lh', 21, new Decimal(0))
+                setBuyableAmount('lh', 22, new Decimal(0))
+                setBuyableAmount('lh', 23, new Decimal(0))
+                player.lh.solarMagnets = new Decimal(0)
+                setBuyableAmount('lh', 31, new Decimal(0))
+                setBuyableAmount('lh', 32, new Decimal(0))
+            },
+            canComplete() {return player.lh.light.gte(1e42)},
             unlocked() {return challengeCompletions('sn', 11) >= 1},
             style() {return {
                 "width": "350px",

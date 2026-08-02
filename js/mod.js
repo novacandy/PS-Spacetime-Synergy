@@ -56,6 +56,8 @@ function getPointGen() {
 	if (hasUpgrade('sn', 23)) gain = gain.mul(upgradeEffect('sn', 23))
 	if (hasUpgrade('sn', 32)) gain = gain.mul(upgradeEffect('sn', 32))
 
+	if (player.sn.activeChallenge !== null && challengeCompletions('sn', 14) >= 1) gain = gain.mul(tmp.lh.attractionMulti)
+
 	return gain
 }
 
@@ -97,6 +99,7 @@ function getSpaceMultis() {
 	if (hasUpgrade('dk', 11)) mult = mult.mul(10)
 
 	if (hasUpgrade('sn', 32)) mult = mult.mul(upgradeEffect('sn', 32))
+	if (player.sn.activeChallenge !== null && challengeCompletions('sn', 14) >= 1) mult = mult.mul(tmp.lh.attractionMulti)
 
 	return mult
 }
@@ -107,6 +110,7 @@ function getTimeMultis() {
 	mult = mult.mul(tmp.sn.sunEnergyEffect)
 
 	if (hasUpgrade('sn', 32)) mult = mult.mul(upgradeEffect('sn', 32))
+	if (player.sn.activeChallenge !== null && challengeCompletions('sn', 14) >= 1) mult = mult.mul(tmp.lh.attractionMulti)
 
 	return mult
 }

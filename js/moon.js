@@ -6,10 +6,12 @@ addLayer("mn", {
     },
     row: 1,
     position: 0,
+    increaseUnlockOrder: ['sn'],
     startData() { return {
         unlocked: false,
 		points: new Decimal(0),
         resetTime: 0,
+        unlockOrder: 0,
         total: new Decimal(0),
 
         moonEnergy: new Decimal(0),
@@ -68,7 +70,7 @@ addLayer("mn", {
             "background-color": "#0a371d"
         }},
     },
-    requires: new Decimal(10000),
+    requires() {return player.mn.unlockOrder == 0 ? new Decimal(10000) : new Decimal(1e100)},
     resource() {
         if (inChallenge('mn', 11)) return "dark moon essence"
         return "moon essence"
@@ -169,6 +171,7 @@ addLayer("mn", {
             cost: new Decimal(1e9),
             effect() {
                 let effect = player.spacePoints.add(1).log(50).pow(0.5).div(5)
+                if (player.mn.unlockOrder == 1) effect = effect.div(3)
                 return effect
             },
             currencyLayer: "mn",
@@ -280,7 +283,7 @@ addLayer("mn", {
         34: {
             title: "All At Once",
             description() {return "Unlock the Quinary Ω-Space Building. Ω-space requirement scales 50% slower."},
-            cost: new Decimal(1e18),
+            cost: new Decimal(1e24),
             currencyLayer: "mn",
             currencyDisplayName: "moonstone",
             currencyInternalName: "moonstone",
@@ -356,17 +359,20 @@ addLayer("mn", {
         100: {
             requirementDescription: "Complete Depth 0",
             effectDescription: "You can buy max Convert Rate and Lengtheners, unlock two new space buyables and more moonstone upgrades",
-            done() {return challengeCompletions('mn', 11) >= 1}
+            done() {return challengeCompletions('mn', 11) >= 1},
+            unlocked() {return hasUpgrade('mn', 11)}
         },
         101: {
             requirementDescription: "Complete Depth 1",
             effectDescription: "You can buy max spacetime enhancement buyables, unlock Absolute Space Buildings and even more moonstone upgrades",
-            done() {return challengeCompletions('mn', 11) >= 2}
+            done() {return challengeCompletions('mn', 11) >= 2},
+            unlocked() {return hasMilestone('mn', 100)}
         },
         102: {
             requirementDescription: "Complete Depth 2",
             effectDescription: "Re-unlock the Sun",
             done() {return challengeCompletions('mn', 11) >= 3},
+            unlocked() {return hasMilestone('mn', 101)},
             onComplete() {
                 player.dk.upgrades = [11, 12, 13, 14, 15, 21, 22, 23, 24, 25, 31, 32, 33, 34, 35, 41, 42, 43, 44, 45]
             }
@@ -384,6 +390,7 @@ addLayer("mn", {
             title() {return "Space Points (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")"},
             cost(x) {
                 let cost = new Decimal(100).mul(x.mul(1.25).add(1)).mul(new Decimal(1.25).pow(x))
+                if (player.mn.unlockOrder == 1 && !inChallenge('mn', 11)) cost = new Decimal(1e100).mul(x.mul(1.25).add(1)).mul(new Decimal(1.25).pow(x))
                 if (x.gte(15)) cost = cost.pow(1.25)
                 if (hasUpgrade('dk', 13)) cost = cost.div(upgradeEffect('dk', 13))
                 return cost
@@ -429,6 +436,7 @@ addLayer("mn", {
             },
             cost(x) {
                 let cost = new Decimal(100000).mul(x.mul(1.25).add(1)).mul(new Decimal(1.25).pow(x))
+                if (player.mn.unlockOrder == 1 && !inChallenge('mn', 11)) cost = new Decimal(1e110).mul(x.mul(1.25).add(1)).mul(new Decimal(1.25).pow(x))
                 if (inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 1) cost = cost.div(1000)
                 if (x.gte(15)) cost = cost.pow(1.25)
                 if (hasUpgrade('dk', 13)) cost = cost.div(upgradeEffect('dk', 13))
@@ -491,6 +499,7 @@ addLayer("mn", {
             },
             cost(x) {
                 let cost = new Decimal(10000000).mul(x.mul(1.25).add(1)).mul(new Decimal(1.25).pow(x))
+                if (player.mn.unlockOrder == 1 && !inChallenge('mn', 11)) cost = new Decimal(1e120).mul(x.mul(1.25).add(1)).mul(new Decimal(1.25).pow(x))
                 if (inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 1) cost = cost.div(10000)
                 if (x.gte(15)) cost = cost.pow(1.25)
                 if (hasUpgrade('dk', 13)) cost = cost.div(upgradeEffect('dk', 13))
@@ -762,13 +771,13 @@ addLayer("mn", {
                 doReset('mn', true)
                 player.spacePoints = new Decimal(15)
                 player.timePoints = new Decimal(5)
+                setBuyableAmount('st', 11, new Decimal(0))
+                setBuyableAmount('st', 12, new Decimal(0))
+                setBuyableAmount('st', 13, new Decimal(0))
+                setBuyableAmount('st', 14, new Decimal(0))
                 if (challengeCompletions('mn', 11) >= 1) {
                     player.mn.points = new Decimal(0)
                     player.mn.moonEnergy = new Decimal(0)
-                    setBuyableAmount('st', 11, new Decimal(0))
-                    setBuyableAmount('st', 12, new Decimal(0))
-                    setBuyableAmount('st', 13, new Decimal(0))
-                    setBuyableAmount('st', 14, new Decimal(0))
                     setBuyableAmount('mn', 11, new Decimal(0))
                     setBuyableAmount('mn', 12, new Decimal(0))
                     setBuyableAmount('mn', 13, new Decimal(0))
@@ -946,7 +955,7 @@ addLayer("mn", {
         if (player.mn.radiance.gte(tmp.mn.getRadianceOverflowStart)) player.mn.radiance = player.mn.radiance.div(tmp.mn.getRadianceOverflowDiv.pow(diff))
         if (hasMilestone('mn', 200)) setBuyableAmount('mn', 31, getBuyableAmount('mn', 31).add(tmp.mn.buyables[31].cost.mul(0.05).mul(diff)))
     },
-    layerShown() {return (hasUpgrade('st', 24) || player.mn.unlocked) && !player.sn.unlocked}
+    layerShown() {return (hasUpgrade('st', 24) || player.mn.unlocked) && (!player.sn.unlocked || challengeCompletions('sn', 14) >= 1)}
 })
 const moonOrbit = document.createElement('style'); // orbit code stolen from Gods of Incremental adkv
 moonOrbit.innerHTML = `

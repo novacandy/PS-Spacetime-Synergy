@@ -95,11 +95,13 @@ addLayer("dk", {
         if (hasUpgrade('st', 14)) gen = gen.mul(upgradeEffect('st', 14))
         gen = gen.mul(buyableEffect('st', 12))
         gen = gen.mul(tmp.dk.getLunarGenPowerEffect)
+        if (player.mn.unlockOrder == 1) gen = gen.pow(0.5)
         return gen
     },
 
     getLunarGenEffect() {
         let effect = tmp.dk.getLunarGenBase.pow(player.dk.lunarGenerators.add(tmp.dk.getFreeLunarGens)).sub(1)
+        if (player.mn.unlockOrder == 1) effect = effect.pow(0.5)
         return effect
     },
     getLunarGenBase() {
@@ -121,6 +123,7 @@ addLayer("dk", {
         let mult = new Decimal(1)
         mult = mult.mul(buyableEffect('mn', 13))
         if (hasUpgrade('dk', 35)) mult = mult.mul(upgradeEffect('dk', 35))
+        if (player.mn.unlockOrder == 1) mult = mult.pow(0.5)
         return mult
     },
     getLunarGenPowerEffect() {
@@ -131,6 +134,7 @@ addLayer("dk", {
 
     getLunarAltEffect() {
         let effect = tmp.dk.getLunarAltBase.pow(player.dk.lunarAlternators.add(tmp.dk.getFreeLunarAlts)).sub(1)
+        if (player.mn.unlockOrder == 1) effect = effect.pow(0.5)
         return effect
     },
     getLunarAltBase() {
@@ -149,6 +153,7 @@ addLayer("dk", {
     getLunarACMult() {
         let mult = new Decimal(1)
         mult = mult.mul(tmp.mn.absoluteSpaceEffect)
+        if (player.mn.unlockOrder == 1) mult = mult.pow(0.5)
         return mult
     },
     getLunarACEffect() {
@@ -158,6 +163,7 @@ addLayer("dk", {
 
     getLunarDynEffect() {
         let effect = tmp.dk.getLunarDynBase.pow(player.dk.lunarDynamos.add(tmp.dk.getFreeLunarDyns)).sub(1)
+        if (player.mn.unlockOrder == 1) effect = effect.pow(0.5)
         return effect
     },
     getLunarDynBase() {
@@ -175,6 +181,7 @@ addLayer("dk", {
     getLunarDCMult() {
         let mult = new Decimal(1)
         mult = mult.mul(tmp.mn.absoluteSpaceEffect)
+        if (player.mn.unlockOrder == 1) mult = mult.pow(0.5)
         return mult
     },
     getLunarDCEffect() {
@@ -593,7 +600,10 @@ addLayer("dk", {
     },
     tabFormat: [
         ["display-text", () => {return "You have <h2 style='color: #ffffff; text-shadow: 0px 0px 10px #ffffff'>" + format(player.dk.darkness) + "</h2> darkness"}],
-        ["display-text", () => {return "(+" + format(tmp.dk.getDarknessGen) + "/s)<br><br>"}],
+        ["display-text", () => {return "(+" + format(tmp.dk.getDarknessGen) + "/s)<br>"}],
+        ["display-text", () => {
+            if (player.mn.unlockOrder == 1) return "<br><b style='color: #ff0000; text-shadow: 0px 0px 10px #ff0000'>[SOFTCAPPED: The Moon is not your dominant layer, all Darkness resource gains and multipliers are raised to the power of ^0.5"
+        }],
         "blank",
         ['buttonless-microtabs', 'darkness']
     ],
