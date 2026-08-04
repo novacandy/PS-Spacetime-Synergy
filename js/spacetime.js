@@ -120,9 +120,11 @@ addLayer("st", {
     getConvertOutputMult() {
         let mult = new Decimal(1)
         let enableMoonPenalty = player.mn.unlockOrder == 1 && (player.st.convertInput == 'MOON ESSENCE' || inChallenge('mn', 11))
+        let enableSunPenalty = player.sn.unlockOrder == 1 && player.st.convertInput == 'SUN ESSENCE'
+
         if (hasUpgrade('st', 21)) mult = mult.mul(1.75)
         if (hasUpgrade('st', 23) && !enableMoonPenalty) mult = mult.mul(upgradeEffect('st', 23))
-        if (hasMilestone('mn', 1)) mult = mult.mul(tmp.st.getStoredAbsSpaceEffect)
+        if (hasMilestone('mn', 1) && !enableSunPenalty) mult = mult.mul(tmp.st.getStoredAbsSpaceEffect)
         if (hasMilestone('sn', 1) && !(enableMoonPenalty && !(player.sn.activeSolarPowers[3]))) mult = mult.mul(tmp.st.getStoredAbsTimeEffect)
         if (!enableMoonPenalty) mult = mult.mul(buyableEffect('sn', 12))
         if (hasUpgrade('sn', 42) && !enableMoonPenalty) mult = mult.mul(upgradeEffect('sn', 42))
@@ -315,11 +317,13 @@ addLayer("st", {
             effect() {
                 let effect = player.timePoints.pow(0.25).div(5).add(1)
                 if (player.sn.activeSolarPowers[2]) effect = effect.pow(1.2)
-                if (effect.gte(1e30)) effect = effect.div(1e30).pow(0.5).mul(1e30)
+                if (effect.gte(this.softcapStart())) effect = effect.div(this.softcapStart()).pow(0.5).mul(this.softcapStart())
+                if (player.sn.unlockOrder == 1 && player.st.convertInput == 'SUN ESSENCE') effect = effect.div(1e6)
                 return effect
             },
             softcapStart() {
                 let start = new Decimal(1e30)
+                if (player.sn.unlockOrder == 1 && player.st.convertInput == 'SUN ESSENCE') start = new Decimal(1)
                 return start
             },
             unlocked() {return hasMilestone('st', 2)},
@@ -1204,7 +1208,10 @@ addLayer("st", {
                         if (tmp.st.getConvertRate.gt(1)) return "Convert rate is dividing convert output by /" + format(new Decimal(1).div(new Decimal(1).sub(tmp.st.getConvertReduction).pow(tmp.st.getConvertRate)))
                     }],
                     ["display-text", () => {
-                        if (player.mn.unlockOrder == 1 && (player.st.convertInput == 'MOON ESSENCE' || inChallenge('mn', 11))) return "<br><b style='color: #ff0000; text-shadow: 0px 0px 10px #ff0000'>[SOFTCAPPED: The Moon is not your dominant layer, Absolute Time, Tickspeed's convert multi, and convert multis from The Sun are disabled]"
+                        if (player.mn.unlockOrder == 1 && (player.st.convertInput == 'MOON ESSENCE' || inChallenge('mn', 11))) return "<br><b style='color: #ff0000; text-shadow: 0px 0px 10px #ff0000'>[SOFTCAPPED: The Moon is not your dominant layer. Absolute Time, Tickspeed's convert multi, and convert multis from The Sun are disabled,]"
+                    }],
+                    ["display-text", () => {
+                        if (player.sn.unlockOrder == 1 && (player.st.convertInput == 'SUN ESSENCE')) return "<br><b style='color: #ff0000; text-shadow: 0px 0px 10px #ff0000'>[SOFTCAPPED: The Sun is not your dominant layer. Absolute Space and convert multis from The Moon are disabled, and Tickspeed's softcap starts immediately and its effect is heavily reduced.]"
                     }],
                     "blank",
                     ["display-text", () => {

@@ -810,6 +810,10 @@ addLayer("mn", {
                     setBuyableAmount('mn', 21, new Decimal(0))
                     setBuyableAmount('mn', 22, new Decimal(0))
                 }
+                if (challengeCompletions('mn', 11) >= 3) {
+                    player.sn.points = new Decimal(0)
+                    player.sn.sunEnergy = new Decimal(0)
+                }
             },
             onExit() {
                 player.dk.darkness = new Decimal(0)
@@ -844,7 +848,7 @@ addLayer("mn", {
                 return [new Decimal(10000000), new Decimal(1e15), new Decimal(1e36), new Decimal(1e100)]
             },
             canComplete() {return player.dk.darkness.gte(this.goals()[challengeCompletions('mn', 11)])},
-            unlocked() {return hasUpgrade('mn', 11) && (!hasMilestone('mn', 102) || false)},
+            unlocked() {return hasUpgrade('mn', 11) && (!hasMilestone('mn', 102) || hasMilestone('sn', 3))},
             style() {return {
                 "width": "350px",
                 "height": "350px",
@@ -912,7 +916,7 @@ addLayer("mn", {
                         return "You have " + format(player.mn.darkEssence) + " dark essence, which ???"
                     }],
                     ["display-text", () => {
-                        if (!(!hasMilestone('mn', 102) || false)) return "<br>The Dark Side of The Moon has been temporarily sealed away, you need to progress more in The Sun to re-unlock it.<br>You have been given all the Lunar Generator and Lunar Alternator upgrades for free if not already obtained."
+                        if (!(!hasMilestone('mn', 102) || hasMilestone('sn', 3))) return "<br>The Dark Side of The Moon has been temporarily sealed away, you need to progress more in The Sun to re-unlock it.<br>You have been given all the Lunar Generator and Lunar Alternator upgrades for free if not already obtained."
                     }],
                     "blank",
                     "challenges",
@@ -977,7 +981,7 @@ addLayer("mn", {
         if (player.mn.radiance.gte(tmp.mn.getRadianceOverflowStart)) player.mn.radiance = player.mn.radiance.div(tmp.mn.getRadianceOverflowDiv.pow(diff))
         if (hasMilestone('mn', 200)) setBuyableAmount('mn', 31, getBuyableAmount('mn', 31).add(tmp.mn.buyables[31].cost.mul(0.05).mul(diff)))
     },
-    layerShown() {return (hasUpgrade('st', 24) || player.mn.unlocked) && (!player.sn.unlocked || challengeCompletions('sn', 14) >= 1)}
+    layerShown() {return hasUpgrade('st', 24) && (!player.sn.unlocked || challengeCompletions('sn', 14) >= 1) || player.mn.unlocked}
 })
 const moonOrbit = document.createElement('style'); // orbit code stolen from Gods of Incremental adkv
 moonOrbit.innerHTML = `

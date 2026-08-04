@@ -96,6 +96,7 @@ addLayer("lh", {
         if (inChallenge('sn', 13)) gen = gen.mul(Decimal.pow(1.5, player.points.add(1).log(5).add(1)))
         if (inChallenge('sn', 21)) gen = gen.mul(tmp.st.getAbsoluteSpaceLengths.pow(tmp.st.getAbsoluteSpaceDims))
         if (inChallenge('sn', 22)) gen = gen.pow(0.5)
+        if (player.sn.unlockOrder == 1) gen = gen.pow(0.5)
         gen = gen.mul(tmp.lh.solarPrestigeEffect)
         gen = gen.mul(buyableEffect('lh', 11))
         gen = gen.mul(buyableEffect('lh', 21))
@@ -487,17 +488,20 @@ addLayer("lh", {
     tabFormat: [
         ["display-text", () => {return "You have <h2 style='color: #ffffff; text-shadow: 0px 0px 10px #ffffff'>" + format(player.lh.light) + "</h2> light"}],
         ["display-text", () => {return "(+" + format(tmp.lh.getLightGen) + "/s)<br><br>"}],
+        ["display-text", () => {
+            if (player.sn.unlockOrder == 1) return "<b style='color: #ff0000; text-shadow: 0px 0px 10px #ff0000'>[SOFTCAPPED: The Sun is not your dominant layer. All bonus Light multipliers are raised to the power of ^0.5.]"
+        }],
         "blank",
         ['buttonless-microtabs', 'light']
     ],
     update(diff) {
-        if (player.sn.activeChallenge !== null) {
+        if (player.sn.activeChallenge !== null && player.sn.activeChallenge !== undefined) {
             player.lh.light = player.lh.light.add(tmp.lh.getLightGen.mul(diff))
             player.lh.solarMagnets = player.lh.solarMagnets.add(tmp.lh.getSolarMagnetGen.mul(diff))
             if (player.lh.light.gte(player.lh.bestLight)) player.lh.bestLight = player.lh.light
         }
     },
-    layerShown() {return (player.sn.activeChallenge !== null)}
+    layerShown() {return (player.sn.activeChallenge !== null && player.sn.activeChallenge !== undefined)}
 })
 const lightOrbit = document.createElement('style'); // orbit code stolen from Gods of Incremental adkv
 lightOrbit.innerHTML = `

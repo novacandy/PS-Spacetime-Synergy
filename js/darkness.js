@@ -44,6 +44,7 @@ addLayer("dk", {
     name: "darkness",
     symbol: "D",
     row: 3,
+    displayRow: 4,
     position: 0,
     startData() { return {
         unlocked: true,
@@ -602,7 +603,7 @@ addLayer("dk", {
         ["display-text", () => {return "You have <h2 style='color: #ffffff; text-shadow: 0px 0px 10px #ffffff'>" + format(player.dk.darkness) + "</h2> darkness"}],
         ["display-text", () => {return "(+" + format(tmp.dk.getDarknessGen) + "/s)<br>"}],
         ["display-text", () => {
-            if (player.mn.unlockOrder == 1) return "<br><b style='color: #ff0000; text-shadow: 0px 0px 10px #ff0000'>[SOFTCAPPED: The Moon is not your dominant layer, all Darkness resource gains and multipliers are raised to the power of ^0.5"
+            if (player.mn.unlockOrder == 1) return "<br><b style='color: #ff0000; text-shadow: 0px 0px 10px #ff0000'>[SOFTCAPPED: The Moon is not your dominant layer. all Darkness resource gains and multipliers are raised to the power of ^0.5.]"
         }],
         "blank",
         ['buttonless-microtabs', 'darkness']

@@ -1,6 +1,6 @@
 addLayer("sn", {
     name: "sun",
-    symbol: "SN",
+    symbol() {return inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 3 ? "DS" : "SN"},
     row: 1,
     displayRow: 3,
     position: 0,
@@ -42,10 +42,9 @@ addLayer("sn", {
         if (effect.gte(1000)) effect = effect.div(1000).pow(0.25).mul(1000)
         return effect
     },
-    color: "#ffa200",
+    color() {return inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 3 ? "#49330c" : "#ffa200"},
     nodeStyle() {
-
-        if (inChallenge('mn', 11) && challengeCompletions('mn', 11) > 4) return {
+        if (inChallenge('mn', 11) && challengeCompletions('mn', 11) >= 3) return {
             "color": "#ffffff",
             "animation": 'sunOrbit 25s infinite linear',
         }
@@ -53,7 +52,7 @@ addLayer("sn", {
             "animation": 'sunOrbit 25s infinite linear',
         }
     },
-    requires: new Decimal(10000),
+    requires() {return player.sn.unlockOrder == 0 ? new Decimal(10000) : new Decimal(1e54)},
     resource: "sun essence",
     baseResource: "time",
     baseAmount() {return player.timePoints},
@@ -255,7 +254,7 @@ addLayer("sn", {
                 player.spacePoints = new Decimal(5)
                 player.timePoints = new Decimal(15)
             },
-            unlocked() {return hasMilestone('mn', 102)},
+            unlocked() {return hasMilestone('mn', 102) && player.mn.unlockOrder == 1 || challengeCompletions('sn', 22) >= 1},
             style() {return {
                 "width": "200px",
                 "height": "200px",
@@ -321,6 +320,7 @@ addLayer("sn", {
             currencyLayer: "sn",
             currencyDisplayName: "solar flares",
             currencyInternalName: "solarFlares",
+            unlocked() {return challengeCompletions('sn', 11) >= 1}
         },
         22: {
             title: "Repeated Resonance",
@@ -333,6 +333,7 @@ addLayer("sn", {
             currencyLayer: "sn",
             currencyDisplayName: "solar flares",
             currencyInternalName: "solarFlares",
+            unlocked() {return challengeCompletions('sn', 11) >= 1}
         },
         23: {
             title: "Trial Booster",
@@ -346,6 +347,7 @@ addLayer("sn", {
             currencyLayer: "sn",
             currencyDisplayName: "solar flares",
             currencyInternalName: "solarFlares",
+            unlocked() {return challengeCompletions('sn', 11) >= 1}
         },
         24: {
             fullDisplay() {return `<h3>Premium Subscription</h3><br>
@@ -368,6 +370,7 @@ addLayer("sn", {
             currencyLayer: "sn",
             currencyDisplayName: "resonance",
             currencyInternalName: "resonance",
+            unlocked() {return hasUpgrade('sn', 14)}
         },
         32: {
             title: "Reverberate",
@@ -381,6 +384,7 @@ addLayer("sn", {
             currencyLayer: "sn",
             currencyDisplayName: "resonance",
             currencyInternalName: "resonance",
+            unlocked() {return hasUpgrade('sn', 14)}
         },
         33: {
             fullDisplay() {return `<h3>Sunnier Days</h3><br>
@@ -415,6 +419,7 @@ addLayer("sn", {
             currencyLayer: "sn",
             currencyDisplayName: "solar flares",
             currencyInternalName: "solarFlares",
+            unlocked() {return hasUpgrade('sn', 14)}
         },
         42: {
             fullDisplay() {return `<h3>Trial Booster II</h3><br>
@@ -465,8 +470,14 @@ addLayer("sn", {
         },
         2: {
             requirementDescription: "1000 sun essence",
-            effectDescription: "Start resets with 10 Convert Rate levels, unlock Solar Flare Module and a new spacetime conversion input",
+            effectDescription: "Start resets with 10 Convert Rate levels, unlock Solar Flare Module, a new buyable in Absolute Time, and a new spacetime conversion input",
             done() { return player.sn.points.gte(1000) }
+        },
+        3: {
+            requirementDescription: "1e12 sun essence",
+            effectDescription: "Unseal the Dark Side of The Moon",
+            done() { return player.sn.points.gte(1e12) },
+            unlocked() {return player.sn.unlockOrder == 1 && challengeCompletions('sn', 11) >= 1}
         },
         100: {
             requirementDescription: "1000 solarity",
@@ -479,6 +490,7 @@ addLayer("sn", {
             title() {return "Time Points (" + formatWhole(getBuyableAmount(this.layer, this.id)) + "/" + formatWhole(this.purchaseLimit()) + ")"},
             cost(x) {
                 let cost = new Decimal(100).mul(x.mul(1.25).add(1)).mul(new Decimal(1.25).pow(x))
+                if (player.sn.unlockOrder == 1) cost = new Decimal(1e54).mul(x.mul(1.25).add(1)).mul(new Decimal(1.25).pow(x))
                 if (x.gte(15)) cost = cost.pow(1.25)
                 return cost
             },
@@ -638,7 +650,7 @@ addLayer("sn", {
                 }
             },
             effectBase() {
-                let base = new Decimal(0.01)
+                let base = new Decimal(0.05)
                 if (hasUpgrade('sn', 12)) base = new Decimal(1.5)
                 if (hasUpgrade('sn', 41)) base = base.mul(upgradeEffect('sn', 41))
                 return base
@@ -938,7 +950,7 @@ addLayer("sn", {
                 setBuyableAmount('lh', 32, new Decimal(0))
             },
             canComplete() {return player.lh.light.gte(1e9)},
-            unlocked() {return challengeCompletions('sn', 12) >= 1},
+            unlocked() {return challengeCompletions('sn', 11) >= 1},
             style() {return {
                 "width": "325px",
                 "height": "325px",
@@ -1208,7 +1220,7 @@ addLayer("sn", {
             if (hasMilestone('sn', 0)) return "You have <h2 style='color: #ffffff; text-shadow: 0px 0px 10px #ffffff'>" + formatTime(player.sn.absoluteTime) + "</h2> of absolute time, which multiplies spacetime gain by x" + format(tmp.sn.absoluteTimeEffect)
         }],
         "blank",
-        ["milestones", [0, 1, 2]],
+        ["milestones", [0, 1, 2, 3]],
         ["microtabs", "sun"]
     ],
     update(diff) {
@@ -1217,16 +1229,16 @@ addLayer("sn", {
         player.sn.resonance = player.sn.resonance.mul(tmp.sn.getResonanceMult.pow(diff))
         if (hasMilestone('sn', 100)) setBuyableAmount('sn', 31, getBuyableAmount('sn', 31).add(tmp.sn.buyables[31].cost.mul(0.05).mul(diff)))
     },
-    layerShown() {return hasUpgrade('st', 24) || player.sn.unlocked && !player.mn.unlocked}
+    layerShown() {return (hasUpgrade('st', 24) || player.sn.unlocked) && (!player.mn.unlocked || hasMilestone('mn', 102))}
 })
 const sunOrbit = document.createElement('style'); // orbit code stolen from Gods of Incremental adkv
 sunOrbit.innerHTML = `
 @keyframes sunOrbit {
     0% {
-        transform: translateY(120px) rotate(0deg) translateX(-175px) rotate(0deg);
+        transform: translateY(20px) rotate(0deg) translateX(-175px) rotate(0deg);
       }
       100% {
-        transform: translateY(120px) rotate(360deg) translateX(-175px) rotate(-360deg);
+        transform: translateY(20px) rotate(360deg) translateX(-175px) rotate(-360deg);
       }
   }
   `
